@@ -156,14 +156,14 @@ This table maps \texttt{UserGroup}s to specific privileges. A mapping includes a
 It will be up to application logic to interpret the semantics of the concrete privileges.
 
 \subsection{Subject to change}
-We can already foresee that configuration of controllers as well as other settings will most likely require extensions to the above proposed schema. The basic structure of the core schema should however not change.
+We can already foresee that configuration of controllers as well as other settings that must be persisted will most likely require extensions to the schema proposed above. The basic structure of the core schema should however not change.
 
 \subsection{Rolling window}\label{subsection:rollingwindow}
 Since the \texttt{Measurement} table will grow very quickly, a the partitioning and data discarding scheme will be employed. The table will be partitioned in time intervald, having one subtable for every 24 hours. Furthermore, subtables older than one week will be dropped. The time limits can naturally be configured. The same scheme might be applied to tables \texttt{ControlAction} and \texttt{Prediction}.
-This done in order to accomodate the VPP application on a desktop size machine with limited disk space.
+This is done in order to accommodate the VPP server on a desktop size machine with limited disk space.
 
 \subsection{Data warehouse}
-In order to retain data, the VPP will periodically forward data to an external database (data warehouse) that can accomodate a larger volume of data for longer periods. When forwarding data, measurements may be averaged over limited time intervals to reduce data size. The data warehouse can then be used for statistics and historical analysis. While the data warehouse schema was initially planned to be identical to the VPP rolling window DB, the presence of users, privileges and most likely various other configuration indicates that probably only the core schema as shown in figure \ref{figureDbCoreModel} should be present in the data warehouse. 
+In order to retain data, the VPP will periodically forward data to an external database (data warehouse) that can accommodate a larger volume of data for longer periods. When forwarding data, measurements may be averaged over limited time intervals to reduce data size. The data warehouse can then be used for statistics and historical analysis. While the data warehouse schema was initially planned to be identical to the VPP rolling window DB, the presence of users, privileges and most likely various other configuration indicates that probably only the core schema as shown in figure \ref{figureDbCoreModel} should be present in the data warehouse. 
 
 \section{Application design}
 The application will be programmed in object-oriented Python, using Python processes to enable concurrent processing.
@@ -177,6 +177,13 @@ Key classes have been identified to form a static structure which is shown in fi
     \label{figureClassDiagram}
 \end{figure}
 
+The runtime creation of various threads is shown below:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/seq_diagram}
+    \caption{Sequence diagram of thread creation}
+    \label{figureSeqDiagram}
+\end{figure}
 
 
 
