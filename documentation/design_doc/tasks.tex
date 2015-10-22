@@ -1,0 +1,63 @@
+\chapter{Development tasks}
+Given the design described in the previous chapter, we here define initial development tasks as well as an estimate of their size. 
+Note: These are \emph{rough ballpark} estimates.
+
+
+\section{Pending design}
+
+\subsection{Task: Examine Python interprocess communication}
+Python supports various methods of interprocess communication. Evaluate these and decide on a model to use for the VPP. The Python \texttt{multiprocessing} module looks promising. Also consider interaction if some processes are created as threads instead.
+
+Estimate: 1-2 days.
+
+\subsection{Task: Evaluate ORM options and decide DB connectivity model} \label{task:orm}
+The existing solution uses plain SQL. Evaluate this against SQLAlchemy, which seems to be the Python ORM of choice.
+
+Estimate: 1/2 day.
+
+\subsection{Task: Possibly identify use cases}
+It might be beneficial to identify a few key use cases / scenarios to determine which functionality is crucial and what can wait.
+
+Estimate: 1/2 day.
+
+\section{Initial prototype}
+
+\subsection{Task: Initial database}
+Get database up and running with core schema (possibly excluding prediction tables). 
+
+Estimate: 2-3 days?
+
+\subsection{Task: Python DB access}
+Implement \texttt{DBProxy/DBAccess} (according to decision from \ref{task:orm}). 
+
+Estimate: 2-3 days?
+
+Note: If we use an ORM, this and the previous task \emph{might} be solved quite quickly...
+
+\subsection{Task: Initial version of DataProvider framework}
+Implement an initial \texttt{DataProviderManager} and a prototype \texttt{DataAdapter}, for instance for the RabbitMQ. Store measurement in DB.
+
+Estimate: 1 week?
+
+\subsection{Task: Initial version of Controller framework}
+Initial \texttt{ControllerManager} and a prototype \texttt{ControllerAdapter}. Read a scheduled action from DB and actuate controller.
+
+Estimate: 1 week?
+
+\subsection{Task: Initial web server}
+Get web server up and running with Django.
+
+Estimate: 1 day?
+
+\subsection{Task: Data throughput to web server}
+Have the webserver display basic information on devices. Requires the \texttt{StatusMonitorService}.
+
+Estimate: 1-2 days
+
+\subsection{Task: Actuation through web server}
+Click a button in the web interface to actuate a device. Requires the \texttt{ControllerService}.
+
+Estimate: 1-2 days
+
+\section{Summary}
+All of the above estimates sum up to a rather unreliable figure of approx. 4 man-weeks. 

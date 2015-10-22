@@ -1,0 +1,72 @@
+\chapter{Considerations and requirements}
+
+\section{Purpose}
+
+The purpose of the Virtual Power Plant (VPP) platform is to:
+\begin{itemize}
+	\item receive measurements from sensors deployed in a building.
+	\item receive current and forecast information from external sources on grid load, electricity price and more.
+	\item process measurements and external information to make decisions on power usage.
+	\item actuate devices deployed in a building to implement above mentioned decisions.
+\end{itemize} 
+The above functionality is already implemented in a number of individual applications and scripts. This system should provide the same functionality in an integrated application.
+
+\newpage
+\section{Users and privileges}
+
+\subsection{User categories}
+An initial listing of envisioned users and their access to the system is shown below:
+
+\paragraph{Residents}
+\begin{itemize}
+    \item{Actuate in own home}
+    \item{See data from own home}
+\end{itemize}
+
+\paragraph{Janitor}
+\begin{itemize}
+    \item{Should be able to do anything he/she can already do before the system}
+    \item{Actuate anything not in private}
+    \item{Add/remove actuators}
+\end{itemize}
+
+\paragraph{Administrative staff (ie. housing association office staff)}
+\begin{itemize}
+    \item{See data on some level of aggregation. Maybe just reports?}
+\end{itemize}
+
+\paragraph{Aggregator}
+\begin{itemize}
+    \item{multiple buildings}
+    \item{specific read/actuate permissions, granted by janitor/admin. staff}
+\end{itemize}
+
+\paragraph{System administrator}
+\begin{itemize}
+    \item{full access}
+\end{itemize}
+
+\newpage
+\subsection{Privileges requirements} \label{subsection:PrivilegesRequirements}
+With outset in the above user categories and tasks, the following distinct privileges have been identified:
+
+\paragraph{Global system privileges}
+\begin{itemize}
+    \item{Access to reports}
+    \item{User access}
+    \item{System admin access}
+\end{itemize}
+
+\paragraph{Building-specific privileges}
+\begin{itemize}
+    \item{Add new devices}
+    \item{Remove devices}
+\end{itemize}
+
+\paragraph{Device-specific privileges}
+\begin{itemize}
+    \item{Read device status and data (measurements/actions)}
+    \item{Configure device (configure parameters, disable)}
+    \item{Remove device and data}
+    \item{Actuate controller}
+\end{itemize}
