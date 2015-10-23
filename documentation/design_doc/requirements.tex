@@ -70,3 +70,87 @@ With outset in the above user categories and tasks, the following distinct privi
     \item{Remove device and data}
     \item{Actuate controller}
 \end{itemize}
+
+\section{Use cases}
+
+\subsection*{UC1: Sensor data from RabbitMQ (Priority 1)}
+\noindent Trigger: RabbitMQ announces new message.
+
+\noindent Post condition: Measurements are stored in DB
+
+\noindent Steps: 
+\begin{enumerate}
+    \item Message is sent from RabbitMQ to VPP \texttt{DataProvider}
+    \item For each measurement in message:
+        \subitem If sensor is unknown, create it and store in DB
+        \subitem Store measurement (with link to sensor)
+\end{enumerate}
+
+
+\subsection*{UC2: Sensor and prediction data from FTP (Priority 2)}
+\noindent Trigger: Periodic check connects to configured FTP
+
+\noindent Post condition: Measurements and predictions are stored in DB, avoiding duplication of previously posted data
+
+\noindent Steps: 
+\begin{enumerate}
+    \item VPP DataProvider (with FTP adapter) connects to FTP with configured credentials
+    \item The targeted file is downloaded
+    \item Relevant (new) data from file is stored as measurements and predictions, as appropriate.
+\end{enumerate}
+
+\subsection*{UC3: Scheduled ControlAction is executed (Priority 3)}
+\noindent Trigger: Periodic check discovers scheduled action on ventilation system
+
+\noindent Post condition: Ventilation system setting is changed via HTTP, and the VPP DB updated to reflect action has been carried out.
+
+\subsection*{UC4: HTTP control of Develco devices (smart plugs) (Priority 10)}
+Extension of SmartAmm server with HTTP interface.
+
+\subsection*{UC5: VPP control strategy schedules action (Priority 5)}
+\noindent Trigger: Control strategy periodic check (or possibly arrival of relevant measurement/prediction data)
+
+\noindent Post condition: New control action is stored DB
+
+\noindent Steps: 
+\begin{enumerate}
+    \item Read relevant data from DB
+    \item Control algorithm computes suitable action
+    \item Store new action
+    \item If action should be performed immediately: Notify ControllerManager
+\end{enumerate}
+
+\subsection*{UC6: Data visualization on website (Priority 5)}
+\noindent Trigger: Super user wishes to view data form specific sensor
+
+\noindent Post condition: Graph of data from sensor is displayed in browser
+
+\noindent Steps: 
+\begin{enumerate}
+    \item User authenticates with username and password
+    \item User specifies sensor and time range
+    \item User is presented with data plot
+\end{enumerate}
+
+\subsection*{UC7: Periodic status report (Priority 6)}
+\noindent Trigger: Status report is generated every 24 hours.
+
+\noindent Post condition: Administrator receives email with report
+
+\noindent Data in report: 
+\begin{itemize}
+    \item New sensors
+    \item Sensors gone offline (no reports for 24 hours)
+    \item Statistics on measurement data
+        \subitem size (kilobytes)
+        \subitem number of measurements
+    \item Status on subsystems 
+        \subitem uptime
+\end{itemize}
+Possibly use Nagios for system info
+
+
+\subsection*{UC8: alarm report (Priority 7)}
+\noindent Trigger: RabbitMQ has not sent data for 1 hour
+
+\noindent Post condition: Administrator receives email with report
