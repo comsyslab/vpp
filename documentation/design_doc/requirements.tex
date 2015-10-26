@@ -71,9 +71,10 @@ With outset in the above user categories and tasks, the following distinct privi
     \item{Actuate controller}
 \end{itemize}
 
+\newpage
 \section{Use cases}
 
-\subsection*{UC1: Sensor data from RabbitMQ (Priority 1)}
+\subsection*{UC1: Sensor data from RabbitMQ (Priority 1)}\label{uc1}
 \noindent Trigger: RabbitMQ announces new message.
 
 \noindent Post condition: Measurements are stored in DB
@@ -154,3 +155,8 @@ Possibly use Nagios for system info
 \noindent Trigger: RabbitMQ has not sent data for 1 hour
 
 \noindent Post condition: Administrator receives email with report
+
+\section{Measurement data characteristics}
+Grundfoss data: 2-3GBs per day. A few thousand sensors report every 5 seconds, giving approx. 50 mio. rows per day. That is 500 rows per second!
+
+Develco: 15MB per day, 0.5 mio. rows

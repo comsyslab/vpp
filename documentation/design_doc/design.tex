@@ -4,7 +4,10 @@ The platform will consist of one main server application with an attached databa
 It is intended to be deployed on a Beckhoff CX2030 PC. This machine has a dual-core Intel Core i7 1.5GHz CPU and up to 4GB RAM. The disk is a flash card. The machine is intended to reside in the same building as the devices it should interact with.
 
 \section{Database design}
-The database will reside in a PostgreSQL DBMS. 
+Since the intended machine is somewhat limited, the immediate choice would be to use SQLite for the database.
+SQLite is however not designed for concurrent access, in that it resides in a single file which must be locked to perform writes. Supporting 5-600 writes per second (the Grundfoss dormitory) from multiple data provider threads/processes along with controller processes, monitor processes, a reporting process and a predictor process is expected to cause significant file lock contention. \textgreater500 writes per second gives \textless2ms per write, not counting the need to allow other processes to access the database. Since we do not expect to do disk writes in less than 2ms (and even if we did, there would be no scaling potential), the SQLite option is abandoned.
+
+The database will reside in a PostgreSQL DBMS which is open source and should run well even on a smaller machine.
 
 \subsection{Schema: core}
 The central part of the database schema is shown in figure \ref{figureDbCoreModel} and explained below:
@@ -50,23 +53,32 @@ A logical source of predictions of one type. Specifies the \texttt{Attribute}, \
 Actual prediction values. \texttt{Timestamp} indicates the time for which the value applies, while \texttt{TimeReceived} indicates when the prediction was received from the provider. This is relevant since multiple predictions for the same future point in time may be received over time. Some values actually cover an interval (for instance predicted power consumption for a given day of 24 hours), which is specified in column \texttt{ValueInterval}.
 This table is also expected to grow quickly, motivating the same partitioning and rolling window strategy as for table \texttt{Measurement}.
 
-\subsection{Schema: Users, groups and privileges}
+\newpage
+\subsection{Schema: Users, groupings and privileges}
 
-The database schema for storing users and privileges has been developed to meet the requirements from section \ref{subsection:PrivilegesRequirements}. This is shown below:
+The database schema for storing device groupings, users, user groups and their privileges has been developed to meet the requirements from section \ref{subsection:PrivilegesRequirements}. This is shown below:
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/db_user_schema}
-    \caption{Users and privilege schema}
+    \caption{Schema for device groups, user groups and privileges}
 \end{figure}
 
-\paragraph{Users and UserGroups}
-\texttt{User}s have a username and a password (which will be hashed with a suitable one-way hash function) and can be member of a number of \texttt{UserGroup}s. 
+\paragraph{DeviceGroupMapping}
+Devices can be put in arbitrary logical groups which is modeled by this table.
+
+\paragraph{User and UserGroup}
+\texttt{User}s have a username and a password (which will be hashed with a suitable one-way hash function) and can be member of a number of \texttt{UserGroup}s.
+
+\paragraph{HierarchyGroup and HierarchyMapping} 
+\texttt{DeviceGroup} and \texttt{UserGroup} are subtypes of the general \texttt{HierarchyGroup} which can be nested in parent-child relationships as modeled by \texttt{HierarchyMapping}.
 
 \paragraph{PrivilegeMapping}
-This table maps \texttt{UserGroup}s to specific privileges. A mapping includes a time period which may be open-ended. In order to have privileges for specific devices and buildings as well as globally valid ones, a \texttt{Scope} must be set. In case of a device or building-specific privilege, the concerned \texttt{Device} or \texttt{Building} must be looked up in \texttt{DevicePrivilegeMapping} or \texttt{BuildingPrivilegeMapping} respectively. These tables are intended to have corresponding subtypes in the object-oriented implementation.
+This table maps \texttt{UserGroup}s to specific privileges. A mapping includes a time period which may be open-ended. In order to have privileges for specific devices and buildings as well as globally valid ones, a \texttt{Scope} must be set. In case of a device or building-specific privilege, the concerned \texttt{DeviceGroup} or \texttt{Building} must be looked up in \texttt{DevicePrivilegeMapping} or \texttt{BuildingPrivilegeMapping} respectively. These tables are intended to have corresponding subtypes in the object-oriented implementation.
 
 It will be up to application logic to interpret the semantics of the concrete privileges.
+
+
 
 \subsection{Subject to change}
 We can already foresee that configuration of controllers as well as other settings that must be persisted will most likely require extensions to the schema proposed above. The basic structure of the core schema should however not change.

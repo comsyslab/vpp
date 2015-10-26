@@ -3,61 +3,73 @@ Given the design described in the previous chapter, we here define initial devel
 Note: These are \emph{rough ballpark} estimates.
 
 
-\section{Pending design}
 
-\subsection{Task: Examine Python interprocess communication}
-Python supports various methods of interprocess communication. Evaluate these and decide on a model to use for the VPP. The Python \texttt{multiprocessing} module looks promising. Also consider interaction if some processes are created as threads instead.
-
-Estimate: 1-2 days.
-
-\subsection{Task: Evaluate ORM options and decide DB connectivity model} \label{task:orm}
-The existing solution uses plain SQL. Evaluate this against SQLAlchemy, which seems to be the Python ORM of choice.
-
-Estimate: 1/2 day.
-
-\subsection{Task: Possibly identify use cases}
-It might be beneficial to identify a few key use cases / scenarios to determine which functionality is crucial and what can wait.
-
-Estimate: 1/2 day.
 
 \section{Initial prototype}
 
-\subsection{Task: Initial database}
-Get database up and running with core schema (possibly excluding prediction tables). 
+\subsection*{UC1: Sensor data from RabbitMQ}
+\subsubsection{Task: Initial database}
+Get PostgreSQL database up and running with core schema (possibly excluding prediction tables) using SQLAlchemy.
 
-Estimate: 2-3 days?
+Estimate: 1 week
 
-\subsection{Task: Python DB access}
-Implement \texttt{DBProxy/DBAccess} (according to decision from \ref{task:orm}). 
 
-Estimate: 2-3 days?
+\subsubsection{ Task: Data layer impl. for storing sensors and measurements}
+Implementation in \texttt{DBProxy/DBAccess}
 
-Note: If we use an ORM, this and the previous task \emph{might} be solved quite quickly...
+Estimate: 3 days
 
-\subsection{Task: Initial version of DataProvider framework}
-Implement an initial \texttt{DataProviderManager} and a prototype \texttt{DataAdapter}, for instance for the RabbitMQ. Store measurement in DB.
 
-Estimate: 1 week?
+\subsubsection{Task: Initial version of Data Provider framework}
+Implement an initial \texttt{DataProviderManager, DataProvider} and a dummy \texttt{DataAdapter}.
 
-\subsection{Task: Initial version of Controller framework}
-Initial \texttt{ControllerManager} and a prototype \texttt{ControllerAdapter}. Read a scheduled action from DB and actuate controller.
+Estimate: 3 days.
 
-Estimate: 1 week?
+\subsubsection{Task: RabbitMQAdapter}
+Implement \texttt{RabbitMQAdapter}. Store measurements in DB.
 
-\subsection{Task: Initial web server}
-Get web server up and running with Django.
+Estimate: 3 days.
 
-Estimate: 1 day?
+\subsection*{UC2: Sensor and prediction data from FTP}
+\subsubsection{Task: Database schema for predictions}
+DB schema and access through \texttt{DBAccess}.
 
-\subsection{Task: Data throughput to web server}
-Have the webserver display basic information on devices. Requires the \texttt{StatusMonitorService}.
+Estimate: 2 days.
 
-Estimate: 1-2 days
+\subsubsection{Task: Store DataProvider config}
+It should be possible to configure multiple dataproviders and store the configuration. DB schema and access through data layer.
 
-\subsection{Task: Actuation through web server}
-Click a button in the web interface to actuate a device. Requires the \texttt{ControllerService}.
+Estimate: 2 days.
 
-Estimate: 1-2 days
+\subsubsection{Task: FTPAdapter}
+Implement an \texttt{FTPAdapter}. Store measurements and predictions in DB, avoiding duplication.
+
+Estimate: 3 days.
+
+\subsection*{UC3: Scheduled ControlAction is executed}
+\subsubsection{Task: Initial version of Controller framework}
+Initial \texttt{ControllerManager}, dummy \texttt{ControlStrategy, Controller}.
+
+Estimate: 3 days.
+
+\subsubsection{Task: VentilationControllerAdapter}
+Communicate with ventilation system using HTTP.
+
+Estimate: 3 days.
+
+\subsubsection{Task: Execute scheduled action}
+Read a scheduled action from DB and actuate ventilation controller.
+
+Estimate: 2 days.
+
+\subsection*{UC5: ControlStrategy schedules action(s)}
+\subsubsection{Task: Simple ControlStrategy}
+Simple \texttt{ControllerStrategy} which schedules ventilation system to run at lower setting at night.
+
+Estimate: 2 days.
+
 
 \section{Summary}
-All of the above estimates sum up to a rather unreliable figure of approx. 4 man-weeks. 
+The above covers acquiring measurements from RabbitMQ, predictions and measurements from FTP and scheduling actions for controlling the ventilation system.
+
+The estimates sum up to approx. 4.5 man-weeks. Taking unforseen complications into account, 6-8 weeks is probably more realistic. 
