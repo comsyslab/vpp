@@ -7,26 +7,37 @@ Note: These are \emph{rough ballpark} estimates.
 
 \section{Initial prototype}
 
-\subsection*{UC1: Sensor data from RabbitMQ}
+\subsection*{UC1a: Sensor data from RabbitMQ}
 \subsubsection{Task: Initial database}
 Get PostgreSQL database up and running with core schema (possibly excluding prediction tables) using SQLAlchemy.
 
 Estimate: 1 week
 
 
-\subsubsection{ Task: Data layer impl. for storing sensors and measurements}
+\subsubsection{Task: Data layer impl. for storing sensors and measurements}
 Implementation in \texttt{DBProxy/DBAccess}
 
 Estimate: 3 days
 
 
 \subsubsection{Task: Initial version of Data Provider framework}
-Implement an initial \texttt{DataProviderManager, DataProvider} and a dummy \texttt{DataAdapter}.
+Implement an initial \texttt{DataProviderManager, DataProvider} and dummy \texttt{DataAdapter and DataInterpreter}.
 
 Estimate: 3 days.
 
 \subsubsection{Task: RabbitMQAdapter}
-Implement \texttt{RabbitMQAdapter}. Store measurements in DB.
+Implement \texttt{RabbitMQAdapter}.
+
+Estimate: 4 days.
+
+\subsubsection{Task: Interpret Grundfoss data}
+Imlement interpretation of Grundfoss data from RabbitMQ. Store measurements in DB.
+
+Estimate: 3 days.
+
+\subsection*{UC1b: Develco sensor data from RabbitMQ}
+\subsubsection{Task: Intepret Develco data}
+Implement interpretation of Develco data from RabbitMQ. Store measurements in DB.
 
 Estimate: 3 days.
 
@@ -72,4 +83,4 @@ Estimate: 2 days.
 \section{Summary}
 The above covers acquiring measurements from RabbitMQ, predictions and measurements from FTP and scheduling actions for controlling the ventilation system.
 
-The estimates sum up to approx. 4.5 man-weeks. Taking unforseen complications into account, 6-8 weeks is probably more realistic. 
+The estimates sum up to approx. 5 man-weeks. Taking unforseen complications into account, 6-8 weeks is probably more realistic. 

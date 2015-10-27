@@ -74,8 +74,8 @@ With outset in the above user categories and tasks, the following distinct privi
 \newpage
 \section{Use cases}
 
-\subsection*{UC1: Sensor data from RabbitMQ (Priority 1)}\label{uc1}
-\noindent Trigger: RabbitMQ announces new message.
+\subsection*{UC1a: Grundfoss sensor data from RabbitMQ (Priority 1)}\label{uc1}
+\noindent Trigger: RabbitMQ announces new message with Grundfoss data.
 
 \noindent Post condition: Measurements are stored in DB
 
@@ -87,6 +87,10 @@ With outset in the above user categories and tasks, the following distinct privi
         \subitem Store measurement (with link to sensor)
 \end{enumerate}
 
+\subsection*{UC1b: Develco sensor data from RabbitMQ (Priority 1)}\label{uc1}
+\noindent Trigger: RabbitMQ announces new message with Develco data.
+
+\noindent Post condition: Measurements are stored in DB
 
 \subsection*{UC2: Sensor and prediction data from FTP (Priority 2)}
 \noindent Trigger: Periodic check connects to configured FTP
