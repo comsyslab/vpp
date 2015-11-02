@@ -11,22 +11,25 @@ class Coordinator:
 
 
     def test_db_manager(self):
-        controller_id1 = "mydevice1"
-        controller = self.db_manager.create_new_controller(external_id=controller_id1, attribute="length", unit="m", unit_prefix=None)
+        controller_id = "mydevice1"
+        controller = self.db_manager.create_new_controller(external_id=controller_id, attribute="length", unit="m", unit_prefix=None)
 
         sensor_external_id = "temp_sensor_1"
         attribute = "temperature"
         unit = "deg_c"
         sensor = self.db_manager.create_new_sensor(sensor_external_id, attribute, unit)
 
-        measurement = self.db_manager.create_new_measurement(sensor.id, "2015-10-30 23:30:00+01:00", 1.37)
+        measurement = self.db_manager.create_new_measurement(sensor.id, "2015-11-02 23:30:00", 1.37)
 
 
-        for meas in self.db_manager.get_measurements_for_sensor(sensor.id):
-            print "Measurement: " + str(meas)
+        measurements = self.db_manager.get_measurements_for_sensor(sensor.id)
+        for m in measurements:
+            print "Found measurement: " + str(m.id) + ", " + str(m.timestamp) + ", " + str(m.value)
 
-        #print str(controller)
-        #print "Looked up " + str(self.db_manager.search_controller(controller_id))
+
+        result = self.db_manager.search_controller(controller_id)
+        for cont in result:
+            print "Found controller: " + str(cont)
 
 
 

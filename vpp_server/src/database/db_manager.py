@@ -1,7 +1,8 @@
 import logging
 
 import sqlalchemy
-from database.table_manager import Measurement, TableManager, Controller, Sensor
+from database.orm_tables import Controller, Sensor
+from database.table_manager import TableManager
 
 __author__ = 'ubbe'
 
@@ -11,11 +12,11 @@ class DBManager(object):
 
         local_db_string = "postgresql://ubbe:ubbep4ss@localhost/vpp"
         self.engine = sqlalchemy.create_engine(local_db_string, echo=False)
-        self.set_logging_levels()
+        #self.set_logging_levels()
 
-        table_manager = TableManager(self.engine)
-        table_manager.drop_tables()
-        table_manager.create_missing_tables()
+        self.table_manager = TableManager(self.engine)
+        self.table_manager.drop_tables()
+        self.table_manager.create_missing_tables()
 
         SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
 
@@ -37,12 +38,19 @@ class DBManager(object):
         return sensor
 
     def create_new_measurement(self, sensor_id, timestamp, value):
-        measurement = Measurement(sensor_id=sensor_id, timestamp=timestamp, value=value)
-        self.persist_object(measurement)
-        return measurement
+        table_name = self.table_manager.get_partition_table_name(timestamp)
+        table = self.table_manager.lookup_table(table_name)
+        sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
+        self.session.execute(sql)
+        self.session.commit()
 
     def get_measurements_for_sensor(self, sensor_id):
-        return self.session.query(Measurement).filter_by(sensor_id=sensor_id)
+        table = self.table_manager.lookup_table(self.table_manager.measurement_base_table_name)
+        sql = table.select('sensor_id=' + str(sensor_id))
+        return self.session.execute(sql)
+
+    def search_controller(self, controller_id):
+        return self.session.query(Controller).filter_by(external_id=controller_id)
 
     def persist_object(self, object):
         self.session.add(object)
