@@ -1,17 +1,20 @@
 import datetime as dt
 import time
-
 import pytz
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import mapper
-from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, Time, Float, DateTime, Table
 import tzlocal
+
+
+import sqlalchemy
+from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table
+
 
 __author__ = 'ubbe@eng.au.dk'
 
 DeclarativeBase = declarative_base()
+
+import core_entities
+import dataprovider_entities
 
 class TableManager(object):
     def __init__(self, engine):
@@ -96,7 +99,6 @@ class TableManager(object):
 
     def lookup_table(self, name):
         return Table(name, DeclarativeBase.metadata, autoload=True, autoload_with=self.engine)
-
 
 
 class Measurement(object):

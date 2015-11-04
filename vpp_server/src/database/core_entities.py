@@ -100,3 +100,4 @@ class DeviceLocation(DeclarativeBase):
     room_id = Column(Integer, ForeignKey('Room.id'), nullable=False)
     from_time = Column(DateTime(timezone=True), nullable=False)
     to_time = Column(DateTime(timezone=True))
+

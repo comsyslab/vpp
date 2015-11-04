@@ -1,7 +1,8 @@
 import logging
 
 import sqlalchemy
-from database.orm_tables import Controller, Sensor
+from database.dataprovider_entities import DataProviderEntity
+from database.core_entities import Controller, Sensor
 from database.table_manager import TableManager
 
 __author__ = 'ubbe'
@@ -11,7 +12,7 @@ class DBManager(object):
     def __init__(self):
 
         local_db_string = "postgresql://ubbe:ubbep4ss@localhost/vpp"
-        self.engine = sqlalchemy.create_engine(local_db_string, echo=False)
+        self.engine = sqlalchemy.create_engine(local_db_string, echo=True)
         #self.set_logging_levels()
 
         self.table_manager = TableManager(self.engine)
@@ -49,9 +50,15 @@ class DBManager(object):
         sql = table.select('sensor_id=' + str(sensor_id))
         return self.session.execute(sql)
 
-    def search_controller(self, controller_id):
+    def get_controller(self, controller_id):
         return self.session.query(Controller).filter_by(external_id=controller_id)
+
+    def get_data_providers(self):
+        return self.session.query(DataProviderEntity)
 
     def persist_object(self, object):
         self.session.add(object)
         self.session.commit()
+
+
+instance = DBManager()
