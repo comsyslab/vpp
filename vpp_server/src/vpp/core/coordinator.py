@@ -1,6 +1,6 @@
-from core.data_provider_manager import DataProviderManager
 from database import db_manager
-from database.db_manager import DBManager
+
+from vpp.core import DataProviderManager
 
 __author__ = 'ubbe'
 

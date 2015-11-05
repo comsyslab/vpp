@@ -1,6 +1,7 @@
 from sqlalchemy import *
 from sqlalchemy.orm import relationship
-from database.table_manager import DeclarativeBase
+
+from vpp.database.table_manager import DeclarativeBase
 
 __author__ = 'ubbe'
 

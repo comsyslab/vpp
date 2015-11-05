@@ -1,31 +1,37 @@
 import logging
 
 import sqlalchemy
-from database.dataprovider_entities import DataProviderEntity
-from database.core_entities import Controller, Sensor
-from database.table_manager import TableManager
+
+from vpp.database.core_entities import Controller
+from vpp.database.core_entities import Sensor
+from vpp.database.dataprovider_entities import DataProviderEntity
+from vpp.database.table_manager import TableManager
 
 __author__ = 'ubbe'
 
 class DBManager(object):
 
+
+    _instance = None
+
+    @staticmethod
+    def __new__(cls, *more):
+        if not cls._instance:
+            cls._instance = super(DBManager, cls).__new__(cls, *more)
+        return cls._instance
+
     def __init__(self):
 
         local_db_string = "postgresql://ubbe:ubbep4ss@localhost/vpp"
-        self.engine = sqlalchemy.create_engine(local_db_string, echo=True)
-        #self.set_logging_levels()
+        self.engine = sqlalchemy.create_engine(local_db_string, echo=False)
 
         self.table_manager = TableManager(self.engine)
-        self.table_manager.drop_tables()
+        #self.table_manager.drop_tables()
         self.table_manager.create_missing_tables()
 
         SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
 
         self.session = SessionCls()
-
-    def set_logging_levels(self):
-        logging.basicConfig()
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.WARN)
 
     def create_new_controller(self, external_id, attribute, unit, unit_prefix=None):
         controller = Controller(external_id=external_id, attribute=attribute, unit=unit, unit_prefix=unit_prefix)
@@ -59,6 +65,3 @@ class DBManager(object):
     def persist_object(self, object):
         self.session.add(object)
         self.session.commit()
-
-
-instance = DBManager()

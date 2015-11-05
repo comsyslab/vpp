@@ -31,9 +31,10 @@ class TableManager(object):
         self.engine.execute(sql)
 
     def create_missing_tables(self):
-        self.create_measurement_basetable()
         DeclarativeBase.metadata.create_all(self.engine)
+        self.create_measurement_basetable()
         self.create_measurement_subtable()
+
 
     def create_measurement_basetable(self):
         self.measurement_base_table = Table(self.measurement_base_table_name,
@@ -41,7 +42,9 @@ class TableManager(object):
                                  Column('id', Integer, primary_key=True),
                                  Column('sensor_id', Integer, ForeignKey('Sensor.id'), nullable=False),
                                  Column('timestamp', DateTime(timezone=True), nullable=False),
-                                 Column('value', Float, nullable=False))
+                                 Column('value', Float, nullable=False),
+                                 extend_existing=True)
+        self.measurement_base_table.create(self.engine, checkfirst=True)
 
     def create_measurement_subtable(self):
         '''Create initial subtable for the present day'''
