@@ -4,7 +4,11 @@ import sys
 import threading
 
 from vpp.core.data_provider_process_manager import DataProviderProcessManager
-from vpp.database.dataprovider_entities import DataAdapterEntity, DataInterpreterEntity, DataProviderEntity
+from vpp.data_acquisition.data_adapter import RabbitMQAdapter
+from vpp.data_acquisition.data_interpreter import GrundfosMeasurementInterpreter
+from vpp.data_acquisition.data_processor import DefaultMeasProcessor
+from vpp.data_acquisition.data_provider import DataProvider
+from vpp.database.dataprovider_entities import DataProviderEntity
 from vpp.database.db_manager import DBManager
 
 __author__ = 'ubbe'
@@ -52,7 +56,7 @@ class TestCoordinator:
 
     def test_data_provider_manager(self):
 
-        #self.add_new_data_providers()
+        self.add_new_data_providers()
 
         self.logger.info("Found " + str(len(self.db_manager.get_data_providers())) + " data providers in DB")
 
@@ -66,14 +70,17 @@ class TestCoordinator:
         self.dataprovider_manager.stop_process()
         self.logger.info("TestCoordinator exiting")
 
-    def add_new_data_providers(self):
-        for _ in range(0, 3):
-            data_adapter_entity = DataAdapterEntity()
-            data_interpreter_entity = DataInterpreterEntity()
+    def add_new_grundfos_provider(self):
 
-            data_provider_entity = DataProviderEntity(data_adapter=data_adapter_entity,
-                                                      data_interpreter=data_interpreter_entity, interval=2)
-            self.db_manager.persist_object(data_provider_entity)
+
+        data_provider_entity = DataProviderEntity(interval=2, data_processor_repr="")
+        data_provider = DataProvider(data_provider_entity)
+
+        data_processor = DefaultMeasProcessor(RabbitMQAdapter(), GrundfosMeasurementInterpreter())
+        data_provider.data_processor = data_processor
+        data_provider.persist_data_processor()
+
+        self.db_manager.commit()
 
 
 if __name__ == '__main__':

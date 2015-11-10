@@ -2,6 +2,7 @@ import logging
 
 from enum import Enum
 from vpp.data_acquisition.data_provider import DataProvider
+from vpp.data_acquisition.data_provider_timer import DataProviderTimer
 from vpp.database.db_manager import DBManager
 
 
@@ -21,18 +22,20 @@ class DataProviderProcess(object):
         self._listen_for_commands()
 
     def _init_data_providers(self):
-        self.data_providers = []
+        self.data_provider_timers = []
 
         provider_entities = self.db_manager.get_data_providers()
         self.logger.debug("DataProviderProcess  found " + str(len(provider_entities)) + " data providers in DB")
         for data_provider_entity in provider_entities:
+
             data_provider = DataProvider(data_provider_entity)
-            self.data_providers.append(data_provider)
+            data_provider_timer = DataProviderTimer(data_provider)
+            self.data_provider_timers.append(data_provider_timer)
 
     def _run_data_providers(self):
-        for data_provider in self.data_providers:
-            self.logger.info("Starting DataProvider %d", data_provider.get_id())
-            data_provider.run()
+        for data_provider_timer in self.data_provider_timers:
+            self.logger.info("Starting DataProvider %d", data_provider_timer.data_provider.get_id())
+            data_provider_timer.run()
 
     def _listen_for_commands(self):
         while self.command is None or self.command.index != self.Commands.STOP.index:
@@ -44,13 +47,13 @@ class DataProviderProcess(object):
 
     def _stop_data_providers(self):
         self.logger.info("DataProviderProcess signalling provider threads to exit")
-        for data_provider in self.data_providers:
+        for data_provider in self.data_provider_timers:
             data_provider.stop()
 
         self._wait_for_data_providers_to_exit()
 
     def _wait_for_data_providers_to_exit(self):
         self.logger.info("DataProviderProcess waiting for provider threads to exit")
-        for data_provider in self.data_providers:
+        for data_provider in self.data_provider_timers:
             data_provider.join()
         self.logger.info("DataProvider threads exited, DataProviderProcess exiting")

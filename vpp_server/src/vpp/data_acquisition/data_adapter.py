@@ -1,8 +1,7 @@
+from abc import ABCMeta, abstractmethod
+
 __author__ = 'ubbe'
 
-class DataAdapter(object):
-    def __init__(self, data_adapter_entity):
-        self.entity = data_adapter_entity
-
+class RabbitMQAdapter(object):
     def fetch_data(self):
         pass

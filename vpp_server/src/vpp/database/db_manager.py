@@ -33,8 +33,7 @@ class DBManager(object):
 
         self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
 
-        self.query_session = self.SessionCls() #for querying only, will never need to commit
-        self.write_session = self.SessionCls()
+        self.session = self.SessionCls()
 
     def drop_tables(self):
         self.table_manager.drop_tables()
@@ -44,35 +43,43 @@ class DBManager(object):
 
     def create_new_controller(self, external_id, attribute, unit, unit_prefix=None):
         controller = Controller(external_id=external_id, attribute=attribute, unit=unit, unit_prefix=unit_prefix)
-        self.persist_object(controller)
+        self.persist_entity(controller)
         return controller
 
     def create_new_sensor(self, external_id, attribute, unit, unit_prefix=None, value_interval=None):
         sensor = Sensor(external_id=external_id, attribute=attribute,
                         unit=unit, unit_prefix=unit_prefix, value_interval=value_interval)
-        self.persist_object(sensor)
+        self.persist_entity(sensor)
         return sensor
+
+    def get_sensor_with_external_id(self, external_id):
+        return self.session.query(Sensor).filter_by(external_id=external_id).first()
 
     def create_new_measurement(self, sensor_id, timestamp, value):
         table_name = self.table_manager.get_partition_table_name(timestamp)
         table = self.table_manager.lookup_table(table_name)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
-        self.write_session.execute(sql)
-        self.write_session.commit()
+        self.session.execute(sql)
 
     def get_measurements_for_sensor(self, sensor_id):
         table = self.table_manager.lookup_table(self.table_manager.measurement_base_table_name)
         sql = table.select('sensor_id=' + str(sensor_id))
-        return self.query_session.execute(sql)
+        return self.session.execute(sql)
 
     def get_controller(self, controller_id):
-        return self.query_session.query(Controller).filter_by(external_id=controller_id).all()
+        return self.session.query(Controller).filter_by(external_id=controller_id).all()
 
     def get_data_providers(self):
-        return self.query_session.query(DataProviderEntity).all()
+        return self.session.query(DataProviderEntity).all()
 
-    def persist_object(self, object):
-        self.logger.debug(str(self) + " committing " + str(object))
-        self.write_session.add(object)
-        self.write_session.commit()
-        self.logger.debug(str(self) + " commit succeeded")
+    def persist_entity(self, object):
+        self.session.add(object)
+
+    def commit(self):
+        self.session.commit()
+
+    def close(self):
+        self.session.close()
+
+    def __del__(self):
+        self.close()

@@ -10,14 +10,8 @@ class DataProviderEntity(DeclarativeBase):
     __tablename__ = 'DataProvider'
 
     id = Column(Integer, primary_key=True)
-
-    data_interpreter_id = Column(Integer, ForeignKey('DataInterpreter.id'), nullable=False)
-    data_interpreter = relationship("DataInterpreterEntity", uselist=False)
-
-    data_adapter_id = Column(Integer, ForeignKey('DataAdapter.id'), nullable=False)
-    data_adapter = relationship("DataAdapterEntity", uselist=False)
-
-    interval = Column(Integer)
+    data_processor_pickled = Column(String, nullable=False)
+    interval = Column(Integer, nullable=False)
 
     #def __repr__(self):
     #    return "<DataProviderEntity ", id, ">"
@@ -26,15 +20,5 @@ class DataProviderEntity(DeclarativeBase):
     #    return "<DataProviderEntity ", id, ">"
 
 
-class DataInterpreterEntity(DeclarativeBase):
-    __tablename__ = 'DataInterpreter'
-
-    id = Column(Integer, primary_key=True)
-
-
-class DataAdapterEntity(DeclarativeBase):
-    __tablename__ = 'DataAdapter'
-
-    id = Column(Integer, primary_key=True)
 
 
