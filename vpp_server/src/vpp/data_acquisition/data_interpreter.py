@@ -1,10 +1,12 @@
 import json
-from abc import ABCMeta, abstractmethod
+import logging
 
 __author__ = 'ubbe'
 
 
 class GrundfosMeasurementInterpreter(object):
+
+
 
     '''{"version":3,
         "timestamp":"2014-10-08T09:30:32.750Z",
@@ -15,11 +17,20 @@ class GrundfosMeasurementInterpreter(object):
          ]
        }'''
 
-    def interpret_data(self, data_string):
-        json_dict = json.loads(data_string)
+    def __init__(self, entity):
+        self.entity = entity
+
+    def interpret_data(self, data_string=""):
+        result_dicts = []
+
+        try:
+            json_dict = json.loads(data_string)
+        except ValueError as e:
+            logging.getLogger(__name__).exception(e.message)
+            return result_dicts
 
         json_reading = json_dict['reading']
-        result_dicts = []
+
         for meas_dict in json_reading:
             result_dicts.append({'sensor_external_id':meas_dict['sensorId'],
                                  'timestamp' : meas_dict['timestamp'],

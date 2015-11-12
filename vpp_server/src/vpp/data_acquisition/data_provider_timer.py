@@ -9,12 +9,12 @@ class DataProviderTimer(object):
         self.logger = logging.getLogger(__name__)
         self.check_stop_interval = 5
         self.data_provider = data_provider
-        self.fetch_interval = data_provider.entity.interval
+        self.fetch_interval = data_provider.get_interval()
         self.stop_signal = threading.Event()
         self.thread = None
         self.last_fetch = 0
 
-    def run(self):
+    def start(self):
         name = __name__ + " " + str(self.data_provider.get_id())
         self.stop()
         self.stop_signal = threading.Event()

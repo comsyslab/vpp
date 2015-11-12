@@ -1,10 +1,12 @@
 import logging
 
+import iso8601
 import sqlalchemy
 
-from vpp.database.core_entities import Controller
-from vpp.database.core_entities import Sensor
-from vpp.database.dataprovider_entities import DataProviderEntity
+
+from vpp.database.entities.core_entities import Controller
+from vpp.database.entities.core_entities import Sensor
+from vpp.database.entities.dataprovider_entities import DataProviderEntity
 from vpp.database.table_manager import TableManager
 
 __author__ = 'ubbe'
@@ -41,6 +43,9 @@ class DBManager(object):
     def create_missing_tables(self):
         self.table_manager.create_missing_tables()
 
+    def clear_data_providers(self):
+        self.session.query(DataProviderEntity).delete()
+
     def create_new_controller(self, external_id, attribute, unit, unit_prefix=None):
         controller = Controller(external_id=external_id, attribute=attribute, unit=unit, unit_prefix=unit_prefix)
         self.persist_entity(controller)
@@ -56,7 +61,8 @@ class DBManager(object):
         return self.session.query(Sensor).filter_by(external_id=external_id).first()
 
     def create_new_measurement(self, sensor_id, timestamp, value):
-        table_name = self.table_manager.get_partition_table_name(timestamp)
+        datetime_w_timezone = iso8601.parse_date(timestamp)
+        table_name = self.table_manager.get_partition_table_name(datetime_w_timezone)
         table = self.table_manager.lookup_table(table_name)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
         self.session.execute(sql)

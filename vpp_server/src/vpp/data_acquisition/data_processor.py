@@ -1,11 +1,18 @@
+import logging
+
+from vpp.core import domain_object_factory
 from vpp.database.db_manager import DBManager
 
 
 class DefaultMeasProcessor(object):
 
-    def __init__(self, data_adapter, data_interpreter):
-        self.data_adapter = data_adapter
-        self.data_interpreter = data_interpreter
+    def __init__(self, data_processor_entity):
+
+        data_adapter_entity = data_processor_entity.data_adapter_entities[0]
+        self.data_adapter = domain_object_factory.get_domain_object_from_entity(data_adapter_entity)
+
+        data_interpreter_entity = data_processor_entity.data_interpreter_entities[0]
+        self.data_interpreter = domain_object_factory.get_domain_object_from_entity(data_interpreter_entity)
 
 
     def fetch_and_process_data(self, db_manager=DBManager()):
@@ -14,16 +21,21 @@ class DefaultMeasProcessor(object):
         meas_dicts_for_db = self.data_interpreter.interpret_data(data)
 
         for meas in meas_dicts_for_db:
-            db_manager.create_new_measurement(meas['sensor_external_id'], meas['timestamp'], meas['value'])
+            sensor_external_id_ = meas['sensor_external_id']
+            timestamp = meas['timestamp']
+            value = meas['value']
+            db_manager.create_new_measurement(sensor_external_id_, timestamp, value)
+            logging.getLogger(__name__).debug("Created new measurement from sensor %d. Timestamp %s, value %d.", sensor_external_id_, timestamp, value)
 
         db_manager.commit()
         db_manager.close()
 
 
-class DefaultSensorProcessor():
-    def __init__(self, data_adapter, data_interpreter):
-        self.data_adapter = data_adapter
-        self.data_interpreter = data_interpreter
+class DefaultSensorInfoProcessor():
+    def __init__(self, data_processor_entity):
+        pass
+        #self.data_adapter = data_adapter
+        #self.data_interpreter = data_interpreter
 
 
     def fetch_and_process_data(self, db_manager=DBManager()):

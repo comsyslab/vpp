@@ -22,20 +22,19 @@ class DataProviderProcess(object):
         self._listen_for_commands()
 
     def _init_data_providers(self):
-        self.data_provider_timers = []
+        self.data_providers = []
 
         provider_entities = self.db_manager.get_data_providers()
-        self.logger.debug("DataProviderProcess  found " + str(len(provider_entities)) + " data providers in DB")
+        self.logger.debug("DataProviderProcess found " + str(len(provider_entities)) + " data providers in DB")
         for data_provider_entity in provider_entities:
 
             data_provider = DataProvider(data_provider_entity)
-            data_provider_timer = DataProviderTimer(data_provider)
-            self.data_provider_timers.append(data_provider_timer)
+            self.data_providers.append(data_provider)
 
     def _run_data_providers(self):
-        for data_provider_timer in self.data_provider_timers:
-            self.logger.info("Starting DataProvider %d", data_provider_timer.data_provider.get_id())
-            data_provider_timer.run()
+        for data_provider in self.data_providers:
+            self.logger.info("Starting DataProvider %d", data_provider.get_id())
+            data_provider.start()
 
     def _listen_for_commands(self):
         while self.command is None or self.command.index != self.Commands.STOP.index:
@@ -47,13 +46,13 @@ class DataProviderProcess(object):
 
     def _stop_data_providers(self):
         self.logger.info("DataProviderProcess signalling provider threads to exit")
-        for data_provider in self.data_provider_timers:
+        for data_provider in self.data_providers:
             data_provider.stop()
 
         self._wait_for_data_providers_to_exit()
 
     def _wait_for_data_providers_to_exit(self):
         self.logger.info("DataProviderProcess waiting for provider threads to exit")
-        for data_provider in self.data_provider_timers:
+        for data_provider in self.data_providers:
             data_provider.join()
         self.logger.info("DataProvider threads exited, DataProviderProcess exiting")

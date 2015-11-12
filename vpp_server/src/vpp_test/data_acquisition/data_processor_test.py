@@ -2,7 +2,7 @@
 import unittest
 
 from vpp.data_acquisition.data_interpreter import GrundfosMeasurementInterpreter, GrundfosSensorInfoInterpreter
-from vpp.data_acquisition.data_processor import DefaultMeasProcessor, DefaultSensorProcessor
+from vpp.data_acquisition.data_processor import DefaultMeasProcessor, DefaultSensorInfoProcessor
 
 
 class DataProcessorTest(unittest.TestCase):
@@ -90,8 +90,8 @@ class DataProcessorTest(unittest.TestCase):
         self.assertEqual(db_manager.attribute, None)
         self.assertEqual(db_manager.unit, None)
 
-        data_processor = DefaultSensorProcessor(DataAdapterStub(),
-                                                GrundfosSensorInfoInterpreter())
+        data_processor = DefaultSensorInfoProcessor(DataAdapterStub(),
+                                                    GrundfosSensorInfoInterpreter())
         data_processor.fetch_and_process_data(db_manager=db_manager)
 
         self.assertEqual(db_manager.external_id, 2)
