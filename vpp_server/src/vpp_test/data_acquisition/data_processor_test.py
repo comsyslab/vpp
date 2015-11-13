@@ -2,7 +2,8 @@
 import unittest
 
 from vpp.data_acquisition.data_interpreter import GrundfosMeasurementInterpreter, GrundfosSensorInfoInterpreter
-from vpp.data_acquisition.data_processor import DefaultMeasProcessor, DefaultSensorInfoProcessor
+from vpp.data_acquisition.data_processor_async import DefaultAsyncSensorInfoProcessor
+from vpp.data_acquisition.data_processor_sync import DefaultMeasProcessor, DefaultSensorInfoProcessor
 
 
 class DataProcessorTest(unittest.TestCase):

@@ -19,7 +19,10 @@ class DataProviderProcessManager(object):
     def stop_process(self):
         self.out_queue.put(DataProviderProcess.Commands.STOP)
         self.logger.info("DataProviderProcessManager signalled process to stop")
-        self.process.join()
-        self.logger.info("DataProviderProcess quit gracefully")
+        self.process.join(timeout=15)
+        if (self.process.is_alive()):
+            self.logger.info("Timeout exceeded, forcefully terminating DataProviderProcess")
+            self.process.terminate()
+        self.logger.info("DataProviderProcess terminated")
 
 

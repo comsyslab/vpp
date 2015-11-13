@@ -1,10 +1,11 @@
 import logging
 
+
 import iso8601
 import sqlalchemy
 
 
-from vpp.database.entities.core_entities import Controller
+from vpp.database.entities.core_entities import Controller, Device
 from vpp.database.entities.core_entities import Sensor
 from vpp.database.entities.dataprovider_entities import DataProviderEntity
 from vpp.database.table_manager import TableManager
@@ -55,19 +56,35 @@ class DBManager(object):
         sensor = Sensor(external_id=external_id, attribute=attribute,
                         unit=unit, unit_prefix=unit_prefix, value_interval=value_interval)
         self.persist_entity(sensor)
+        self.session.flush()
+        self.logger.info("Created new sensor " + str(sensor.id) + " with external ID " + str(external_id))
         return sensor
 
     def get_sensor_with_external_id(self, external_id):
-        return self.session.query(Sensor).filter_by(external_id=external_id).first()
+        return self.session.query(Device).join(Sensor).filter(Device.external_id==str(external_id)).first()
 
-    def create_new_measurement(self, sensor_id, timestamp, value):
+    def create_new_measurement(self, sensor_external_id, timestamp, value):
+        sensor = self.get_sensor_with_external_id(sensor_external_id)
+        if sensor is None:
+            raise ValueError("Could not find sensor with external ID " + str(sensor_external_id))
+
+        self._create_new_measurement(sensor.id, timestamp, value)
+
+    def _create_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
         table_name = self.table_manager.get_partition_table_name(datetime_w_timezone)
         table = self.table_manager.lookup_table(table_name)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
         self.session.execute(sql)
+        self.logger.info("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
 
-    def get_measurements_for_sensor(self, sensor_id):
+    def get_measurements_for_sensor_external_id(self, sensor_external_id):
+        sensor = self.get_sensor_with_external_id(sensor_external_id)
+        if sensor is None:
+            raise ValueError("Could not find sensor with external ID " + str(sensor_external_id))
+        return self._get_measurements_for_sensor(sensor.id)
+
+    def _get_measurements_for_sensor(self, sensor_id):
         table = self.table_manager.lookup_table(self.table_manager.measurement_base_table_name)
         sql = table.select('sensor_id=' + str(sensor_id))
         return self.session.execute(sql)
@@ -85,6 +102,7 @@ class DBManager(object):
         self.session.commit()
 
     def close(self):
+        self.commit()
         self.session.close()
 
     def __del__(self):

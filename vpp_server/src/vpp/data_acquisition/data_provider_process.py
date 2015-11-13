@@ -1,7 +1,9 @@
 import logging
 
 from enum import Enum
-from vpp.data_acquisition.data_provider import DataProvider
+
+from vpp.core import domain_object_factory
+from vpp.data_acquisition.data_provider import PeriodicDataProvider
 from vpp.data_acquisition.data_provider_timer import DataProviderTimer
 from vpp.database.db_manager import DBManager
 
@@ -28,7 +30,7 @@ class DataProviderProcess(object):
         self.logger.debug("DataProviderProcess found " + str(len(provider_entities)) + " data providers in DB")
         for data_provider_entity in provider_entities:
 
-            data_provider = DataProvider(data_provider_entity)
+            data_provider = domain_object_factory.get_data_provider_from_entity(data_provider_entity)
             self.data_providers.append(data_provider)
 
     def _run_data_providers(self):

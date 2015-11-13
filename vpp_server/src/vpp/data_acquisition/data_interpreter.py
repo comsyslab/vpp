@@ -4,25 +4,40 @@ import logging
 __author__ = 'ubbe'
 
 
-class GrundfosMeasurementInterpreter(object):
+class GrundfosDataInterpreter(object):
+
+    def __init__(self, entity):
+        self.entity = entity
+        self.logger = logging.getLogger(__name__)
+
+    def interpret_data(self, data_string=""):
+        measurements = []
+        sensors = []
+        data_prefix_stripped = data_string[8:]
+        if data_string.startswith("GFKRE003"):
+            measurements = self.parse_measurements(data_prefix_stripped)
+        elif data_string.startswith("GFKSC002"):
+
+            sensors = self.parse_sensors(data_prefix_stripped)
+        else:
+            self.logger.warning("Could not parse message with unknown prefix: " + data_string[:20])
+
+        return {'measurements':measurements, 'sensors':sensors}
 
 
-
-    '''{"version":3,
+    def parse_measurements(self, data_string):
+        '''Example data_string:
+        {
+        "version":3,
         "timestamp":"2014-10-08T09:30:32.750Z",
          "reading":[
              {"sensorId":949,"appartmentId":46,"value":0.000000,"timestamp":"2014-10-08T09:30:32.573Z"},
              {"sensorId":1151,"appartmentId":3,"value":0.292496,"timestamp":"2014-10-08T09:30:32.747Z"},
              {"sensorId":1152,"appartmentId":3,"value":1024.000000,"timestamp":"2014-10-08T09:30:32.747Z"}
          ]
-       }'''
+        }'''
 
-    def __init__(self, entity):
-        self.entity = entity
-
-    def interpret_data(self, data_string=""):
         result_dicts = []
-
         try:
             json_dict = json.loads(data_string)
         except ValueError as e:
@@ -35,13 +50,13 @@ class GrundfosMeasurementInterpreter(object):
             result_dicts.append({'sensor_external_id':meas_dict['sensorId'],
                                  'timestamp' : meas_dict['timestamp'],
                                  'value' : meas_dict['value']})
-
         return result_dicts
 
 
-class GrundfosSensorInfoInterpreter(object):
-
-    '''{'appartmentCharacteristic': [
+    def parse_sensors(self, data_string):
+        '''Example data_string
+        {
+        'appartmentCharacteristic': [
             {'No': 1, 'Size': 39.5, 'Floor': 0, 'appartmentId':66},
             {'No': 2, 'Size': 23.2, 'Floor': 0, 'appartmentId':138}],
 
@@ -54,7 +69,6 @@ class GrundfosSensorInfoInterpreter(object):
             {'calibrationCoeff': '', 'description': '(*Ambient Temperature C*)', 'calibrationDate': '2012-11-19T21:22:45.320Z', 'externalRef': '', 'sensorId': 2, 'unit': 'C', 'calibrationEquation': ''}]
         }'''
 
-    def interpret_data(self, data_string):
         json_dict = json.loads(data_string)
 
         json_reading = json_dict['sensorCharacteristic']
@@ -64,5 +78,5 @@ class GrundfosSensorInfoInterpreter(object):
                                  'attribute' : sensor_dict['description'],
                                  'unit_prefix': "",
                                  'unit' : sensor_dict['unit']})
-
         return result_dicts
+

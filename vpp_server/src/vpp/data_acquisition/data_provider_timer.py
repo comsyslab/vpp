@@ -27,7 +27,7 @@ class DataProviderTimer(object):
             time_since_fetch = time.time() - self.last_fetch
             if  time_since_fetch >= self.fetch_interval:
                 self.last_fetch = time.time()
-                self.data_provider.fetch_and_process_data()
+                self.data_provider.listen_for_data()
 
 
             time_until_fetch = self.last_fetch + self.fetch_interval - time.time()

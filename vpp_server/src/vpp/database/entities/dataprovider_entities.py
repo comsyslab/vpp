@@ -36,7 +36,7 @@ class DataInterpreterEntity(DeclarativeBase):
 
     id = Column(Integer, primary_key=True)
     domain_type = Column(String, nullable=False)
-    data_processor = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
+    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
 
 
 
@@ -44,7 +44,7 @@ class DataAdapterEntity(DeclarativeBase):
     __tablename__ = 'DataAdapter'
 
     id = Column(Integer, primary_key=True)
-    data_processor = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
+    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
     sub_type = Column(String, nullable=False)
 
     __mapper_args__ = {

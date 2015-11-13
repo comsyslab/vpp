@@ -47,8 +47,10 @@ class TableManager(object):
         part_start, part_end = self._get_partition_boundary_timestamps(dt.datetime.now(self.timezone))
 
         primary_key_sql = 'PRIMARY KEY (id)'
-        check_sql= 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
-        constraint_sql = str(primary_key_sql) + ', ' + str(check_sql)
+        timestamp_constraint_sql= 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
+        foreign_key_sql = 'FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id)'
+
+        constraint_sql = primary_key_sql + ', ' + foreign_key_sql + ', ' + timestamp_constraint_sql
 
         table_name = self.get_partition_table_name(dt.datetime.now(self.timezone))
 

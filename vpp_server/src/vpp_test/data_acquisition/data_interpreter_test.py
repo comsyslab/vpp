@@ -13,7 +13,7 @@ class DataInterpreterTest(unittest.TestCase):
 
         interpreter = GrundfosMeasurementInterpreter()
 
-        meas_dicts = interpreter.interpret_data(json)
+        meas_dicts = interpreter.parse_sensors(json)
 
         self.assertEqual(len(meas_dicts), 1)
 
