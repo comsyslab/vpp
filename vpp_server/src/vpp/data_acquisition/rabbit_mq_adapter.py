@@ -5,6 +5,7 @@ from pika.exceptions import ChannelClosed
 
 __author__ = 'ubbe'
 
+
 class RabbitMQAdapter(object):
 
     def __init__(self, entity):
@@ -22,7 +23,7 @@ class RabbitMQAdapter(object):
 
         self.channel = connection.channel()
         self.channel.queue_declare(queue=self.entity.queue)
-        self.consumer_tag = self.channel.basic_consume(self.receive_data,
+        self.consumer_tag = self.channel.basic_consume(self._receive_data,
                                                        queue=self.entity.queue,
                                                        no_ack=True)
         try:
@@ -35,8 +36,8 @@ class RabbitMQAdapter(object):
     def stop_listening(self):
         self.channel.basic_cancel(self.consumer_tag)
         self.channel.stop_consuming()
-        self.logger.debug("RabbitMQAdapter cancelled message consumption.")
+        self.logger.debug("RabbitMQAdapter " + str(self.entity.id) + " cancelled message consumption.")
 
-    def receive_data(self, channel, method, properties, body):
-        self.logger.debug("RabbitMQAdapter " + str(self.entity.id) + " received message: " + str(body))
+    def _receive_data(self, channel, method, properties, body):
+        self.logger.info("RabbitMQAdapter " + str(self.entity.id) + " received message: " + str(body)[0:50])
         self.callback(body)

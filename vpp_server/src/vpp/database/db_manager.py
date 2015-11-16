@@ -3,11 +3,11 @@ import logging
 
 import iso8601
 import sqlalchemy
-
+import time
 
 from vpp.database.entities.core_entities import Controller, Device
 from vpp.database.entities.core_entities import Sensor
-from vpp.database.entities.dataprovider_entities import DataProviderEntity
+from vpp.database.entities.data_acquisition_entities import DataProviderEntity
 from vpp.database.table_manager import TableManager
 
 __author__ = 'ubbe'
@@ -47,50 +47,67 @@ class DBManager(object):
     def clear_data_providers(self):
         self.session.query(DataProviderEntity).delete()
 
-    def create_new_controller(self, external_id, attribute, unit, unit_prefix=None):
-        controller = Controller(external_id=external_id, attribute=attribute, unit=unit, unit_prefix=unit_prefix)
+    def create_new_controller(self, id, attribute, unit, unit_prefix=None):
+        controller = Controller(id=id, attribute=attribute, unit=unit, unit_prefix=unit_prefix)
         self.persist_entity(controller)
         return controller
 
-    def create_new_sensor(self, external_id, attribute, unit, unit_prefix=None, value_interval=None):
-        sensor = Sensor(external_id=external_id, attribute=attribute,
+    def create_new_sensor(self, id, attribute, unit, unit_prefix=None, value_interval=None):
+        sensor = Sensor(id=id, attribute=attribute,
                         unit=unit, unit_prefix=unit_prefix, value_interval=value_interval)
         self.persist_entity(sensor)
         self.session.flush()
-        self.logger.info("Created new sensor " + str(sensor.id) + " with external ID " + str(external_id))
+        self.logger.info("Created new sensor " + str(sensor.id))
         return sensor
 
-    def get_sensor_with_external_id(self, external_id):
-        return self.session.query(Device).join(Sensor).filter(Device.external_id==str(external_id)).first()
+    def get_device(self, id):
+        return self.session.query(Device).filter(Device.id==str(id)).first()
 
-    def create_new_measurement(self, sensor_external_id, timestamp, value):
-        sensor = self.get_sensor_with_external_id(sensor_external_id)
-        if sensor is None:
-            raise ValueError("Could not find sensor with external ID " + str(sensor_external_id))
+    def create_new_measurements(self, meas_dicts):
+        time_begin = time.time()
 
-        self._create_new_measurement(sensor.id, timestamp, value)
+        table_to_meas_dicts = {}
 
-    def _create_new_measurement(self, sensor_id, timestamp, value):
+        time_grouping_begin = time.time()
+        for meas in meas_dicts:
+            sensor_id = meas['sensor_external_id']
+            timestamp = meas['timestamp']
+            value = meas['value']
+            datetime_w_timezone = iso8601.parse_date(timestamp)
+            table_name = self.table_manager.get_partition_table_name(datetime_w_timezone)
+            if not table_name in table_to_meas_dicts:
+                table_to_meas_dicts[table_name] = []
+            table_to_meas_dicts[table_name].append({'sensor_id': sensor_id, 'timestamp': timestamp, 'value': value})
+        time_grouping_spent = time.time() - time_grouping_begin
+
+        time_sql_begin = time.time()
+        for table_name, meas_list in table_to_meas_dicts.iteritems():
+            table = self.table_manager.lookup_table(table_name)
+            sql = table.insert().values(meas_list)
+            self.session.execute(sql)
+            self.logger.info("Created "+ str(len(meas_list)) + " measurements in table " + table_name)
+        time_sql_spent = time.time() - time_sql_begin
+
+
+        time_spent = time.time() - time_begin
+        self.logger.debug("Created "+ str(len(meas_dicts)) + " measurements in " + str(time_spent) + " seconds. "
+                         "Grouping by table " + str(time_grouping_spent) + " seconds, DB interaction " + str(time_sql_spent) + " seconds.")
+
+    def create_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
         table_name = self.table_manager.get_partition_table_name(datetime_w_timezone)
         table = self.table_manager.lookup_table(table_name)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
         self.session.execute(sql)
-        self.logger.info("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
+        self.logger.debug("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
 
-    def get_measurements_for_sensor_external_id(self, sensor_external_id):
-        sensor = self.get_sensor_with_external_id(sensor_external_id)
-        if sensor is None:
-            raise ValueError("Could not find sensor with external ID " + str(sensor_external_id))
-        return self._get_measurements_for_sensor(sensor.id)
-
-    def _get_measurements_for_sensor(self, sensor_id):
+    def get_measurements_for_sensor(self, sensor_id):
         table = self.table_manager.lookup_table(self.table_manager.measurement_base_table_name)
         sql = table.select('sensor_id=' + str(sensor_id))
         return self.session.execute(sql)
 
     def get_controller(self, controller_id):
-        return self.session.query(Controller).filter_by(external_id=controller_id).all()
+        return self.session.query(Controller).filter_by(id=controller_id).all()
 
     def get_data_providers(self):
         return self.session.query(DataProviderEntity).all()

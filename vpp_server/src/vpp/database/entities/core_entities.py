@@ -9,9 +9,8 @@ __author__ = 'ubbe'
 class Device(DeclarativeBase):
     __tablename__ = 'Device'
 
-    id = Column(Integer, primary_key=True)
-    external_id = Column(String, nullable=False)
-    attribute = Column(String, nullable=False)
+    id = Column(String, primary_key=True)
+    attribute = Column(String)
     unit = Column(String, nullable=False)
     unit_prefix = Column(String)
     sub_type = Column(String, nullable=False)
@@ -21,16 +20,14 @@ class Device(DeclarativeBase):
         'polymorphic_identity':'Device'
     }
 
-    unique_constraint = UniqueConstraint(external_id, attribute)
-
     def __repr__(self):
        return "<Device(id='%s', external_id='%s', attribute='%s', unit='%s', unit_prefix='%s', sub_type='%s')>" \
-              % (self.id, self.external_id, self.attribute, self.unit, self.unit_prefix, self.sub_type)
+              % (self.id, self.attribute, self.unit, self.unit_prefix, self.sub_type)
 
 
 class Controller(Device):
     __tablename__ = 'Controller'
-    id = Column(Integer, ForeignKey('Device.id'), primary_key=True)
+    id = Column(String, ForeignKey('Device.id'), primary_key=True)
 
     __mapper_args__ = {
         'polymorphic_identity':'Controller'
@@ -40,7 +37,7 @@ class Controller(Device):
 class Sensor(Device):
     __tablename__ = 'Sensor'
 
-    id = Column(Integer, ForeignKey('Device.id'), primary_key=True)
+    id = Column(String, ForeignKey('Device.id'), primary_key=True)
     value_interval = Column(Time)
 
     __mapper_args__ = {
@@ -52,7 +49,7 @@ class ControlAction(DeclarativeBase):
     __tablename__ = 'ControlAction'
 
     id = Column(Integer, primary_key=True)
-    device_id = Column(Integer, ForeignKey('Device.id'), nullable=False)
+    device_id = Column(String, ForeignKey('Device.id'), nullable=False)
     value = Column(Integer, nullable=False)
     created = Column(DateTime, nullable=False)
     schedule = Column(DateTime, nullable=False)
@@ -97,7 +94,7 @@ class DeviceLocation(DeclarativeBase):
     __tablename__ = 'DeviceLocation'
 
     id = Column(Integer, primary_key=True)
-    device_id = Column(Integer, ForeignKey('Device.id'), nullable=False)
+    device_id = Column(String, ForeignKey('Device.id'), nullable=False)
     room_id = Column(Integer, ForeignKey('Room.id'), nullable=False)
     from_time = Column(DateTime(timezone=True), nullable=False)
     to_time = Column(DateTime(timezone=True))

@@ -1,6 +1,6 @@
 from vpp.data_acquisition.rabbit_mq_adapter import RabbitMQAdapter
 
-from vpp.database.entities.dataprovider_entities import RabbitMQAdapterEntity, DataProcessorEntity, \
+from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, DataProcessorEntity, \
     DataInterpreterEntity
 
 
@@ -18,8 +18,8 @@ def get_domain_object_from_entity(entity):
 
 def get_data_interpreter_from_entity(entity):
     if isinstance(entity, DataInterpreterEntity):
-        from vpp.data_acquisition import data_interpreter #placed here to avoid circular import
-        data_interpreter_class = getattr(data_interpreter, entity.domain_type)
+        from vpp.data_acquisition import grundfos_data_interpreter #placed here to avoid circular import
+        data_interpreter_class = getattr(grundfos_data_interpreter, entity.domain_type)
         return data_interpreter_class(entity)
 
     raise ValueError('Unknown entity ' + str(entity))

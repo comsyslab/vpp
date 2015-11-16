@@ -18,7 +18,7 @@ class DefaultMeasProcessor(object):
     def fetch_and_process_data(self, db_manager=DBManager()):
         data = self.data_adapter.fetch_data()
 
-        meas_dicts_for_db = self.data_interpreter.parse_sensors(data)
+        meas_dicts_for_db = self.data_interpreter._parse_sensors(data)
 
         for meas in meas_dicts_for_db:
             sensor_external_id_ = meas['sensor_external_id']
@@ -41,7 +41,7 @@ class DefaultSensorInfoProcessor():
     def fetch_and_process_data(self, db_manager=DBManager()):
         data = self.data_adapter.fetch_data()
 
-        sensor_dicts_for_db = self.data_interpreter.parse_sensors(data)
+        sensor_dicts_for_db = self.data_interpreter._parse_sensors(data)
 
         for sensor_dict in sensor_dicts_for_db:
             external_id = sensor_dict['sensor_external_id']

@@ -2,9 +2,11 @@ import logging
 import sys
 import threading
 
+import re
+
 from vpp.core.data_provider_process_manager import DataProviderProcessManager
 from vpp.database.db_manager import DBManager
-from vpp.database.entities.dataprovider_entities import DataProviderEntity, DataProcessorEntity, RabbitMQAdapterEntity, \
+from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProcessorEntity, RabbitMQAdapterEntity, \
     DataInterpreterEntity
 
 __author__ = 'ubbe'
@@ -13,7 +15,7 @@ __author__ = 'ubbe'
 class TestCoordinator:
 
     def __init__(self):
-        logging.basicConfig(level=logging.DEBUG,
+        logging.basicConfig(level=logging.INFO,
                             stream=sys.stdout,
                             format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                             datefmt='%y-%m-%d %H:%M:%S')
@@ -22,11 +24,11 @@ class TestCoordinator:
         self.logger = logging.getLogger(__name__)
 
 
-        self.drop_and_recreate_db_schema()
+        #self.drop_and_recreate_db_schema()
 
         #self.clear_data_providers()
 
-        self.configure_new_grundfos_data_provider()
+        #self.configure_new_grundfos_data_provider()
 
 
         #self.create_sensor()

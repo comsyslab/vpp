@@ -43,13 +43,13 @@ class AbstractAsyncDataProcessor(object):
 
 class GrundfosDataProcessor(AbstractAsyncDataProcessor):
 
-    def process_data(self, data):
+    def process_data(self, data, db_manager=DBManager()):
         start_time = time.time()
         result = self.data_interpreter.interpret_data(data)
         meas_dicts = result['measurements']
         sensor_dicts = result['sensors']
 
-        self.db_manager = DBManager()
+        self.db_manager = db_manager
         self.process_measurements(meas_dicts)
         self.process_sensors(sensor_dicts)
         self.db_manager.close()
@@ -58,7 +58,13 @@ class GrundfosDataProcessor(AbstractAsyncDataProcessor):
 
 
     def process_measurements(self, meas_dicts):
-        for meas in meas_dicts:
+        #try:
+        self.db_manager.create_new_measurements(meas_dicts)
+        #except Exception as e:
+        #    self.logger.error(e.message)
+
+
+        '''for meas in meas_dicts:
             sensor_external_id_ = meas['sensor_external_id']
             timestamp = meas['timestamp']
             value = meas['value']
@@ -66,18 +72,18 @@ class GrundfosDataProcessor(AbstractAsyncDataProcessor):
                 self.db_manager.create_new_measurement(sensor_external_id_, timestamp, value)
             except:
                 self.logger.warning("Could not store measurement for (unknown?) sensor with external ID " + str(sensor_external_id_))
-        self.logger.debug("Processed " + str(len(meas_dicts)) + " measurements.")
+        self.logger.debug("Processed " + str(len(meas_dicts)) + " measurements.")'''
 
 
     def process_sensors(self, sensor_dicts_for_db):
         for sensor_dict in sensor_dicts_for_db:
-            external_id = sensor_dict['sensor_external_id']
+            id = sensor_dict['sensor_id']
             new_attribute = sensor_dict['attribute']
             new_unit = sensor_dict['unit']
 
-            existing_sensor_entity = self.db_manager.get_sensor_with_external_id(external_id)
+            existing_sensor_entity = self.db_manager.get_device(id)
             if existing_sensor_entity is None:
-                self.db_manager.create_new_sensor(external_id, new_attribute, new_unit)
+                self.db_manager.create_new_sensor(id, new_attribute, new_unit)
             else:
                 existing_sensor_entity.attribute = new_attribute
                 existing_sensor_entity.unit = new_unit

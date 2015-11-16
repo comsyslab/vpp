@@ -3,7 +3,7 @@ import time
 
 import pytz
 import tzlocal
-from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table
+from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String
 from sqlalchemy.ext.declarative import declarative_base
 
 __author__ = 'ubbe@eng.au.dk'
@@ -36,7 +36,7 @@ class TableManager(object):
         self.measurement_base_table = Table(self.measurement_base_table_name,
                                  DeclarativeBase.metadata,
                                  Column('id', Integer, primary_key=True),
-                                 Column('sensor_id', Integer, ForeignKey('Sensor.id'), nullable=False),
+                                 Column('sensor_id', String, ForeignKey('Sensor.id'), nullable=False),
                                  Column('timestamp', DateTime(timezone=True), nullable=False),
                                  Column('value', Float, nullable=False),
                                  extend_existing=True)

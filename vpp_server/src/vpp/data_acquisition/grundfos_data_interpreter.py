@@ -1,31 +1,34 @@
 import json
 import logging
 
+import re
+
 __author__ = 'ubbe'
 
 
 class GrundfosDataInterpreter(object):
 
-    def __init__(self, entity):
+    def __init__(self, entity, device_prefix='grundfos'):
         self.entity = entity
         self.logger = logging.getLogger(__name__)
+        self.device_prefix = device_prefix
 
     def interpret_data(self, data_string=""):
         measurements = []
         sensors = []
         data_prefix_stripped = data_string[8:]
         if data_string.startswith("GFKRE003"):
-            measurements = self.parse_measurements(data_prefix_stripped)
+            measurements = self._parse_measurements(data_prefix_stripped)
         elif data_string.startswith("GFKSC002"):
 
-            sensors = self.parse_sensors(data_prefix_stripped)
+            sensors = self._parse_sensors(data_prefix_stripped)
         else:
             self.logger.warning("Could not parse message with unknown prefix: " + data_string[:20])
 
         return {'measurements':measurements, 'sensors':sensors}
 
 
-    def parse_measurements(self, data_string):
+    def _parse_measurements(self, data_string):
         '''Example data_string:
         {
         "version":3,
@@ -47,13 +50,15 @@ class GrundfosDataInterpreter(object):
         json_reading = json_dict['reading']
 
         for meas_dict in json_reading:
-            result_dicts.append({'sensor_external_id':meas_dict['sensorId'],
+            sensor_id = self._get_id(meas_dict['sensorId'])
+
+            result_dicts.append({'sensor_id': sensor_id,
                                  'timestamp' : meas_dict['timestamp'],
                                  'value' : meas_dict['value']})
         return result_dicts
 
 
-    def parse_sensors(self, data_string):
+    def _parse_sensors(self, data_string):
         '''Example data_string
         {
         'appartmentCharacteristic': [
@@ -73,10 +78,28 @@ class GrundfosDataInterpreter(object):
 
         json_reading = json_dict['sensorCharacteristic']
         result_dicts = []
-        for sensor_dict in json_reading:
-            result_dicts.append({'sensor_external_id':sensor_dict['sensorId'],
-                                 'attribute' : sensor_dict['description'],
+        for grundfos_sensor_dict in json_reading:
+
+            id = self._get_id(grundfos_sensor_dict['sensorId'])
+            attribute = self._strip_description(grundfos_sensor_dict['description'])
+
+            result_dicts.append({'sensor_id':id,
+                                 'attribute' : attribute,
                                  'unit_prefix': "",
-                                 'unit' : sensor_dict['unit']})
+                                 'unit' : grundfos_sensor_dict['unit']})
         return result_dicts
+
+    def _strip_description(self, description):
+        regex = re.compile('\(\*.*\*\)')
+        match = regex.match(description)
+        if match:
+            start_index = 2
+            end_index = len(description) - 2
+            return description[start_index:end_index]
+
+        return description
+
+
+    def _get_id(self, grundfos_id):
+        return self.device_prefix + '_' + str(grundfos_id)
 
