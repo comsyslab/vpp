@@ -38,7 +38,7 @@ class TableManager(object):
                                  Column('id', Integer, primary_key=True),
                                  Column('sensor_id', String, ForeignKey('Sensor.id'), nullable=False),
                                  Column('timestamp', DateTime(timezone=True), nullable=False),
-                                 Column('value', Float, nullable=False),
+                                 Column('value', String, nullable=False),
                                  extend_existing=True)
         self.measurement_base_table.create(self.engine, checkfirst=True)
 

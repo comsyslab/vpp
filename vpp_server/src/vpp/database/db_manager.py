@@ -56,7 +56,6 @@ class DBManager(object):
         sensor = Sensor(id=id, attribute=attribute,
                         unit=unit, unit_prefix=unit_prefix, value_interval=value_interval)
         self.persist_entity(sensor)
-        self.session.flush()
         self.logger.info("Created new sensor " + str(sensor.id))
         return sensor
 
@@ -70,7 +69,7 @@ class DBManager(object):
 
         time_grouping_begin = time.time()
         for meas in meas_dicts:
-            sensor_id = meas['sensor_external_id']
+            sensor_id = meas['sensor_id']
             timestamp = meas['timestamp']
             value = meas['value']
             datetime_w_timezone = iso8601.parse_date(timestamp)
@@ -103,7 +102,7 @@ class DBManager(object):
 
     def get_measurements_for_sensor(self, sensor_id):
         table = self.table_manager.lookup_table(self.table_manager.measurement_base_table_name)
-        sql = table.select('sensor_id=' + str(sensor_id))
+        sql = table.select('sensor_id=\'' + str(sensor_id) + '\'')
         return self.session.execute(sql)
 
     def get_controller(self, controller_id):

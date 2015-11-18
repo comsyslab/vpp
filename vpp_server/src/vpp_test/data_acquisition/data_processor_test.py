@@ -1,7 +1,7 @@
 import logging
 import unittest
 
-from vpp.data_acquisition.data_processor_async import GrundfosDataProcessor
+from vpp.data_acquisition.data_processor_async import DefaultAsyncDataProcessor
 from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
 
 
@@ -58,7 +58,7 @@ class GrundfosDataProcessorTest(unittest.TestCase):
         self.assertEqual(db_manager.sensor_unit, "C")
 
 
-class GrundfosDataProcessorOverride(GrundfosDataProcessor):
+class GrundfosDataProcessorOverride(DefaultAsyncDataProcessor):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.data_interpreter = GrundfosDataInterpreter(None)

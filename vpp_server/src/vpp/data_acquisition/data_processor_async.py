@@ -41,39 +41,23 @@ class AbstractAsyncDataProcessor(object):
         pass
 
 
-class GrundfosDataProcessor(AbstractAsyncDataProcessor):
+class DefaultAsyncDataProcessor(AbstractAsyncDataProcessor):
 
-    def process_data(self, data, db_manager=DBManager()):
+    def process_data(self, data, db_manager=None):
+        if not db_manager:           # putting the call to DBManager() directly as default parameter above
+            db_manager = DBManager() # apparently causes the same instance to be reused (?).
+
         start_time = time.time()
         result = self.data_interpreter.interpret_data(data)
         meas_dicts = result['measurements']
         sensor_dicts = result['sensors']
 
         self.db_manager = db_manager
-        self.process_measurements(meas_dicts)
         self.process_sensors(sensor_dicts)
+        self.process_measurements(meas_dicts)
         self.db_manager.close()
         time_spent = time.time() - start_time
         self.logger.info("Processed message in " + str(time_spent) + " seconds.")
-
-
-    def process_measurements(self, meas_dicts):
-        #try:
-        self.db_manager.create_new_measurements(meas_dicts)
-        #except Exception as e:
-        #    self.logger.error(e.message)
-
-
-        '''for meas in meas_dicts:
-            sensor_external_id_ = meas['sensor_external_id']
-            timestamp = meas['timestamp']
-            value = meas['value']
-            try:
-                self.db_manager.create_new_measurement(sensor_external_id_, timestamp, value)
-            except:
-                self.logger.warning("Could not store measurement for (unknown?) sensor with external ID " + str(sensor_external_id_))
-        self.logger.debug("Processed " + str(len(meas_dicts)) + " measurements.")'''
-
 
     def process_sensors(self, sensor_dicts_for_db):
         for sensor_dict in sensor_dicts_for_db:
@@ -82,9 +66,13 @@ class GrundfosDataProcessor(AbstractAsyncDataProcessor):
             new_unit = sensor_dict['unit']
 
             existing_sensor_entity = self.db_manager.get_device(id)
-            if existing_sensor_entity is None:
-                self.db_manager.create_new_sensor(id, new_attribute, new_unit)
-            else:
+            if existing_sensor_entity:
                 existing_sensor_entity.attribute = new_attribute
                 existing_sensor_entity.unit = new_unit
+            else:
+                self.db_manager.create_new_sensor(id, new_attribute, new_unit)
         self.logger.debug("Processed " + str(len(sensor_dicts_for_db)) + " sensors.")
+        self.db_manager.commit()
+
+    def process_measurements(self, meas_dicts):
+        self.db_manager.create_new_measurements(meas_dicts)

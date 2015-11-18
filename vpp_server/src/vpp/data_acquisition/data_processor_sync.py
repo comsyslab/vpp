@@ -21,11 +21,11 @@ class DefaultMeasProcessor(object):
         meas_dicts_for_db = self.data_interpreter._parse_sensors(data)
 
         for meas in meas_dicts_for_db:
-            sensor_external_id_ = meas['sensor_external_id']
+            sensor_id_ = meas['sensor_id']
             timestamp = meas['timestamp']
             value = meas['value']
-            db_manager.create_new_measurement(sensor_external_id_, timestamp, value)
-            logging.getLogger(__name__).debug("Created new measurement from sensor %d. Timestamp %s, value %d.", sensor_external_id_, timestamp, value)
+            db_manager.create_new_measurement(sensor_id_, timestamp, value)
+            logging.getLogger(__name__).debug("Created new measurement from sensor %d. Timestamp %s, value %d.", sensor_id_, timestamp, value)
 
         db_manager.commit()
         db_manager.close()
@@ -44,13 +44,13 @@ class DefaultSensorInfoProcessor():
         sensor_dicts_for_db = self.data_interpreter._parse_sensors(data)
 
         for sensor_dict in sensor_dicts_for_db:
-            external_id = sensor_dict['sensor_external_id']
+            sensor_id = sensor_dict['sensor_id']
             new_attribute = sensor_dict['attribute']
             new_unit = sensor_dict['unit']
 
-            existing_sensor_entity = db_manager.get_sensor_with_external_id(external_id)
+            existing_sensor_entity = db_manager.get_device(sensor_id)
             if existing_sensor_entity is None:
-                db_manager.create_new_sensor(external_id, new_attribute, new_unit)
+                db_manager.create_new_sensor(sensor_id, new_attribute, new_unit)
             else:
                 existing_sensor_entity.attribute = new_attribute
                 existing_sensor_entity.unit = new_unit

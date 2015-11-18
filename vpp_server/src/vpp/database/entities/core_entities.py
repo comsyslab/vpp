@@ -11,7 +11,7 @@ class Device(DeclarativeBase):
 
     id = Column(String, primary_key=True)
     attribute = Column(String)
-    unit = Column(String, nullable=False)
+    unit = Column(String)
     unit_prefix = Column(String)
     sub_type = Column(String, nullable=False)
 
@@ -21,7 +21,7 @@ class Device(DeclarativeBase):
     }
 
     def __repr__(self):
-       return "<Device(id='%s', external_id='%s', attribute='%s', unit='%s', unit_prefix='%s', sub_type='%s')>" \
+       return "<Device(id='%s', attribute='%s', unit='%s', unit_prefix='%s', sub_type='%s')>" \
               % (self.id, self.attribute, self.unit, self.unit_prefix, self.sub_type)
 
 
