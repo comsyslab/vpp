@@ -1,0 +1,1 @@
+SAMRE001{"Attributes":{"CurrentSummationDelivered":2658648,"InstantaneousDemand":20},"Time":"2015-11-18T07:37:04.063Z","Device":"0015BC00260000DE","Gateway":"0015BC001C00076D","Endpoint":2,"Cluster":"Metering"}

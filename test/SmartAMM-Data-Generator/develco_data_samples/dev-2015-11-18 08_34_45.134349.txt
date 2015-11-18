@@ -1,0 +1,1 @@
+SAMRE001{"Attributes":{"ZoneStatus[Alarm 1]":"closed"},"Time":"2015-11-18T07:36:56.514Z","Device":"0015BC001E0027C0","Gateway":"0015BC001C000571","Endpoint":35,"Cluster":"IAS_Zone"}

@@ -89,15 +89,17 @@ def fake_data_GFKSC002(n_sen = 3180, n_ap = 159):
 
     return base+'],"version":2}'
 
-f1 = open('GFKSC002.txt', 'w')
-f2 = open('GFKRE003.txt', 'w')
-m1 = fake_data_GFKSC002()
-m2 = fake_data_GFKRE003()
-f1.write(m1)
-f2.write(m2)
-f1.close()
-f2.close()
-sys.exit()
+
+def write_data_files():
+    f1 = open('GFKSC002.txt', 'w')
+    f2 = open('GFKRE003.txt', 'w')
+    m1 = fake_data_GFKSC002()
+    m2 = fake_data_GFKRE003()
+    f1.write(m1)
+    f2.write(m2)
+    f1.close()
+    f2.close()
+    sys.exit()
 
 
 exchange = rmq.Exchange('./configRabbitMQ.ini')
@@ -126,15 +128,15 @@ if sys.argv[-1] == 'sc':
     message = fake_data_GFKSC002()
     for i in range(1, MAX_GFKSC002):
         print type(message)
-        channel.basic_publish(exchange='ecosense-exchange', routing_key=routing_key, body=message)
+        channel.basic_publish(exchange='', routing_key=routing_key, body=message)
         print type(message)
         print " [x] Sent %r:%r" % (routing_key, message[:8])
-        message = Gfake_data_FKSC002()
+        message = fake_data_GFKSC002()
         t.sleep(T_GFKSC002)
 elif sys.argv[-1] == 're':
     message = fake_data_GFKRE003()
     for i in range(1, MAX_GFKRE003):
-        channel.basic_publish(exchange='ecosense-exchange', routing_key=routing_key, body=message)
+        channel.basic_publish(exchange='', routing_key=routing_key, body=message)
         print " [x] Sent %r:%r" % (routing_key, message[:8])
         message = fake_data_GFKRE003()
         t.sleep(T_GFKRE003)

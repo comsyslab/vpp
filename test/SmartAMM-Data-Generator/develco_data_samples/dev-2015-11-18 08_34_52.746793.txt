@@ -1,0 +1,1 @@
+SAMRE001{"Attributes":{"MeasuredValue_Temperature":1581},"Time":"2015-11-18T07:37:04.166Z","Device":"0015BC001E002896","Gateway":"0015BC001C00076D","Endpoint":38,"Cluster":"TemperatureMeasurement"}

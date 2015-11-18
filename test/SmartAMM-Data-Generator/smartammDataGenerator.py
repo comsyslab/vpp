@@ -1,41 +1,59 @@
-"""
-smartammDataGenerator.py
-This python library contains the functions to generate fake Smart AMM data to test DaQ system.
-Version 1.0
-Date 12/01/2015
-Developed by Sergi Rotger Griful <srgr@eng.au.dk>
-SAMRE001{"Time":"2014-12-08T17:10:37.124Z","Device":"0015BC0026000015","registers":[{"value":171139380,"attribute":0,"type":"Wh_W","channel":100},{"value":140,"attribute":1024,"type":"Wh_W","channel":102}]}
-"""
+# coding=utf-8
 
+__author__ = 'srgr'
+
+import pika
 import datetime as dt
+import random as rd
+import time as t
+import rabbitMQ as rmq
+import sys
 import json
+import os
+
+def get_smartamm_messages():
 
 
-class KaribuMessage(object):
-    """Generic message that is send from Karibu to RabbitMQ."""
+    messages = []
 
-    def __str__(self):
-        return self.type + self.payload
+    dir_name = 'develco_data_samples'
+    for file_name in os.listdir(dir_name):
+        file = open(dir_name + os.sep + file_name, 'r')
+        messages.append(file.read())
+        file.close()
+
+    return messages
+
+def send():
+    # Connection parameters
+    exchange = rmq.Exchange('./configRabbitMQ.ini')
+    credentials = pika.PlainCredentials(exchange.username, exchange.password)
+    connection = pika.BlockingConnection(
+                    pika.ConnectionParameters(host=exchange.url,
+                                              credentials=credentials,
+                                              ssl=exchange.ssl,
+                                              port=exchange.port))
+    channel = connection.channel()
+    channel.exchange_declare(exchange=exchange.name, type=exchange.type, durable=exchange.durable)
+
+    # Here you can modify the data messages that you want to send
+    routing_key = 'smartamm.data'
+
+    messages = get_smartamm_messages()
 
 
-class SAMRE001(KaribuMessage):
+    interval = 0.1 #seconds
 
-    def __init__(self):
-        self.type = 'SAMRE001'
-        self.time = dt.datetime.now().isoformat()
-        self.device = '0015BC0026000015'
-        self.registers = []
-        self.payload = json.dumps({"Time": self.time , "Device": self.device, "registers": self.registers})
+    for i in range(0, 50):
+        for message in messages:
+            channel.basic_publish(exchange='', routing_key=routing_key, body=message)
+            print " [x] Sent %r:%r" % (routing_key, message[:50])
+            t.sleep(interval)
 
-    def add_register(self, value=171139380, attribute=0, reg_type='Wh_W', channel=100):
-        register = {"value": value, "attribute": attribute, "type": reg_type, "channel": channel}
-        print register
-        self.registers.append(register)
-        self.payload = json.dumps({"Time": self.time , "Device": self.device, "registers": self.registers})
+    connection.close()
 
 
-if __name__ == "__main__":
-    smart = SAMRE001()
-    smart.add_register()
-    smart.add_register()
-    print smart
+
+
+if __name__ == '__main__':
+    send()
