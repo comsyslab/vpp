@@ -39,5 +39,5 @@ class RabbitMQAdapter(object):
         self.logger.debug("RabbitMQAdapter " + str(self.entity.id) + " cancelled message consumption.")
 
     def _receive_data(self, channel, method, properties, body):
-        self.logger.info("RabbitMQAdapter " + str(self.entity.id) + " received message: " + str(body)[0:50])
+        self.logger.info("RabbitMQAdapter " + str(self.entity.id) + " received message: " + str(body))
         self.callback(body)

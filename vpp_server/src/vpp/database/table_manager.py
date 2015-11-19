@@ -1,9 +1,11 @@
 import datetime as dt
+import logging
 import time
 
 import pytz
 import tzlocal
 from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String
+from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
 __author__ = 'ubbe@eng.au.dk'
@@ -13,6 +15,7 @@ DeclarativeBase = declarative_base()
 
 class TableManager(object):
     def __init__(self, engine):
+        self.logger = logging.getLogger(__name__)
         self.engine = engine
         self.measurement_base_table_name = 'Measurement'
         self.timezone = tzlocal.get_localzone()
@@ -20,6 +23,7 @@ class TableManager(object):
     def drop_tables(self):
         self.drop_measurement_tables()
         DeclarativeBase.metadata.drop_all(self.engine)
+
 
     def drop_measurement_tables(self):
         #drop base table with cascade
@@ -29,8 +33,7 @@ class TableManager(object):
     def create_missing_tables(self):
         DeclarativeBase.metadata.create_all(self.engine)
         self.create_measurement_basetable()
-        self.create_measurement_subtable()
-
+        #self.get_or_create_measurement_subtable(dt.datetime.now(self.timezone))
 
     def create_measurement_basetable(self):
         self.measurement_base_table = Table(self.measurement_base_table_name,
@@ -42,24 +45,33 @@ class TableManager(object):
                                  extend_existing=True)
         self.measurement_base_table.create(self.engine, checkfirst=True)
 
-    def create_measurement_subtable(self):
+    def get_or_create_measurement_subtable(self, timestamp):
+        table_name = self.get_partition_table_name(timestamp)
+        table = self.lookup_table(table_name)
+        if table is None:
+            table = self._create_measurement_subtable(timestamp)
+        return table
+
+    def _create_measurement_subtable(self, timestamp):
         '''Create initial subtable for the present day'''
-        part_start, part_end = self._get_partition_boundary_timestamps(dt.datetime.now(self.timezone))
+        part_start, part_end = self._get_partition_boundary_timestamps(timestamp)
 
         primary_key_sql = 'PRIMARY KEY (id)'
-        timestamp_constraint_sql= 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
+        timestamp_constraint_sql = 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
         foreign_key_sql = 'FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id)'
 
-        constraint_sql = primary_key_sql + ', ' + foreign_key_sql + ', ' + timestamp_constraint_sql
-
-        table_name = self.get_partition_table_name(dt.datetime.now(self.timezone))
+        constraint_sql = primary_key_sql + ', ' + timestamp_constraint_sql + ', ' + foreign_key_sql
+        table_name = self.get_partition_table_name(timestamp)
 
         sql = 'CREATE TABLE IF NOT EXISTS \"' + table_name + '\"' + \
               '(' + constraint_sql + ')' + \
               ' INHERITS (\"' + self.measurement_base_table_name + '\");'
 
         result_proxy = self.engine.execute(sql)
+
         result_proxy.close()
+        self.logger.info("Created table " + table_name)
+        return self.lookup_table(table_name)
 
     def get_partition_table_name(self, timestamp):
         """
@@ -95,7 +107,11 @@ class TableManager(object):
 
 
     def lookup_table(self, name):
-        return Table(name, DeclarativeBase.metadata, autoload=True, autoload_with=self.engine)
+        try:
+            table = Table(name, DeclarativeBase.metadata, autoload=True, autoload_with=self.engine)
+            return table
+        except NoSuchTableError:
+            return None
 
 
 class Measurement(object):

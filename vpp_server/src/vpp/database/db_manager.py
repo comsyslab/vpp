@@ -1,5 +1,5 @@
 import logging
-
+from ConfigParser import ConfigParser
 
 import iso8601
 import sqlalchemy
@@ -14,29 +14,33 @@ __author__ = 'ubbe'
 
 class DBManager(object):
 
-
-    '''_instance = None
-
-    @staticmethod
-    def __new__(cls, *more):
-        if not cls._instance:
-            cls._instance = super(DBManager, cls).__new__(cls, *more)
-        return cls._instance'''
-
     def __init__(self):
-
         self.logger = logging.getLogger(__name__)
 
-        local_db_string = "postgresql://ubbe:ubbep4ss@localhost/vpp"
-        self.engine = sqlalchemy.create_engine(local_db_string, echo=False)
+        db_string = self.get_db_string()
+        self.engine = sqlalchemy.create_engine(db_string, echo=False)
 
         self.table_manager = TableManager(self.engine)
 
-        self.create_missing_tables()
-
         self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
-
         self.session = self.SessionCls()
+
+    def get_db_string(self):
+        config_parser = ConfigParser()
+        config_file = '../../../resources/config.ini.default'
+        section_name = 'DB'
+
+        ok_count = config_parser.read(config_file)
+
+        if not config_parser.has_section(section_name):
+            self.logger.error("No section '" + section_name + "' in config file " + config_file)
+
+        user = config_parser.get(section_name, 'user')
+        password = config_parser.get(section_name, 'password')
+        host = config_parser.get(section_name, 'host')
+        database_name = config_parser.get(section_name, 'database')
+        db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + database_name
+        return db_string
 
     def drop_tables(self):
         self.table_manager.drop_tables()
@@ -73,7 +77,8 @@ class DBManager(object):
             timestamp = meas['timestamp']
             value = meas['value']
             datetime_w_timezone = iso8601.parse_date(timestamp)
-            table_name = self.table_manager.get_partition_table_name(datetime_w_timezone)
+            table = self.table_manager.get_or_create_measurement_subtable(datetime_w_timezone)
+            table_name = table.name
             if not table_name in table_to_meas_dicts:
                 table_to_meas_dicts[table_name] = []
             table_to_meas_dicts[table_name].append({'sensor_id': sensor_id, 'timestamp': timestamp, 'value': value})
@@ -89,13 +94,12 @@ class DBManager(object):
 
 
         time_spent = time.time() - time_begin
-        self.logger.debug("Created "+ str(len(meas_dicts)) + " measurements in " + str(time_spent) + " seconds. "
+        self.logger.debug("Created " + str(len(meas_dicts)) + " measurements in " + str(time_spent) + " seconds. " +
                          "Grouping by table " + str(time_grouping_spent) + " seconds, DB interaction " + str(time_sql_spent) + " seconds.")
 
     def create_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
-        table_name = self.table_manager.get_partition_table_name(datetime_w_timezone)
-        table = self.table_manager.lookup_table(table_name)
+        table = self.table_manager.get_or_create_measurement_subtable(datetime_w_timezone)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
         self.session.execute(sql)
         self.logger.debug("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
