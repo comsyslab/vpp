@@ -1,7 +1,7 @@
 import logging
 
 import pika
-from pika.exceptions import ChannelClosed
+from pika.exceptions import ChannelClosed, ConnectionClosed
 
 __author__ = 'ubbe'
 
@@ -19,7 +19,11 @@ class RabbitMQAdapter(object):
 
     def listen_for_data(self, callback):
         self.callback = callback
-        connection = pika.BlockingConnection(pika.ConnectionParameters(self.entity.host))
+        try:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(self.entity.host))
+        except ConnectionClosed as e:
+            self.logger.exception(e)
+            return
 
         self.channel = connection.channel()
         self.channel.queue_declare(queue=self.entity.queue)
