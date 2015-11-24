@@ -27,7 +27,7 @@ class DataProviderProcess(object):
         self.data_providers = []
 
         provider_entities = self.db_manager.get_data_providers()
-        self.logger.debug("DataProviderProcess found " + str(len(provider_entities)) + " data providers in DB")
+        self.logger.info("DataProviderProcess found " + str(len(provider_entities)) + " data providers in DB")
         for data_provider_entity in provider_entities:
 
             data_provider = domain_object_factory.get_data_provider_from_entity(data_provider_entity)
