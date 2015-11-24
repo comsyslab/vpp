@@ -47,5 +47,6 @@ def init_logging():
 
 
 if __name__ == '__main__':
+    print "Starting VPP server..."
     init_logging()
     coordinator = Coordinator()
