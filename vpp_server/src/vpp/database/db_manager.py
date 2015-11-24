@@ -27,7 +27,7 @@ class DBManager(object):
 
     def get_db_string(self):
         config_parser = ConfigParser()
-        config_file = '../../../resources/config.ini.default'
+        config_file = '../resources/config.ini.default'
         section_name = 'DB'
 
         ok_count = config_parser.read(config_file)

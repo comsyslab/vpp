@@ -1,9 +1,6 @@
 import logging
-import sys
 
 from vpp.data_acquisition.data_processor_async import DefaultAsyncDataProcessor
-from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
-from vpp.data_acquisition.smartamm_data_interpreter import SmartAmmDataInterpreter
 from vpp.database.db_manager import DBManager
 from vpp.database.entities.data_acquisition_entities import DataInterpreterEntity, DataProcessorEntity, \
     DataProviderEntity, RabbitMQAdapterEntity
