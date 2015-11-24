@@ -11,22 +11,28 @@ class Coordinator:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.run_data_provider_manager()
+        self.start_processes()
         self.check_for_stop()
 
-
-    def run_data_provider_manager(self):
+    def start_processes(self):
+       #data providers
        self.dataprovider_process_manager = DataProviderProcessManager()
        self.dataprovider_process_manager.start_process()
+
+        #more to come
+        # ...
 
 
     def check_for_stop(self):
         stop_file_name = "stop"
         while not os.path.isfile(stop_file_name):
             time.sleep(5)
-        self.dataprovider_process_manager.stop_process()
+        self.stop_processes()
         self.logger.info("Coordinator exiting.")
         os.remove(stop_file_name)
+
+    def stop_processes(self):
+        self.dataprovider_process_manager.stop_process()
 
 
 def init_logging():
