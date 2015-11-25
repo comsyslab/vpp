@@ -3,7 +3,7 @@ import logging
 from vpp.data_acquisition.data_provider import ListeningDataProvider
 from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
 from vpp.database.db_manager import DBManager
-from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, DataProviderEntity
+from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, DataProviderEntity, FTPAdapterEntity
 from vpp.util import util
 
 

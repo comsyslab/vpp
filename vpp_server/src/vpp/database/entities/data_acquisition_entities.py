@@ -43,3 +43,15 @@ class RabbitMQAdapterEntity(DataAdapterEntity):
     __mapper_args__ = {
         'polymorphic_identity':'RabbitMQAdapter'
     }
+
+class FTPAdapterEntity(DataAdapterEntity):
+    __tablename__ = 'FTPAdapter'
+    id = Column(Integer, ForeignKey('DataAdapter.id'), primary_key=True)
+    host = Column(String, nullable=False)
+    user = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    file = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        'polymorphic_identity':'FTPAdapter'
+    }
