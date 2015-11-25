@@ -8,8 +8,7 @@ __author__ = 'ubbe'
 
 class GrundfosDataInterpreter(object):
 
-    def __init__(self, entity, device_prefix='grundfos'):
-        self.entity = entity
+    def __init__(self, device_prefix='grundfos'):
         self.logger = logging.getLogger(__name__)
         self.device_prefix = device_prefix
 

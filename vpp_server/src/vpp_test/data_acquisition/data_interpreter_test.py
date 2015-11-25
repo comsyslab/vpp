@@ -16,7 +16,7 @@ class DataInterpreterTest(unittest.TestCase):
                '}'
 
 
-        interpreter = GrundfosDataInterpreter(None)
+        interpreter = GrundfosDataInterpreter()
 
         meas_dicts = interpreter.interpret_data(json)['measurements']
 
@@ -45,7 +45,7 @@ class DataInterpreterTest(unittest.TestCase):
                     '"Cluster":"Metering"}'''
 
 
-        interpreter = SmartAmmDataInterpreter(None)
+        interpreter = SmartAmmDataInterpreter()
 
         data_dict = interpreter.interpret_data(json)
         meas_dicts = data_dict['measurements']
@@ -54,7 +54,7 @@ class DataInterpreterTest(unittest.TestCase):
         self.assertEqual(len(sensor_dicts), 1)
         self.assertEqual(sensor_dicts[0]['sensor_id'], 'smartamm_0015BC001B0211D5_InstantaneousDemand')
         self.assertEqual(sensor_dicts[0]['attribute'], 'InstantaneousDemand')
-        self.assertEqual(sensor_dicts[0]['unit'], None)
+        self.assertEqual(sensor_dicts[0]['unit'], 'W')
 
 
         self.assertEqual(len(meas_dicts), 1)

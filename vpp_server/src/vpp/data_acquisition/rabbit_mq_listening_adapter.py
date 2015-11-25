@@ -6,7 +6,7 @@ from pika.exceptions import ChannelClosed, ConnectionClosed
 __author__ = 'ubbe'
 
 
-class RabbitMQAdapter(object):
+class RabbitMQListeningAdapter(object):
 
     def __init__(self, entity):
         self.entity = entity

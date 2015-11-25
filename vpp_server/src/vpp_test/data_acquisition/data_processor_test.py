@@ -1,13 +1,17 @@
 import logging
 import unittest
 
-from vpp.data_acquisition.data_processor_async import DefaultAsyncDataProcessor
+from vpp.data_acquisition.data_provider import ListeningDataProvider
 from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
+from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
+from vpp.database.entities.data_acquisition_entities import DataProviderEntity, RabbitMQAdapterEntity
+
+from vpp.util import util
 
 
-class GrundfosDataProcessorTest(unittest.TestCase):
+class DefaultDataProcessorTest(unittest.TestCase):
 
-    def test_grundfos_data_processor_measurements(self):
+    def test_default_data_processor_grundfos_measurements(self):
 
         data = 'GFKRE003{"version":3, "timestamp":"2014-10-08T09:30:32.750Z",' \
                        '"reading":[{"sensorId":1152,"appartmentId":3,"value":1024.0,"timestamp":"2014-10-08T09:30:32.747Z"}]' \
@@ -16,7 +20,7 @@ class GrundfosDataProcessorTest(unittest.TestCase):
         db_manager = DBManagerStub()
         self.assertEqual(db_manager.meas_dicts, None)
 
-        data_processor = GrundfosDataProcessorOverride()
+        data_processor = self.get_grundfos_data_processor()
 
         data_processor.process_data(data, db_manager=db_manager)
         self.assertEqual(len(db_manager.meas_dicts), 1)
@@ -29,7 +33,9 @@ class GrundfosDataProcessorTest(unittest.TestCase):
         self.assertEqual(timestamp, "2014-10-08T09:30:32.747Z")
         self.assertEqual(value, 1024.0)
 
-    def test_grundfos_data_processor_sensors(self):
+
+
+    def test_default_data_processor_grundfos_sensors(self):
 
         data = 'GFKSC002{' \
                 '"appartmentCharacteristic": [{"No": 1, "Size": 39.5, "Floor": 0, "appartmentId":66},{"No": 2, "Size": 23.2, "Floor": 0, "appartmentId":138}],' \
@@ -50,18 +56,16 @@ class GrundfosDataProcessorTest(unittest.TestCase):
         self.assertEqual(db_manager.sensor_attribute, None)
         self.assertEqual(db_manager.sensor_unit, None)
 
-        data_processor = GrundfosDataProcessorOverride()
+        data_processor = self.get_grundfos_data_processor()
         data_processor.process_data(data, db_manager=db_manager)
 
         self.assertEqual(db_manager.sensor_id, 'grundfos_2')
         self.assertEqual(db_manager.sensor_attribute, "Ambient Temperature C")
         self.assertEqual(db_manager.sensor_unit, "C")
 
+    def get_grundfos_data_processor(self):
+        return DefaultProcessingStrategy(GrundfosDataInterpreter())
 
-class GrundfosDataProcessorOverride(DefaultAsyncDataProcessor):
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.data_interpreter = GrundfosDataInterpreter(None)
 
 class DBManagerStub():
     def __init__(self):
@@ -85,7 +89,7 @@ class DBManagerStub():
         pass
 
     def close(self):
-            pass
+        pass
 
 
 if __name__ == '__main__':

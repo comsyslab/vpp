@@ -30,7 +30,9 @@ class DBManager(object):
         config_file = '../resources/config.ini'
         section_name = 'DB'
 
-        ok_count = config_parser.read(config_file)
+        ok_list = config_parser.read(config_file)
+        if len(ok_list) == 0:
+            self.logger.critical("Could not read config file " + config_file)
 
         if not config_parser.has_section(section_name):
             self.logger.error("No section '" + section_name + "' in config file " + config_file)

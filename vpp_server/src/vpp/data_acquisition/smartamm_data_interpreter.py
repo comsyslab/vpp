@@ -8,8 +8,7 @@ __author__ = 'ubbe'
 
 class SmartAmmDataInterpreter(object):
 
-    def __init__(self, entity, device_prefix='smartamm'):
-        self.entity = entity
+    def __init__(self, device_prefix='smartamm'):
         self.logger = logging.getLogger(__name__)
         self.device_prefix = device_prefix
 

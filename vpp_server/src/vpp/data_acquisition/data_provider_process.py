@@ -3,8 +3,6 @@ import logging
 from enum import Enum
 
 from vpp.core import domain_object_factory
-from vpp.data_acquisition.data_provider import PeriodicDataProvider
-from vpp.data_acquisition.data_provider_timer import DataProviderTimer
 from vpp.database.db_manager import DBManager
 
 

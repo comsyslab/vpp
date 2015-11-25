@@ -10,41 +10,21 @@ class DataProviderEntity(DeclarativeBase):
     __tablename__ = 'DataProvider'
 
     id = Column(Integer, primary_key=True)
-    interval = Column(Integer, nullable=False)
-
-    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
-    data_processor_entity = relationship('DataProcessorEntity')
-
-    #def __repr__(self):
-    #    return "<DataProviderEntity ", id, ">"
-
-    #def __str__(self):
-    #    return "<DataProviderEntity ", id, ">"
-
-class DataProcessorEntity(DeclarativeBase):
-    __tablename__ = 'DataProcessor'
-
-    id = Column(Integer, primary_key=True)
     domain_type = Column(String, nullable=False)
-    data_adapter_entities = relationship('DataAdapterEntity')
-    data_interpreter_entities = relationship('DataInterpreterEntity')
+    interval = Column(Integer)
 
+    processing_strategy_domain_type = Column(String, nullable=False)
 
+    data_adapter_id = Column(Integer, ForeignKey('DataAdapter.id'), nullable=False)
+    data_adapter_entity = relationship('DataAdapterEntity', uselist=False)
 
-class DataInterpreterEntity(DeclarativeBase):
-    __tablename__ = 'DataInterpreter'
-
-    id = Column(Integer, primary_key=True)
-    domain_type = Column(String, nullable=False)
-    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
-
+    data_interpreter_domain_type = Column(String, nullable=False)
 
 
 class DataAdapterEntity(DeclarativeBase):
     __tablename__ = 'DataAdapter'
 
     id = Column(Integer, primary_key=True)
-    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
     sub_type = Column(String, nullable=False)
 
     __mapper_args__ = {

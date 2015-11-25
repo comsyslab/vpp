@@ -1,36 +1,25 @@
-from vpp.data_acquisition.rabbit_mq_adapter import RabbitMQAdapter
+from vpp.data_acquisition.rabbit_mq_listening_adapter import RabbitMQListeningAdapter
 
-from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, DataProcessorEntity, \
-    DataInterpreterEntity
+
 from importlib import import_module
 
-def get_domain_object_from_entity(entity):
+from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity
+
+
+def get_data_adapter_from_entity(entity):
     if isinstance(entity, RabbitMQAdapterEntity):
-        return RabbitMQAdapter(entity)
+        return RabbitMQListeningAdapter(entity)
 
-    elif isinstance(entity, DataProcessorEntity):
-        name = entity.domain_type
-        class_ = get_class_from_fqn(name)
-        return class_(entity)
+    raise ValueError('Unknown DataAdapter entity ' + str(entity))
 
-    raise ValueError('Unknown entity ' + str(entity))
-
-def get_data_interpreter_from_entity(entity):
-    if not isinstance(entity, DataInterpreterEntity):
-        raise ValueError('Unknown entity ' + str(entity))
-
-    class_name = entity.domain_type
-    class_ = get_class_from_fqn(class_name)
+def get_data_provider_from_entity(entity):
+    class_ = get_class_from_fqn(entity.domain_type)
     return class_(entity)
 
 
-def get_data_provider_from_entity(entity):
-    from vpp.data_acquisition.data_provider import PeriodicDataProvider, CallbackDataProvider
-    if entity.interval is None or entity.interval == 0:
-        return CallbackDataProvider(entity)
-    else:
-        return PeriodicDataProvider(entity)
-
+def instantiate_fqn(name, *args):
+    class_ = get_class_from_fqn(name)
+    return class_(*args)
 
 def get_class_from_fqn(name):
     parts = name.rsplit('.', 1)

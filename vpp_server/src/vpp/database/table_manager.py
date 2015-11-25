@@ -21,8 +21,15 @@ class TableManager(object):
         self.timezone = tzlocal.get_localzone()
 
     def drop_tables(self):
-        self.drop_measurement_tables()
-        DeclarativeBase.metadata.drop_all(self.engine)
+        #self.drop_measurement_tables()
+        #DeclarativeBase.metadata.drop_all(self.engine)
+
+        sql = "DROP SCHEMA public CASCADE;" \
+              "CREATE SCHEMA public;" \
+              "GRANT ALL ON SCHEMA public TO postgres;" \
+              "GRANT ALL ON SCHEMA public TO public;" \
+              "COMMENT ON SCHEMA public IS 'standard public schema';"
+        self.engine.execute(sql)
 
 
     def drop_measurement_tables(self):

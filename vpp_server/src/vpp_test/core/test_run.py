@@ -3,11 +3,11 @@ import sys
 
 from vpp.core.configurator import Configurator
 from vpp.core.coordinator import Coordinator
-from vpp.data_acquisition.data_processor_async import DefaultAsyncDataProcessor
+from vpp.data_acquisition.data_provider import DefaultListeningDataProcessor
 from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.data_acquisition.smartamm_data_interpreter import SmartAmmDataInterpreter
 from vpp.database.db_manager import DBManager
-from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProcessorEntity, RabbitMQAdapterEntity, \
+from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProviderEntity, RabbitMQAdapterEntity, \
     DataInterpreterEntity
 
 __author__ = 'ubbe'
