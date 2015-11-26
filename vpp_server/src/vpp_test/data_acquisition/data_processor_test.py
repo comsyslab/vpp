@@ -3,7 +3,7 @@ import unittest
 
 from vpp.data_acquisition.data_provider import ListeningDataProvider
 from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
-from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
+from vpp.data_acquisition.data_processor import DefaultDataProcessor
 from vpp.database.entities.data_acquisition_entities import DataProviderEntity, RabbitMQAdapterEntity
 
 from vpp.util import util
@@ -64,7 +64,7 @@ class DefaultDataProcessorTest(unittest.TestCase):
         self.assertEqual(db_manager.sensor_unit, "C")
 
     def get_grundfos_data_processor(self):
-        return DefaultProcessingStrategy(GrundfosDataInterpreter())
+        return DefaultDataProcessor(GrundfosDataInterpreter())
 
 
 class DBManagerStub():

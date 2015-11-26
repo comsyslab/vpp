@@ -43,8 +43,7 @@ class ListeningDataProvider(object):
         self.logger = logging.getLogger(__name__)
         self.entity = entity
         self.data_adapter = domain_object_factory.get_data_adapter_from_entity(entity.data_adapter_entity)
-        self.data_interpreter = domain_object_factory.instantiate_fqn(entity.data_interpreter_domain_type)
-        self.processing_strategy = domain_object_factory.instantiate_fqn(entity.processing_strategy_domain_type, self.data_interpreter)
+        self.data_processor = domain_object_factory.get_data_processor_from_entity(self.entity.data_processor_entity)
 
     def get_id(self):
         return self.entity.id
@@ -65,4 +64,4 @@ class ListeningDataProvider(object):
         self.logger.debug("...joined in "  + str(time_spent))
 
     def process_data(self, data, db_manager=None):
-        self.processing_strategy.process_data(data, db_manager)
+        self.data_processor.process_data(data, db_manager)

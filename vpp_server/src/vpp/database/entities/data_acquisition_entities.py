@@ -13,11 +13,18 @@ class DataProviderEntity(DeclarativeBase):
     domain_type = Column(String, nullable=False)
     interval = Column(Integer)
 
-    processing_strategy_domain_type = Column(String, nullable=False)
+    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
+    data_processor_entity = relationship('DataProcessorEntity', uselist=False)
 
     data_adapter_id = Column(Integer, ForeignKey('DataAdapter.id'), nullable=False)
     data_adapter_entity = relationship('DataAdapterEntity', uselist=False)
 
+
+class DataProcessorEntity(DeclarativeBase):
+    __tablename__ = 'DataProcessor'
+
+    id = Column(Integer, primary_key=True)
+    domain_type = Column(String, nullable=False)
     data_interpreter_domain_type = Column(String, nullable=False)
 
 

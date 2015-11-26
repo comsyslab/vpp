@@ -1,14 +1,15 @@
 import logging
 import time
 
+from vpp.core import domain_object_factory
 from vpp.database.db_manager import DBManager
 
 
-class DefaultProcessingStrategy(object):
+class DefaultDataProcessor(object):
 
-    def __init__(self, data_interpreter):
+    def __init__(self, entity):
         self.logger = logging.getLogger(__name__)
-        self.data_interpreter = data_interpreter
+        self.data_interpreter = domain_object_factory.instantiate_fqn(entity.data_interpreter_domain_type)
 
     def process_data(self, data, db_manager=None):
         if not db_manager:           # putting the call to DBManager() directly as default parameter above
