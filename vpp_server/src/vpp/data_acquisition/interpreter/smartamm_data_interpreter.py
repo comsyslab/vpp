@@ -3,10 +3,12 @@ import logging
 
 import re
 
+from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractDataInterpreter
+
 __author__ = 'ubbe'
 
 
-class SmartAmmDataInterpreter(object):
+class SmartAmmDataInterpreter(AbstractDataInterpreter):
 
     def __init__(self, device_prefix='smartamm'):
         self.logger = logging.getLogger(__name__)

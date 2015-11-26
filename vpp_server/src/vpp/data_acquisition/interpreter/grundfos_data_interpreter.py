@@ -3,10 +3,12 @@ import logging
 
 import re
 
+from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractDataInterpreter
+
 __author__ = 'ubbe'
 
 
-class GrundfosDataInterpreter(object):
+class GrundfosDataInterpreter(AbstractDataInterpreter):
 
     def __init__(self, device_prefix='grundfos'):
         self.logger = logging.getLogger(__name__)

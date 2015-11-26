@@ -1,14 +1,12 @@
 import logging
 import sys
 
+from vpp.data_acquisition.smartamm_data_interpreter import SmartAmmDataInterpreter
+
 from vpp.core.configurator import Configurator
 from vpp.core.coordinator import Coordinator
-from vpp.data_acquisition.data_provider import DefaultListeningDataProcessor
-from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
-from vpp.data_acquisition.smartamm_data_interpreter import SmartAmmDataInterpreter
+from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.database.db_manager import DBManager
-from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProviderEntity, RabbitMQAdapterEntity, \
-    DataInterpreterEntity
 
 __author__ = 'ubbe'
 

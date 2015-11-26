@@ -1,10 +1,11 @@
 import logging
 
-from vpp.data_acquisition.data_provider import ListeningDataProvider
-from vpp.data_acquisition.data_processor import DefaultDataProcessor
+
+from vpp.data_acquisition.data_provider import DataProvider
+from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
 from vpp.database.db_manager import DBManager
 from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, DataProviderEntity, FTPAdapterEntity, \
-    DataProcessorEntity
+    DataProviderEntity
 from vpp.util import util
 
 
@@ -29,15 +30,13 @@ class Configurator(object):
         data_adapter_entity = RabbitMQAdapterEntity(host=host, exchange=exchange, queue=queue)
 
         data_interpreter_fqn = util.get_fully_qualified_name(interpreter_class)
-        data_processor_fqn = util.get_fully_qualified_name(DefaultDataProcessor)
+        processing_strategy_fqn = util.get_fully_qualified_name(DefaultProcessingStrategy)
 
-        data_processor_entity = DataProcessorEntity(domain_type=data_processor_fqn,
-                                                    data_interpreter_domain_type=data_interpreter_fqn)
+        data_provider_entity = DataProviderEntity(data_adapter_entity=data_adapter_entity,
+                                                  data_interpreter_domain_type=data_interpreter_fqn,
+                                                  processing_strategy_domain_type=processing_strategy_fqn)
 
-        data_provider_fqn = util.get_fully_qualified_name(ListeningDataProvider)
-        data_provider_entity = DataProviderEntity(domain_type=data_provider_fqn,
-                                                  data_adapter_entity=data_adapter_entity,
-                                                  data_processor_entity=data_processor_entity)
+
         db_manager = DBManager()
         db_manager.persist_entity(data_provider_entity)
         db_manager.close()

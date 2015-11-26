@@ -7,7 +7,7 @@ import time
 
 from vpp.database.entities.core_entities import Controller, Device
 from vpp.database.entities.core_entities import Sensor
-from vpp.database.entities.data_acquisition_entities import DataProviderEntity
+from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProviderEntity
 from vpp.database.table_manager import TableManager
 
 __author__ = 'ubbe'

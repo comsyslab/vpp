@@ -10,22 +10,12 @@ class DataProviderEntity(DeclarativeBase):
     __tablename__ = 'DataProvider'
 
     id = Column(Integer, primary_key=True)
-    domain_type = Column(String, nullable=False)
-    interval = Column(Integer)
-
-    data_processor_id = Column(Integer, ForeignKey('DataProcessor.id'), nullable=False)
-    data_processor_entity = relationship('DataProcessorEntity', uselist=False)
 
     data_adapter_id = Column(Integer, ForeignKey('DataAdapter.id'), nullable=False)
     data_adapter_entity = relationship('DataAdapterEntity', uselist=False)
 
-
-class DataProcessorEntity(DeclarativeBase):
-    __tablename__ = 'DataProcessor'
-
-    id = Column(Integer, primary_key=True)
-    domain_type = Column(String, nullable=False)
     data_interpreter_domain_type = Column(String, nullable=False)
+    processing_strategy_domain_type = Column(String, nullable=False)
 
 
 class DataAdapterEntity(DeclarativeBase):
@@ -33,6 +23,7 @@ class DataAdapterEntity(DeclarativeBase):
 
     id = Column(Integer, primary_key=True)
     sub_type = Column(String, nullable=False)
+    interval = Column(Integer)
 
     __mapper_args__ = {
         'polymorphic_on':sub_type,
@@ -50,6 +41,7 @@ class RabbitMQAdapterEntity(DataAdapterEntity):
     __mapper_args__ = {
         'polymorphic_identity':'RabbitMQAdapter'
     }
+
 
 class FTPAdapterEntity(DataAdapterEntity):
     __tablename__ = 'FTPAdapter'

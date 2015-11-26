@@ -1,10 +1,10 @@
 import logging
+import sys
 import unittest
 
-import sys
-
-from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.data_acquisition.smartamm_data_interpreter import SmartAmmDataInterpreter
+
+from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 
 
 class DataInterpreterTest(unittest.TestCase):

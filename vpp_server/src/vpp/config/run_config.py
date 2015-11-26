@@ -1,6 +1,8 @@
+
+
 from vpp.core.configurator import Configurator
-from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
-from vpp.data_acquisition.smartamm_data_interpreter import SmartAmmDataInterpreter
+from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
+from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmDataInterpreter
 
 
 def run_configuration():

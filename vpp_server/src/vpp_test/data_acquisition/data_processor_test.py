@@ -1,12 +1,7 @@
-import logging
 import unittest
 
-from vpp.data_acquisition.data_provider import ListeningDataProvider
-from vpp.data_acquisition.grundfos_data_interpreter import GrundfosDataInterpreter
-from vpp.data_acquisition.data_processor import DefaultDataProcessor
-from vpp.database.entities.data_acquisition_entities import DataProviderEntity, RabbitMQAdapterEntity
-
-from vpp.util import util
+from vpp.data_acquisition.data_provider import DataProvider
+from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 
 
 class DefaultDataProcessorTest(unittest.TestCase):
@@ -22,7 +17,7 @@ class DefaultDataProcessorTest(unittest.TestCase):
 
         data_processor = self.get_grundfos_data_processor()
 
-        data_processor.process_data(data, db_manager=db_manager)
+        data_processor.interpret_and_process_data(data, db_manager=db_manager)
         self.assertEqual(len(db_manager.meas_dicts), 1)
 
         sensor_id = db_manager.meas_dicts[0]['sensor_id']
@@ -57,14 +52,14 @@ class DefaultDataProcessorTest(unittest.TestCase):
         self.assertEqual(db_manager.sensor_unit, None)
 
         data_processor = self.get_grundfos_data_processor()
-        data_processor.process_data(data, db_manager=db_manager)
+        data_processor.interpret_and_process_data(data, db_manager=db_manager)
 
         self.assertEqual(db_manager.sensor_id, 'grundfos_2')
         self.assertEqual(db_manager.sensor_attribute, "Ambient Temperature C")
         self.assertEqual(db_manager.sensor_unit, "C")
 
     def get_grundfos_data_processor(self):
-        return DefaultDataProcessor(GrundfosDataInterpreter())
+        return DataProvider(GrundfosDataInterpreter())
 
 
 class DBManagerStub():

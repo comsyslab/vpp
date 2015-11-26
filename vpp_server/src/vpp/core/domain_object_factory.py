@@ -1,21 +1,23 @@
-from vpp.data_acquisition.rabbit_mq_listening_adapter import RabbitMQListeningAdapter
+
+from vpp.data_acquisition.rabbit_mq_adapter import RabbitMQAdapter
 
 
 from importlib import import_module
 
-from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity
+from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, FTPAdapterEntity
 
 
-def get_data_adapter_from_entity(entity):
+def get_data_adapter_from_entity(entity, *args):
     if isinstance(entity, RabbitMQAdapterEntity):
-        return RabbitMQListeningAdapter(entity)
+        return RabbitMQAdapter(entity, *args)
+    elif isinstance(entity, FTPAdapterEntity):
+        return FTPAdapterEntity(entity, *args)
 
     raise ValueError('Unknown DataAdapter entity ' + str(entity))
 
 def get_data_provider_from_entity(entity):
-    class_ = get_class_from_fqn(entity.domain_type)
-    return class_(entity)
-
+    from vpp.data_acquisition.data_provider import DataProvider
+    return DataProvider(entity)
 
 def instantiate_fqn(name, *args):
     class_ = get_class_from_fqn(name)
