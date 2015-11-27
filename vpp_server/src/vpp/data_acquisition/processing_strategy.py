@@ -11,13 +11,13 @@ class AbstractProcessingStrategy(object):
         self.logger = logging.getLogger(__name__)
 
     @abstractmethod
-    def process_data(self, data, db_manager):
+    def process_data(self, data, db_manager=None):
         pass
 
 
 class DefaultProcessingStrategy(AbstractProcessingStrategy):
 
-    def process_data(self, data, db_manager):
+    def process_data(self, data, db_manager=None):
         if not db_manager:  # putting the call to DBManager() directly as default parameter above
             db_manager = DBManager()  # apparently causes the same instance to be reused (?).
         meas_dicts = data['measurements']

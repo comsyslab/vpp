@@ -1,42 +1,11 @@
 import logging
-import threading
-from abc import ABCMeta, abstractmethod
 
 import pika
-import time
 from pika.exceptions import ChannelClosed, ConnectionClosed
 
+from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractListeningAdapter
+
 __author__ = 'ubbe'
-
-class AbstractListeningAdapter(object):
-
-    __metaclass__ = ABCMeta
-
-    def __init__(self, entity, data_processor):
-        self.logger = logging.getLogger(__name__)
-        self.entity = entity
-        self.data_processor = data_processor
-
-    def start(self):
-        self.thread = threading.Thread(target=self._listen_for_data, args=(), name=__name__)
-        self.thread.setDaemon(True)
-        self.thread.start()
-
-    def stop(self):
-        self.channel.basic_cancel(self.consumer_tag)
-        self.channel.stop_consuming()
-        self.logger.debug("RabbitMQAdapter " + str(self.entity.id) + " cancelled message consumption.")
-
-    def join(self):
-        self.logger.debug("Joining data adapter " + str(self.data_adapter) + "...")
-        begin = time.time()
-        self.thread.join()
-        time_spent = time.time() - begin
-        self.logger.debug("...joined in "  + str(time_spent))
-
-    @abstractmethod
-    def _listen_for_data(self):
-        pass
 
 
 class RabbitMQAdapter(AbstractListeningAdapter):

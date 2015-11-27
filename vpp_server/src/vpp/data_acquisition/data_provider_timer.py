@@ -5,11 +5,11 @@ import time
 
 class DataProviderTimer(object):
 
-    def __init__(self, data_adapter):
+    def __init__(self, fetching_adapter):
         self.logger = logging.getLogger(__name__)
         self.check_stop_interval = 5
-        self.data_processor = data_adapter
-        self.fetch_interval = data_adapter.get_interval()
+        self.data_processor = fetching_adapter
+        self.fetch_interval = fetching_adapter.get_interval()
         self.stop_signal = threading.Event()
         self.thread = None
         self.last_fetch = 0

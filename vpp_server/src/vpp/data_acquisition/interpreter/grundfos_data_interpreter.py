@@ -14,7 +14,7 @@ class GrundfosDataInterpreter(AbstractDataInterpreter):
         self.logger = logging.getLogger(__name__)
         self.device_prefix = device_prefix
 
-    def interpret_data(self, data_string=""):
+    def interpret_data(self, data_string):
         measurements = []
         sensors = []
         data_prefix_stripped = data_string[8:]

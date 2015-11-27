@@ -14,7 +14,7 @@ class SmartAmmDataInterpreter(AbstractDataInterpreter):
         self.logger = logging.getLogger(__name__)
         self.device_prefix = device_prefix
 
-    def interpret_data(self, data_string=""):
+    def interpret_data(self, data_string):
         measurements = []
         sensors = []
         result = {'measurements': measurements, 'sensors': sensors}

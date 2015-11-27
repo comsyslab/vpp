@@ -1,9 +1,6 @@
-
-from vpp.data_acquisition.rabbit_mq_adapter import RabbitMQAdapter
-
-
 from importlib import import_module
 
+from vpp.data_acquisition.adapter.rabbit_mq_adapter import RabbitMQAdapter
 from vpp.database.entities.data_acquisition_entities import RabbitMQAdapterEntity, FTPAdapterEntity
 
 
