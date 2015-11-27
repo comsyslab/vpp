@@ -1,7 +1,7 @@
 from sqlalchemy import Integer, Column, String, ForeignKey, UniqueConstraint, DateTime, Time
 from sqlalchemy.dialects import postgresql
 
-from vpp.database.table_manager import DeclarativeBase
+from vpp.database.schema_manager import DeclarativeBase
 
 __author__ = 'ubbe'
 

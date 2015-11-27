@@ -13,7 +13,7 @@ __author__ = 'ubbe@eng.au.dk'
 DeclarativeBase = declarative_base()
 
 
-class TableManager(object):
+class SchemaManager(object):
     def __init__(self, engine):
         self.logger = logging.getLogger(__name__)
         self.engine = engine

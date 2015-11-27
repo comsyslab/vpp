@@ -2,64 +2,58 @@ import unittest
 
 from vpp.data_acquisition.data_provider import DataProvider
 from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
+from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
+from vpp.database.entities.data_acquisition_entities import DataProviderEntity
 
 
 class DefaultDataProcessorTest(unittest.TestCase):
 
-    def test_default_data_processor_grundfos_measurements(self):
+    def test_default_data_processor_measurements(self):
+        sensor_id = 'grundfos_1152'
+        timestamp = '2014-10-08T09:30:32.747Z'
+        value = 1024.0
 
-        data = 'GFKRE003{"version":3, "timestamp":"2014-10-08T09:30:32.750Z",' \
-                       '"reading":[{"sensorId":1152,"appartmentId":3,"value":1024.0,"timestamp":"2014-10-08T09:30:32.747Z"}]' \
-                       '}'
+        meas = {'sensor_id': sensor_id,
+                'timestamp': timestamp,
+                'value': value}
+
+        data = {'sensors': [], 'measurements': [meas]}
 
         db_manager = DBManagerStub()
         self.assertEqual(db_manager.meas_dicts, None)
 
-        data_processor = self.get_grundfos_data_processor()
-
-        data_processor.interpret_and_process_data(data, db_manager=db_manager)
+        data_processor = DefaultProcessingStrategy()
+        data_processor.process_data(data, db_manager=db_manager)
         self.assertEqual(len(db_manager.meas_dicts), 1)
 
-        sensor_id = db_manager.meas_dicts[0]['sensor_id']
-        timestamp = db_manager.meas_dicts[0]['timestamp']
-        value = db_manager.meas_dicts[0]['value']
-
-        self.assertEqual(sensor_id, 'grundfos_1152')
-        self.assertEqual(timestamp, "2014-10-08T09:30:32.747Z")
-        self.assertEqual(value, 1024.0)
+        self.assertEqual(db_manager.meas_dicts[0]['sensor_id'], sensor_id)
+        self.assertEqual(db_manager.meas_dicts[0]['timestamp'], timestamp)
+        self.assertEqual(db_manager.meas_dicts[0]['value'], value)
 
 
 
-    def test_default_data_processor_grundfos_sensors(self):
+    def test_default_data_processor_sensors(self):
+        attribute = 'InstantaneousDemand'
+        sensor_id = 'grundfos_2'
+        unit = 'W'
 
-        data = 'GFKSC002{' \
-                '"appartmentCharacteristic": [{"No": 1, "Size": 39.5, "Floor": 0, "appartmentId":66},{"No": 2, "Size": 23.2, "Floor": 0, "appartmentId":138}],' \
-                '"timestamp": "2014-10-08T09:30:32.747Z","version": 2,' \
-                '"sensorCharacteristic": [' \
-                   '{"calibrationCoeff": "", ' \
-                    '"description": "(*Ambient Temperature C*)", ' \
-                    '"calibrationDate": "2012-11-19T21:22:45.320Z", ' \
-                    '"externalRef": "", ' \
-                    '"sensorId": 2, ' \
-                    '"unit": "C", ' \
-                    '"calibrationEquation": ""}]' \
-                '}'
+        sensor_dict = {'sensor_id': sensor_id,
+                       'attribute': attribute,
+                       'unit': unit}
+
+        data = {'sensors': [sensor_dict], 'measurements': []}
 
         db_manager = DBManagerStub()
-
         self.assertEqual(db_manager.sensor_id, None)
         self.assertEqual(db_manager.sensor_attribute, None)
         self.assertEqual(db_manager.sensor_unit, None)
 
-        data_processor = self.get_grundfos_data_processor()
-        data_processor.interpret_and_process_data(data, db_manager=db_manager)
+        data_processor = DefaultProcessingStrategy()
+        data_processor.process_data(data, db_manager=db_manager)
 
-        self.assertEqual(db_manager.sensor_id, 'grundfos_2')
-        self.assertEqual(db_manager.sensor_attribute, "Ambient Temperature C")
-        self.assertEqual(db_manager.sensor_unit, "C")
-
-    def get_grundfos_data_processor(self):
-        return DataProvider(GrundfosDataInterpreter())
+        self.assertEqual(db_manager.sensor_id, sensor_id)
+        self.assertEqual(db_manager.sensor_attribute, attribute)
+        self.assertEqual(db_manager.sensor_unit, unit)
 
 
 class DBManagerStub():
