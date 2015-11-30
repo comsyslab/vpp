@@ -1,6 +1,8 @@
 import logging
 from abc import ABCMeta, abstractmethod
 
+from sqlalchemy.exc import IntegrityError
+
 from vpp.database.db_manager import DBManager
 
 
@@ -39,8 +41,12 @@ class DefaultProcessingStrategy(AbstractProcessingStrategy):
                 existing_sensor_entity.unit = new_unit
             else:
                 self.db_manager.create_new_sensor(id, new_attribute, new_unit)
-        self.db_manager.commit()
-        self.logger.info("Processed " + str(len(sensor_dicts_for_db)) + " sensors.")
+        try:
+            self.db_manager.commit()
+            self.logger.info("Processed " + str(len(sensor_dicts_for_db)) + " sensors.")
+        except IntegrityError as e:
+            self.logger.exception(e)
+
 
 
     def _process_measurements(self, meas_dicts):

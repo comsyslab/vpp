@@ -15,12 +15,36 @@ from vpp.database.schema_manager import SchemaManager
 __author__ = 'ubbe'
 
 
+def get_db_string():
+    logger = logging.getLogger(__name__)
+
+    config_parser = ConfigParser()
+    config_file = '../resources/config.ini'
+    section_name = 'DB'
+
+    ok_list = config_parser.read(config_file)
+    if len(ok_list) == 0:
+        logger.critical("Could not read config file " + config_file)
+
+    if not config_parser.has_section(section_name):
+        logger.error("No section '" + section_name + "' in config file " + config_file)
+
+    user = config_parser.get(section_name, 'user')
+    password = config_parser.get(section_name, 'password')
+    host = config_parser.get(section_name, 'host')
+    database_name = config_parser.get(section_name, 'database')
+    db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + database_name
+    return db_string
+
+
 class DBManager(object):
 
-    def __init__(self):
+    def __init__(self, db_string=None):
         self.logger = logging.getLogger(__name__)
 
-        db_string = self.get_db_string()
+        if not db_string:
+            db_string = get_db_string()
+
         self.engine = sqlalchemy.create_engine(db_string, echo=False)
 
         self.schema_manager = SchemaManager(self.engine)
@@ -28,24 +52,6 @@ class DBManager(object):
         self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
         self.session = self.SessionCls()
 
-    def get_db_string(self):
-        config_parser = ConfigParser()
-        config_file = '../resources/config.ini'
-        section_name = 'DB'
-
-        ok_list = config_parser.read(config_file)
-        if len(ok_list) == 0:
-            self.logger.critical("Could not read config file " + config_file)
-
-        if not config_parser.has_section(section_name):
-            self.logger.error("No section '" + section_name + "' in config file " + config_file)
-
-        user = config_parser.get(section_name, 'user')
-        password = config_parser.get(section_name, 'password')
-        host = config_parser.get(section_name, 'host')
-        database_name = config_parser.get(section_name, 'database')
-        db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + database_name
-        return db_string
 
     def drop_tables(self):
         self.schema_manager.drop_tables()
@@ -68,8 +74,14 @@ class DBManager(object):
         self.logger.info("Created new sensor " + str(sensor.id))
         return sensor
 
+    def delete_device(self, id):
+        self._device_query(id).delete()
+
     def get_device(self, id):
-        return self.session.query(Device).filter(Device.id==str(id)).first()
+        return self._device_query(id).first()
+
+    def _device_query(self, id):
+        return self.session.query(Device).filter(Device.id == str(id))
 
     def create_new_measurements(self, meas_dicts):
         time_begin = time.time()
@@ -95,21 +107,25 @@ class DBManager(object):
             sql = table.insert().values(meas_list)
             try:
                 self.session.execute(sql)
+                self.logger.info("Created " + str(len(meas_list)) + " measurements in table " + table_name)
             except Exception as e:
                 self.logger.exception(e)
-            self.logger.info("Created "+ str(len(meas_list)) + " measurements in table " + table_name)
+
         time_sql_spent = time.time() - time_sql_begin
 
         time_spent = time.time() - time_begin
-        self.logger.debug("Created " + str(len(meas_dicts)) + " measurements in " + str(time_spent) + " seconds. " +
+        self.logger.debug("DBManager processed " + str(len(meas_dicts)) + " measurements in " + str(time_spent) + " seconds. " +
                          "Grouping by table " + str(time_grouping_spent) + " seconds, DB interaction " + str(time_sql_spent) + " seconds.")
 
     def create_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
         table = self.schema_manager.get_or_create_measurement_subtable(datetime_w_timezone)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
-        self.session.execute(sql)
-        self.logger.debug("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
+        try:
+            self.session.execute(sql)
+            self.logger.debug("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
+        except Exception as e:
+            self.logger.exception(e)
 
     def get_measurements_for_sensor(self, sensor_id):
         table = self.schema_manager.lookup_table(self.schema_manager.measurement_base_table_name)
@@ -127,6 +143,9 @@ class DBManager(object):
 
     def commit(self):
         self.session.commit()
+
+    def rollback(self):
+        self.session.rollback()
 
     def close(self):
         self.commit()

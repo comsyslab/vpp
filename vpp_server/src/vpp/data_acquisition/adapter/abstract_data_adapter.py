@@ -34,7 +34,7 @@ class AbstractListeningAdapter(AbstractDataAdapter):
 
     def __init__(self, entity, data_processor):
         super(AbstractListeningAdapter, self).__init__(entity, data_processor)
-        self.retry_delay_short = 5
+        self.retry_delay_short = 3
         self.retry_delay_long = 60
 
     def start(self):
@@ -43,7 +43,7 @@ class AbstractListeningAdapter(AbstractDataAdapter):
         self.thread.start()
 
     def join(self):
-        self.logger.debug("Joining data adapter " + str(self.data_adapter) + "...")
+        self.logger.debug("Joining data adapter " + str(self.entity.id) + "...")
         begin = time.time()
         self.thread.join()
         time_spent = time.time() - begin

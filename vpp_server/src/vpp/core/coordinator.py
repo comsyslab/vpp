@@ -39,7 +39,7 @@ def init_logging():
     log_file_name = '../logs/console.log'
 
     print "Output is sent to " + os.path.abspath(log_file_name)
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
                         # stream=sys.stdout,
                         filename=log_file_name,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',

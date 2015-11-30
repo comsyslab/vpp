@@ -27,7 +27,7 @@ class Device(DeclarativeBase):
 
 class Controller(Device):
     __tablename__ = 'Controller'
-    id = Column(String, ForeignKey('Device.id'), primary_key=True)
+    id = Column(String, ForeignKey('Device.id', ondelete='CASCADE'), primary_key=True)
 
     __mapper_args__ = {
         'polymorphic_identity':'Controller'
@@ -37,7 +37,7 @@ class Controller(Device):
 class Sensor(Device):
     __tablename__ = 'Sensor'
 
-    id = Column(String, ForeignKey('Device.id'), primary_key=True)
+    id = Column(String, ForeignKey('Device.id', ondelete='CASCADE'), primary_key=True)
     value_interval = Column(Time)
 
     __mapper_args__ = {
@@ -73,7 +73,7 @@ class FloorSection(DeclarativeBase):
 
     id = Column(Integer, primary_key=True)
     external_id = Column(String)
-    building_id = Column(Integer, ForeignKey('Building.id'), nullable=False)
+    building_id = Column(Integer, ForeignKey('Building.id', ondelete='CASCADE'), nullable=False)
     floor = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     description = Column(String)
@@ -86,7 +86,7 @@ class Room(DeclarativeBase):
     __tablename__ = 'Room'
 
     id = Column(Integer, primary_key=True)
-    floor_section_id = Column(Integer, ForeignKey('FloorSection.id'), nullable=False)
+    floor_section_id = Column(Integer, ForeignKey('FloorSection.id', ondelete='CASCADE'), nullable=False)
     name = Column(String, nullable=False, unique=True)
 
 
@@ -94,8 +94,8 @@ class DeviceLocation(DeclarativeBase):
     __tablename__ = 'DeviceLocation'
 
     id = Column(Integer, primary_key=True)
-    device_id = Column(String, ForeignKey('Device.id'), nullable=False)
-    room_id = Column(Integer, ForeignKey('Room.id'), nullable=False)
+    device_id = Column(String, ForeignKey('Device.id', ondelete='CASCADE'), nullable=False)
+    room_id = Column(Integer, ForeignKey('Room.id', ondelete='CASCADE'), nullable=False)
     from_time = Column(DateTime(timezone=True), nullable=False)
     to_time = Column(DateTime(timezone=True))
 

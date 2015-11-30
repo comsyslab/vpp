@@ -22,13 +22,12 @@ class RabbitMQAdapter(AbstractListeningAdapter):
 
     def _listen_for_data(self):
         try:
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.entity.host, retry_delay=self.retry_delay_short, connection_attempts=1))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.entity.host, retry_delay=self.retry_delay_short, connection_attempts=10))
         except (ConnectionClosed, AMQPConnectionError) as e:
-            self.logger.exception(e)
-            self.logger.info("RabbitMQ connect to " + self.entity.host + " failed. Will reconnect in " + str(self.retry_delay_long) + " seconds.")
+            self.logger.debug(e.message)
+            self.logger.info("RabbitMQ connect to " + self.entity.host + " failed. Will retry in " + str(self.retry_delay_long) + " seconds.")
             self._schedule_reconnect()
             return
-
 
         self.channel = connection.channel()
         self.channel.queue_declare(queue=self.entity.queue)
@@ -37,9 +36,13 @@ class RabbitMQAdapter(AbstractListeningAdapter):
                                                        no_ack=True)
         try:
             self.channel.start_consuming()
+        except ConnectionClosed:
+            self.logger.info("RabbitMQAdapter lost connection to " + self.entity.host + ", reconnecting...")
+            self._listen_for_data()
         except ChannelClosed:
-            self.logger.debug("RabbitMQAdapter channel closing.")
-        self.logger.debug("RabbitMQAdapter exited.")
+            self.logger.info("RabbitMQAdapter channel closed.")
+        except Exception as e:
+            self.logger.exception(e)
 
     def _receive_data(self, channel, method, properties, body):
         self.logger.info("RabbitMQAdapter " + str(self.entity.id) + " received message: " + str(body))
@@ -49,4 +52,5 @@ class RabbitMQAdapter(AbstractListeningAdapter):
     def stop(self):
         self.channel.basic_cancel(self.consumer_tag)
         self.channel.stop_consuming()
+        self.channel.close()
         self.logger.debug("Listening adapter " + str(self.entity.id) + " cancelled message consumption.")
