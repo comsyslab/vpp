@@ -45,7 +45,7 @@ class RabbitMQAdapter(AbstractListeningAdapter):
             self.logger.exception(e)
 
     def _receive_data(self, channel, method, properties, body):
-        self.logger.info("RabbitMQAdapter " + str(self.entity.id) + " received message: " + str(body))
+        self.logger.info("RabbitMQAdapter " + str(self.entity.id) + " received message: " + body[:100])
         self.data_processor.interpret_and_process_data(str(body))
 
 

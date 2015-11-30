@@ -7,8 +7,8 @@ from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmD
 
 def run_configuration():
     configurator = Configurator()
-    #configurator.configure_new_rabbitmq_provider(GrundfosDataInterpreter, queue="grundfos.sensors", host='localhost', exchange='')
-    configurator.configure_new_rabbitmq_provider(interpreter_class=SmartAmmDataInterpreter, queue="smartamm.data", host='localhost', exchange='')
+    configurator.configure_new_rabbitmq_provider(GrundfosDataInterpreter, queue="grundfos.sensors", host='localhost', exchange='')
+    #configurator.configure_new_rabbitmq_provider(interpreter_class=SmartAmmDataInterpreter, queue="smartamm.data", host='localhost', exchange='')
 
 if __name__=='__main__':
     run_configuration()
