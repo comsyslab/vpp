@@ -5,6 +5,8 @@ import iso8601
 import sqlalchemy
 import time
 
+from psycopg2._psycopg import IntegrityError
+
 from vpp.database.entities.core_entities import Controller, Device
 from vpp.database.entities.core_entities import Sensor
 from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProviderEntity
@@ -91,7 +93,10 @@ class DBManager(object):
         for table_name, meas_list in table_to_meas_dicts.iteritems():
             table = self.schema_manager.lookup_table(table_name)
             sql = table.insert().values(meas_list)
-            self.session.execute(sql)
+            try:
+                self.session.execute(sql)
+            except Exception as e:
+                self.logger.exception(e)
             self.logger.info("Created "+ str(len(meas_list)) + " measurements in table " + table_name)
         time_sql_spent = time.time() - time_sql_begin
 

@@ -32,15 +32,15 @@ class AbstractListeningAdapter(AbstractDataAdapter):
 
     __metaclass__ = ABCMeta
 
+    def __init__(self, entity, data_processor):
+        super(AbstractListeningAdapter, self).__init__(entity, data_processor)
+        self.retry_delay_short = 5
+        self.retry_delay_long = 60
+
     def start(self):
         self.thread = threading.Thread(target=self._listen_for_data, args=(), name=__name__)
         self.thread.setDaemon(True)
         self.thread.start()
-
-    def stop(self):
-        self.channel.basic_cancel(self.consumer_tag)
-        self.channel.stop_consuming()
-        self.logger.debug("Listening adapter " + str(self.entity.id) + " cancelled message consumption.")
 
     def join(self):
         self.logger.debug("Joining data adapter " + str(self.data_adapter) + "...")
@@ -52,6 +52,13 @@ class AbstractListeningAdapter(AbstractDataAdapter):
     @abstractmethod
     def _listen_for_data(self):
         pass
+
+    @abstractmethod
+    def stop(self):
+        pass
+
+    def _schedule_reconnect(self):
+        threading.Timer(self.retry_delay_long, self._listen_for_data).start()
 
 
 class AbstractFetchingAdapter(AbstractDataAdapter):
@@ -72,7 +79,7 @@ class AbstractFetchingAdapter(AbstractDataAdapter):
         self.timer.join()
 
     def fetch_and_process_data(self, db_manager=None):
-        data = self.data_adapter.fetch_data()
+        data = self.fetch_data()
         self.data_processor.interpret_and_process_data(data, db_manager)
 
     @abstractmethod
