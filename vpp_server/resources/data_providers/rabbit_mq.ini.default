@@ -1,0 +1,28 @@
+[data_provider]
+adapter = vpp.data_acquisition.adapter.rabbit_mq_adapter.RabbitMQAdapter
+interpreter = vpp.data_acquisition.interpreter.[FILL IN]
+processor = vpp.data_acquisition.processing_strategy.DefaultProcessingStrategy
+
+[exchange]
+username =
+password =
+serverAddressList = localhost
+port = 5672
+sslConnection = False
+exchangeName = [FILL IN]
+exchangeDurable = False
+exchangeType = direct
+
+[queue]
+name =
+routingKeys = [FILL IN]
+durable = False
+exclusive = False
+autoDelete = True
+
+[ssl_options]
+cacerts =
+certfile =
+keyfile =
+cert_reqs = verify_peer
+fail_if_no_peer_cert = False

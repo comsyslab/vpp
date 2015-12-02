@@ -1,4 +1,13 @@
 from vpp.core.configurator import Configurator
+from vpp.database.db_manager import DBManager
+
+
+def recreate_db_schema():
+    db_manager = DBManager()
+    db_manager.drop_tables()
+    db_manager.create_missing_tables()
+    db_manager.close()
 
 if __name__ == '__main__':
-    Configurator().recreate_db_schema()
+    recreate_db_schema()
+

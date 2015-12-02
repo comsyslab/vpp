@@ -7,34 +7,16 @@ import time
 
 from psycopg2._psycopg import IntegrityError
 
+from vpp.config.config_ini_parser import ConfigIniParser
 from vpp.database.entities.core_entities import Controller, Device
 from vpp.database.entities.core_entities import Sensor
-from vpp.database.entities.data_acquisition_entities import DataProviderEntity, DataProviderEntity
+
 from vpp.database.schema_manager import SchemaManager
 
 __author__ = 'ubbe'
 
 
-def get_db_string():
-    logger = logging.getLogger(__name__)
 
-    config_parser = ConfigParser()
-    config_file = '../resources/config.ini'
-    section_name = 'DB'
-
-    ok_list = config_parser.read(config_file)
-    if len(ok_list) == 0:
-        logger.critical("Could not read config file " + config_file)
-
-    if not config_parser.has_section(section_name):
-        logger.error("No section '" + section_name + "' in config file " + config_file)
-
-    user = config_parser.get(section_name, 'user')
-    password = config_parser.get(section_name, 'password')
-    host = config_parser.get(section_name, 'host')
-    database_name = config_parser.get(section_name, 'database')
-    db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + database_name
-    return db_string
 
 
 class DBManager(object):
@@ -43,7 +25,7 @@ class DBManager(object):
         self.logger = logging.getLogger(__name__)
 
         if not db_string:
-            db_string = get_db_string()
+            db_string = ConfigIniParser().get_db_string()
 
         self.engine = sqlalchemy.create_engine(db_string, echo=False)
 

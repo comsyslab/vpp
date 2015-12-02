@@ -1,9 +1,6 @@
 import unittest
 
-from vpp.data_acquisition.data_provider import DataProvider
-from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
-from vpp.database.entities.data_acquisition_entities import DataProviderEntity
 
 
 class DefaultDataProcessorTest(unittest.TestCase):

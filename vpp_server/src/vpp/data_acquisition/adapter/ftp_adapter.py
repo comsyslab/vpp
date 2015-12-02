@@ -1,7 +1,7 @@
 from ftplib import FTP, error_perm
 
 from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractFetchingAdapter
-from vpp.database.entities.data_acquisition_entities import FTPAdapterEntity
+
 
 
 class FTPAdapter(AbstractFetchingAdapter):
@@ -32,6 +32,7 @@ class FTPAdapter(AbstractFetchingAdapter):
 
 if __name__ == '__main__':
     #quick test
-    entity = FTPAdapterEntity(host='localhost', user='ftp_user', password='ftp_pass', file='file.txt')
-    ftp_adapter = FTPAdapter(entity)
-    ftp_adapter.fetch_data()
+    #entity = FTPAdapterEntity(host='localhost', user='ftp_user', password='ftp_pass', file='file.txt')
+    #ftp_adapter = FTPAdapter(entity)
+    #ftp_adapter.fetch_data()
+    pass

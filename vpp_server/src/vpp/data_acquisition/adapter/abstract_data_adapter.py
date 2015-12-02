@@ -10,10 +10,9 @@ class AbstractDataAdapter(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, entity, data_processor):
+    def __init__(self, data_provider):
         self.logger = logging.getLogger(__name__)
-        self.entity = entity
-        self.data_processor = data_processor
+        self.data_provider = data_provider
 
     @abstractmethod
     def start(self):
@@ -32,8 +31,8 @@ class AbstractListeningAdapter(AbstractDataAdapter):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, entity, data_processor):
-        super(AbstractListeningAdapter, self).__init__(entity, data_processor)
+    def __init__(self, data_provider):
+        super(AbstractListeningAdapter, self).__init__(data_provider)
         self.retry_delay_short = 3
         self.retry_delay_long = 60
 
@@ -80,7 +79,7 @@ class AbstractFetchingAdapter(AbstractDataAdapter):
 
     def fetch_and_process_data(self, db_manager=None):
         data = self.fetch_data()
-        self.data_processor.interpret_and_process_data(data, db_manager)
+        self.data_provider.interpret_and_process_data(data, db_manager)
 
     @abstractmethod
     def fetch_data(self):
