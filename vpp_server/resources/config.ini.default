@@ -1,6 +1,6 @@
 [DB]
-user=ubbe
-password=ubbep4ss
+user=[FILL IN]
+password=[FILL IN]
 host=localhost
 database=vpp
 

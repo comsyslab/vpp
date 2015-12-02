@@ -1,0 +1,28 @@
+[data_provider]
+adapter = vpp.data_acquisition.adapter.rabbit_mq_adapter.RabbitMQAdapter
+interpreter = vpp.data_acquisition.interpreter.grundfos_data_interpreter.GrundfosDataInterpreter
+processor = vpp.data_acquisition.processing_strategy.DefaultProcessingStrategy
+
+[exchange]
+username = vpp4sgr
+password = Z2Zm747975
+serverAddressList = ecosensemq02.cs.au.dk
+port = 5671
+sslConnection = False
+exchangeName = ecosense-exchange
+exchangeDurable = True
+exchangeType = topic
+
+[queue]
+name = vpp-listener-queue
+routingKey = grundfos.sensors
+durable = False
+exclusive = False
+autoDelete = True
+
+[ssl_options]
+cacerts =
+certfile =
+keyfile =
+cert_reqs = verify_peer
+fail_if_no_peer_cert = True 
