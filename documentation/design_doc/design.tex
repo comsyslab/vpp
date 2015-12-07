@@ -1,3 +1,5 @@
+% !TEX root =  main.tex
+
 \chapter{Design}
 The platform will consist of one main server application with an attached database. 
 
@@ -100,11 +102,11 @@ The application will be programmed in object-oriented Python, using Python proce
 Using processes instead of threads is necessary to utilize both cores in the intended machine, since Python employs a \emph{Global Interpreter Lock} which prevents threads within the same Python interpreter from executing concurrently. Using processes mitigates this as each process will run with its own interpreter. 
 
 \subsection{Static structure}
-Key classes have been identified to form a static structure which is shown in figure \ref{figureClassDiagram} and elaborated below:
+structure is shown in figure \ref{figureClassDiagram} and elaborated below:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/class_diagram}
+    \includegraphics[width=\textwidth]{figures/class_overview}
     \caption{Class diagram. }
     \label{figureClassDiagram}
 \end{figure}
@@ -113,12 +115,21 @@ The server application is roughly structured in a three-layered architecture wit
 
 The \texttt{webserver} will access the \texttt{service} layer to provide GUI. It will be a separate application deployed on the same machine. See section \ref{subsection:webserver}.
 
+
+
 \subsubsection{Package \texttt{vpp.core}}
-This package implements the core logic of the VPP server. Classes are explained in detail below:\\
+This package implements the core logic of the VPP server. Classes are explained in detail below.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/class_core}
+    \caption{Core}
+    \label{figureClassDiagram}
+\end{figure}
 
 \texttt{Coordinator} is responsible for instantiating other classes and processes. For clarity, associations are not shown in the diagram.\\
 
-\texttt{DataProviderManager} instantiates and keeps track of individual data providers of measurements and predictions. \\
+\texttt{DataProviderProcessManager} launches the process which instantiates and manages the individual data providers that will supply measurements and predictions. \\
 
 \texttt{ControllerManager} instantiates and keeps track of controllers for actuating physical devices. This will run in a separate process that periodically will check for and execute scheduled actions. It is expected that one process for handling all actions will be sufficient. \\
 
@@ -131,7 +142,17 @@ This package implements the core logic of the VPP server. Classes are explained 
 \texttt{DBAccess} provides a clean interface for retrieving and posting data from and to the database. 
 
 \subsubsection{Package \texttt{vpp.data\_acquisition}}
-This package will contain the framework for connecting to various sources of measurement and prediction data. Class \texttt{DataProvider} can be instantiated (in a separate process, or possibly just thread) to model a single source of data. Each \texttt{DataProvider} instance will employ a suitable \texttt{DataAdapter} to communicate with for instance a message queue or a SmartAmm server.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/class_data_acquisition}
+    \caption{Data acquisition}
+    \label{figureClassDiagram}
+\end{figure}
+
+This package contains the framework for connecting to various sources of measurement and prediction data. Class \texttt{DataProvider} can be instantiated in a separate thread to model a single source of data. Each \texttt{DataProvider} instance employs a suitable \texttt{DataAdapter} to communicate with for instance a message queue or a SmartAmm server.
+
+A distinction is made between listening adapters (\texttt{AbstractListeningAdapter}), which will be activated by external events, and fetching adapters (\texttt{AbstractFetchingAdapter}) which employ an internal timer to fetch data periodically.
 
 \subsubsection{Package \texttt{vpp.control}}
 Similar to \texttt{data\_acquisition}, this package will provide a framework for communicating with the various control devices. A \texttt{Controller} can be instantiated with a suitable \texttt{ControllerAdapter} to communicate with a given device. 

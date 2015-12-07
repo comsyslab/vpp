@@ -1,86 +1,34 @@
-\chapter{Development tasks}
-Given the design described in the previous chapter, we here define initial development tasks as well as an estimate of their size. 
-Note: These are \emph{rough ballpark} estimates.
+% !TEX root =  main.tex
+\chapter{Development tasks for initial prototype}
 
+\section{Tasks}
 
-
-
-\section{Initial prototype}
-
-\subsection*{UC1a: Sensor data from RabbitMQ}
-\subsubsection{Task: Initial database}
-Get PostgreSQL database up and running with core schema (possibly excluding prediction tables) using SQLAlchemy.
-
-Estimate: 1 week
-
-
-\subsubsection{Task: Data layer impl. for storing sensors and measurements}
-Implementation in \texttt{DBProxy/DBAccess}
-
-Estimate: 3 days
-
-
-\subsubsection{Task: Initial version of Data Provider framework}
-Implement an initial \texttt{DataProviderManager, DataProvider} and dummy \texttt{DataAdapter and DataInterpreter}.
-
-Estimate: 3 days.
-
-\subsubsection{Task: RabbitMQAdapter}
-Implement \texttt{RabbitMQAdapter}.
-
-Estimate: 4 days.
-
-\subsubsection{Task: Interpret Grundfoss data}
-Imlement interpretation of Grundfoss data from RabbitMQ. Store measurements in DB.
-
-Estimate: 3 days.
-
-\subsection*{UC1b: Develco sensor data from RabbitMQ}
-\subsubsection{Task: Intepret Develco data}
-Implement interpretation of Develco data from RabbitMQ. Store measurements in DB.
-
-Estimate: 3 days.
+\subsection*{Database maintenance}
+Clearing tables older than x days, transfer of data to data warehouse.
 
 \subsection*{UC2: Sensor and prediction data from FTP}
 \subsubsection{Task: Database schema for predictions}
-DB schema and access through \texttt{DBAccess}.
-
-Estimate: 2 days.
-
-\subsubsection{Task: Store DataProvider config}
-It should be possible to configure multiple dataproviders and store the configuration. DB schema and access through data layer.
-
-Estimate: 2 days.
+DB schema and access through \texttt{DBManager}.
 
 \subsubsection{Task: FTPAdapter}
 Implement an \texttt{FTPAdapter}. Store measurements and predictions in DB, avoiding duplication.
-
-Estimate: 3 days.
 
 \subsection*{UC3: Scheduled ControlAction is executed}
 \subsubsection{Task: Initial version of Controller framework}
 Initial \texttt{ControllerManager}, dummy \texttt{ControlStrategy, Controller}.
 
-Estimate: 3 days.
-
 \subsubsection{Task: VentilationControllerAdapter}
 Communicate with ventilation system using HTTP.
 
-Estimate: 3 days.
-
 \subsubsection{Task: Execute scheduled action}
 Read a scheduled action from DB and actuate ventilation controller.
-
-Estimate: 2 days.
 
 \subsection*{UC5: ControlStrategy schedules action(s)}
 \subsubsection{Task: Simple ControlStrategy}
 Simple \texttt{ControllerStrategy} which schedules ventilation system to run at lower setting at night.
 
-Estimate: 2 days.
-
 
 \section{Summary}
 The above covers acquiring measurements from RabbitMQ, predictions and measurements from FTP and scheduling actions for controlling the ventilation system.
 
-The estimates sum up to approx. 5 man-weeks. Taking unforseen complications into account, 6-8 weeks is probably more realistic. 
+
