@@ -42,7 +42,7 @@ def init_logging():
     print "Output is sent to " + os.path.abspath(log_file_name)
 
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.INFO)
 
     handler = RotatingFileHandler(log_file_name, maxBytes=5242880, backupCount=10)
     formatter = logging.Formatter(fmt='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
