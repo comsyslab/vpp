@@ -15,7 +15,7 @@ exchangeType = topic
 
 [queue]
 name = vpp-listener-queue
-routingKey = grundfos.sensors
+routingKeys = grundfos.sensors
 durable = False
 exclusive = False
 autoDelete = True

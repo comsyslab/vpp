@@ -3,4 +3,7 @@ user=[FILL IN]
 password=[FILL IN]
 host=localhost
 database=vpp
+measurement_partition_period=24
 
+[LOG]
+level=INFO

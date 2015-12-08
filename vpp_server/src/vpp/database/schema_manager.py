@@ -8,6 +8,8 @@ from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, Stri
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
+from vpp.config.config_ini_parser import ConfigIniParser
+
 __author__ = 'ubbe@eng.au.dk'
 
 DeclarativeBase = declarative_base()
@@ -19,8 +21,9 @@ class SchemaManager(object):
         self.engine = engine
         self.measurement_base_table_name = 'Measurement'
         self.timezone = tzlocal.get_localzone()
+        self.partition_length_hours = ConfigIniParser().get_measurement_partition_period()
 
-    def drop_tables(self):
+    def recreate_schema(self):
         #self.drop_measurement_tables()
         #DeclarativeBase.metadata.drop_all(self.engine)
 
@@ -90,8 +93,7 @@ class SchemaManager(object):
 
     def _get_partition_boundary_timestamps(self, timestamp):
 
-        partition_length_days = 1
-        partition_length_seconds = int(dt.timedelta(days=partition_length_days).total_seconds())
+        partition_length_seconds = int(dt.timedelta(hours=self.partition_length_hours).total_seconds())
 
         seconds_since_epoch = self._convert_datetime_to_epoch(timestamp)
         partition_count_since_epoch = int(seconds_since_epoch/partition_length_seconds)

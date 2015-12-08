@@ -57,9 +57,9 @@ class DataProviderProcess(object):
             self.command = self.in_queue.get()
             self.logger.debug("DataProviderProcess received command " + str(self.command))
 
-        self._stop_data_providers()
+        self._stop()
 
-    def _stop_data_providers(self):
+    def _stop(self):
         self.logger.info("DataProviderProcess signalling provider threads to exit")
         for data_provider in self.data_providers:
             data_provider.stop()
