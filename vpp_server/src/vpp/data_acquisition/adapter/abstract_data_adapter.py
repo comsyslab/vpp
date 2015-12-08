@@ -42,7 +42,7 @@ class AbstractListeningAdapter(AbstractDataAdapter):
         self.thread.start()
 
     def join(self):
-        self.logger.debug("Joining data adapter " + str(self.entity.id) + "...")
+        self.logger.debug("Joining data adapter " + str(__name__) + "...")
         begin = time.time()
         self.thread.join()
         time_spent = time.time() - begin
