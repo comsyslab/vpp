@@ -16,9 +16,6 @@ from vpp.database.schema_manager import SchemaManager
 __author__ = 'ubbe'
 
 
-
-
-
 class DBManager(object):
 
     def __init__(self, db_string=None):
@@ -36,13 +33,10 @@ class DBManager(object):
 
 
     def drop_tables(self):
-        self.schema_manager.drop_tables()
+        self.schema_manager.recreate_schema()
 
     def create_missing_tables(self):
         self.schema_manager.create_missing_tables()
-
-    def clear_data_providers(self):
-        self.session.query(DataProviderEntity).delete()
 
     def create_new_controller(self, id, attribute, unit, unit_prefix=None):
         controller = Controller(id=id, attribute=attribute, unit=unit, unit_prefix=unit_prefix)
@@ -116,9 +110,6 @@ class DBManager(object):
 
     def get_controller(self, controller_id):
         return self.session.query(Controller).filter_by(id=controller_id).all()
-
-    def get_data_providers(self):
-        return self.session.query(DataProviderEntity).all()
 
     def persist_entity(self, object):
         self.session.add(object)
