@@ -6,31 +6,34 @@ class DataProviderIniParser(object):
 
     def __init__(self, file_name):
         self.logger = logging.getLogger(__name__)
-        self.config_ini_parser = SafeConfigParser()
+        self.safe_config_parser = SafeConfigParser()
         self.parse_file(file_name)
 
     def parse_file(self, file_name):
-        ok_list = self.config_ini_parser.read(file_name)
+        ok_list = self.safe_config_parser.read(file_name)
         if len(ok_list) == 0:
             self.logger.error("Could not read config file " + file_name)
 
     def get_adapter_fqn(self):
-        return self.config_ini_parser.get('data_provider', 'adapter')
+        return self.safe_config_parser.get('data_provider', 'adapter')
 
     def get_interpreter_fqn(self):
-        return self.config_ini_parser.get('data_provider', 'interpreter')
+        return self.safe_config_parser.get('data_provider', 'interpreter')
 
     def get_processor_fqn(self):
-        return self.config_ini_parser.get('data_provider', 'processor')
+        return self.safe_config_parser.get('data_provider', 'processor')
 
     def get_rabbitmq_exchange(self):
-        return Exchange(self.config_ini_parser)
+        return Exchange(self.safe_config_parser)
 
     def get_rabbitmq_queue(self):
-        return Queue(self.config_ini_parser)
+        return Queue(self.safe_config_parser)
 
     def get_rabbitmq_ssl_options(self):
-        return SslOptions(self.config_ini_parser)
+        return SslOptions(self.safe_config_parser)
+
+    def get_ftp_config(self):
+        return FTPConfig(self.safe_config_parser)
 
 
 
@@ -69,3 +72,13 @@ class SslOptions(object):
                      'keyfile': parser.get('ssl_options', 'keyfile'),
                      'cert_reqs': parser.get('ssl_options', 'cert_reqs'),
                      'fail_if_no_peer_cert': parser.get('ssl_options', 'fail_if_no_peer_cert')}
+
+
+class FTPConfig(object):
+    def __init__(self, parser):
+        section_name = 'ftp'
+        self.username = parser.get(section_name, 'username')
+        self.password = parser.get(section_name, 'password')
+        self.host = parser.get(section_name, 'host')
+        self.port = int(parser.get(section_name, 'port'))
+        self.file = parser.get(section_name, 'file')

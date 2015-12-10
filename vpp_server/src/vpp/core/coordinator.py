@@ -40,6 +40,7 @@ class Coordinator:
         while not os.path.isfile(stop_file_name):
             time.sleep(5)
 
+        self.logger.info(util.get_thread_info() + "File " + stop_file_name + " found, stopping application...")
         self.stop_processes()
         self.wait_for_processes()
         os.remove(stop_file_name)

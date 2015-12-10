@@ -84,3 +84,4 @@ class AbstractFetchingAdapter(AbstractDataAdapter):
     @abstractmethod
     def fetch_data(self):
         pass
+

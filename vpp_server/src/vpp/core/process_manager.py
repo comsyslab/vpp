@@ -35,9 +35,9 @@ class ProcessWrapper(object):
 
         if (self.process.is_alive()):
             self.process.terminate()
-            self.logger.debug(util.get_thread_info() + "Timeout exceeded, forcefully terminating process " + self.process.name)
+            self.logger.info(util.get_thread_info() + "Timeout exceeded, forcefully terminating process " + self.process.name)
         else:
-            self.logger.debug(util.get_thread_info() + self.process.name + " exited gracefully")
+            self.logger.info(util.get_thread_info() + self.process.name + " exited gracefully")
 
     def join(self):
         self.logger.debug(util.get_thread_info() + "Joining process " + self.process.name)
