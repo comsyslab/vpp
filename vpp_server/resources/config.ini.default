@@ -4,6 +4,7 @@ password=[FILL IN]
 host=localhost
 database=vpp
 measurement_partition_period=24
+rolling_window_length_days=7
 
 [LOG]
-level=INFO
+level=DEBUG

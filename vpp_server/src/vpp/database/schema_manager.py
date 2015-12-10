@@ -9,6 +9,7 @@ from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
 from vpp.config.config_ini_parser import ConfigIniParser
+from vpp.util import util
 
 __author__ = 'ubbe@eng.au.dk'
 
@@ -61,6 +62,15 @@ class SchemaManager(object):
         if table is None:
             table = self._create_measurement_subtable(timestamp)
         return table
+
+    def drop_measurement_subtable(self, timestamp):
+        table_name = self.get_partition_table_name(timestamp)
+        self.drop_table(table_name)
+
+    def drop_table(self, table_name):
+        sql = 'DROP TABLE IF EXISTS "' + table_name + '";'
+        self.logger.debug(util.get_thread_info() + sql)
+        self.engine.execute(sql)
 
     def _create_measurement_subtable(self, timestamp):
         '''Create initial subtable for the present day'''

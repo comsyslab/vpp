@@ -25,7 +25,10 @@ class ConfigIniParser(object):
         return db_string
 
     def get_measurement_partition_period(self):
-        return int(self.config_parser.get('DB', 'measurement_partition_period'))
+        return int(self.config_parser.get('DB', 'measurement_partition_period_hours'))
+
+    def get_rolling_window_length(self):
+        return int(self.config_parser.get('DB', 'rolling_window_length_days'))
 
     def get_log_level(self):
         return self.config_parser.get('LOG', 'level')
