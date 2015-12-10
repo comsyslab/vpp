@@ -5,7 +5,8 @@ from ConfigParser import SafeConfigParser
 class ConfigIniParser(object):
 
     def __init__(self, file_name='../resources/config.ini'):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__).a
+        self.logger.addLevelName
         self.config_parser = SafeConfigParser()
         self._load_file(file_name)
 
