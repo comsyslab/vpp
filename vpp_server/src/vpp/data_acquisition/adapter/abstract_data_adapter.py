@@ -64,8 +64,12 @@ class AbstractFetchingAdapter(AbstractDataAdapter):
 
     __metaclass__ = ABCMeta
 
+    def __init__(self, data_provider, fetching_adapter_config):
+        super(AbstractFetchingAdapter, self).__init__(data_provider)
+        self.config = fetching_adapter_config
+
     def get_interval(self):
-        return self.entity.interval
+        return int(self.config.interval)
 
     def start(self):
         self.timer = DataProviderTimer(self)

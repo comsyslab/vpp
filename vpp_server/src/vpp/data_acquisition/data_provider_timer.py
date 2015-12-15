@@ -15,7 +15,7 @@ class DataProviderTimer(object):
         self.last_fetch = 0
 
     def start(self):
-        name = __name__ + " " + str(self.data_adapter.get_id())
+        name = __name__ + " " + str(self.data_adapter.data_provider.name)
         self.stop()
         self.stop_signal = threading.Event()
         self.thread = threading.Thread(target=self._run, name=name)
@@ -34,10 +34,10 @@ class DataProviderTimer(object):
             sleep_time = min(self.check_stop_interval, time_until_fetch)
             threading._sleep(sleep_time)
 
-        self.logger.debug("DataProvider %d exiting due to stop signal", self.data_adapter.get_id())
+        self.logger.debug("DataProvider %s exiting due to stop signal", self.data_adapter.data_provider.name)
 
     def stop(self):
-        self.logger.info("DataProvider %d received stop signal", self.data_adapter.get_id())
+        self.logger.info("DataProvider %s received stop signal", self.data_adapter.data_provider.name)
         self.stop_signal.set()
 
     def join(self):

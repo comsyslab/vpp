@@ -22,6 +22,7 @@ class SchemaManager(object):
         self.engine = engine
         self.measurement_base_table_name = 'Measurement'
         self.timezone = tzlocal.get_localzone()
+        self.timezone_utc = pytz.timezone('UTC')
         self.partition_length_hours = ConfigIniParser().get_measurement_partition_period()
 
     def recreate_schema(self):
@@ -77,6 +78,7 @@ class SchemaManager(object):
         part_start, part_end = self._get_partition_boundary_timestamps(timestamp)
 
         primary_key_sql = 'PRIMARY KEY (id)'
+
         timestamp_constraint_sql = 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
         foreign_key_sql = 'FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id)'
 
@@ -98,32 +100,36 @@ class SchemaManager(object):
         :param timestamp: datetime with timezone
         """
         part_start, _ = self._get_partition_boundary_timestamps(timestamp)
-        part_start_string = self._replace_with_underscores(str(part_start))
+        part_start_string = self._date_string_rep(part_start)
         return self.measurement_base_table_name + '_' + part_start_string
 
     def _get_partition_boundary_timestamps(self, timestamp):
-
         partition_length_seconds = int(dt.timedelta(hours=self.partition_length_hours).total_seconds())
 
         seconds_since_epoch = self._convert_datetime_to_epoch(timestamp)
         partition_count_since_epoch = int(seconds_since_epoch/partition_length_seconds)
 
         partition_start_seconds = partition_count_since_epoch * partition_length_seconds
-        partition_start_datetime = dt.datetime.utcfromtimestamp(partition_start_seconds)
 
-        tzinfo = tzlocal.get_localzone()
-        partition_start_datetime = tzinfo.localize(partition_start_datetime)
+        start_time_utc = dt.datetime.utcfromtimestamp(partition_start_seconds)
+        start_time_utc_w_tz= self.timezone_utc.localize(start_time_utc)
+        end_time_utc_w_tz = start_time_utc_w_tz + dt.timedelta(seconds=partition_length_seconds)
 
-        partition_end_datetime = partition_start_datetime + dt.timedelta(seconds=partition_length_seconds)
-
-        return partition_start_datetime, partition_end_datetime
+        return start_time_utc_w_tz, end_time_utc_w_tz
 
     def _convert_datetime_to_epoch(self, timestamp_w_timezone):
-        return (timestamp_w_timezone - dt.datetime(1970, 1, 1, tzinfo=self.timezone)).total_seconds()
+        epoch = dt.datetime(1970,1,1, tzinfo=self.timezone_utc)
+        seconds = (timestamp_w_timezone - epoch).total_seconds()
+        return seconds
+
+    def _date_string_rep(self, datetime):
+        str_rep = str(datetime)
+        str_rep_tz_stripped = str_rep[:len(str_rep)-6]
+
+        return self._replace_with_underscores(str_rep_tz_stripped)
 
     def _replace_with_underscores(self, string):
         return string.replace(' ', '_').replace('-', '_').replace(':', '_').replace('+', '_')
-
 
     def lookup_table(self, name):
         try:

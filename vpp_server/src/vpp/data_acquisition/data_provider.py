@@ -3,6 +3,7 @@ import time
 
 from vpp.config.data_provider_ini_parser import DataProviderIniParser
 from vpp.core import domain_object_factory
+from vpp.util import util
 
 
 class DataProvider(object):
@@ -36,6 +37,6 @@ class DataProvider(object):
         interpreted_data = self.data_interpreter.interpret_data(data_string)
         self.data_processor.process_data(interpreted_data, db_manager)
         time_spent = time.time() - start_time
-        self.logger.info("Processed message in " + str(time_spent) + " seconds.")
+        self.logger.info("Processed message in " + str(util.secs_to_ms(time_spent)) + " ms.")
 
 

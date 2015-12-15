@@ -21,7 +21,7 @@ class DefaultProcessingStrategy(AbstractProcessingStrategy):
 
     def process_data(self, data, db_manager=None):
         if not db_manager:  # putting the call to DBManager() directly as default parameter above
-            db_manager = DBManager()  # apparently causes the same instance to be reused (?).
+            db_manager = DBManager(autoflush=False)  # apparently causes the same instance to be reused (?).
         meas_dicts = data['measurements']
         sensor_dicts = data['sensors']
         self.db_manager = db_manager
