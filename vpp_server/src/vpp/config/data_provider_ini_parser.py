@@ -74,11 +74,19 @@ class SslOptions(object):
                      'fail_if_no_peer_cert': parser.get('ssl_options', 'fail_if_no_peer_cert')}
 
 
-class FTPConfig(object):
+class FetchingAdapterConfig(object):
     def __init__(self, parser):
+        self.interval = parser.get('fetch', 'interval')
+
+
+class FTPConfig(FetchingAdapterConfig):
+    def __init__(self, parser):
+        super(FTPConfig, self).__init__(parser)
+
         section_name = 'ftp'
         self.username = parser.get(section_name, 'username')
         self.password = parser.get(section_name, 'password')
         self.host = parser.get(section_name, 'host')
         self.port = int(parser.get(section_name, 'port'))
         self.file = parser.get(section_name, 'file')
+        self.encoding = parser.get(section_name, 'encoding')

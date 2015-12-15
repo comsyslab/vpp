@@ -8,7 +8,7 @@ from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractFetchingA
 class FTPAdapter(AbstractFetchingAdapter):
 
     def __init__(self, data_provider, ftp_config):
-        super(FTPAdapter, self).__init__(data_provider)
+        super(FTPAdapter, self).__init__(data_provider, ftp_config)
         self.ftp_config = ftp_config
 
 
@@ -33,7 +33,8 @@ class FTPAdapter(AbstractFetchingAdapter):
         return self.message
 
     def receive_line(self, line):
-        self.message += line + '\n'
+        decoded_line = line.decode(self.ftp_config.encoding) + '\n'
+        self.message += decoded_line
 
 
 class FTPConfigTest(object):

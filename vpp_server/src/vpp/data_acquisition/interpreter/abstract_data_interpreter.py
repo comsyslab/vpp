@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class AbstractDataInterpreter:
+class AbstractDataInterpreter(object):
 
     __metaclass__ = ABCMeta
 

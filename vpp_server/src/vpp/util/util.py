@@ -7,3 +7,6 @@ def get_fully_qualified_name(cls):
 
 def get_thread_info():
     return multiprocessing.current_process().name + " " + threading.currentThread().name + " "
+
+def secs_to_ms(secs):
+    return int(secs*1000)

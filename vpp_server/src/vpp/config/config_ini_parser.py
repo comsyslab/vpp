@@ -5,15 +5,14 @@ from ConfigParser import SafeConfigParser
 class ConfigIniParser(object):
 
     def __init__(self, file_name='../resources/config.ini'):
-        self.logger = logging.getLogger(__name__).a
-        self.logger.addLevelName
+        self.logger = logging.getLogger(__name__)
         self.config_parser = SafeConfigParser()
         self._load_file(file_name)
 
     def _load_file(self, file_name):
         ok_list = self.config_parser.read(file_name)
         if len(ok_list) == 0:
-            self.logger.error("Could not read config file " + self.ini_file_name)
+            self.logger.error("Could not read config file " + file_name)
 
     def get_db_string(self):
         section_name = 'DB'

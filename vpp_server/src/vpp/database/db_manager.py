@@ -12,13 +12,15 @@ from vpp.database.entities.core_entities import Controller, Device
 from vpp.database.entities.core_entities import Sensor
 
 from vpp.database.schema_manager import SchemaManager
+from vpp.util import util
+from vpp.util.util import secs_to_ms
 
 __author__ = 'ubbe'
 
 
 class DBManager(object):
 
-    def __init__(self, db_string=None):
+    def __init__(self, db_string=None, autoflush=True):
         self.logger = logging.getLogger(__name__)
 
         if not db_string:
@@ -30,6 +32,7 @@ class DBManager(object):
 
         self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
         self.session = self.SessionCls()
+        self.session.autoflush = autoflush
 
 
     def drop_tables(self):
@@ -75,7 +78,8 @@ class DBManager(object):
             if not table_name in table_to_meas_dicts:
                 table_to_meas_dicts[table_name] = []
             table_to_meas_dicts[table_name].append({'sensor_id': sensor_id, 'timestamp': timestamp, 'value': value})
-        time_grouping_spent = time.time() - time_grouping_begin
+        time_grouping_spent_secs = time.time() - time_grouping_begin
+        time_grouping_spent_ms = secs_to_ms(time_grouping_spent_secs)
 
         time_sql_begin = time.time()
         for table_name, meas_list in table_to_meas_dicts.iteritems():
@@ -87,11 +91,13 @@ class DBManager(object):
             except Exception as e:
                 self.logger.exception(e)
 
-        time_sql_spent = time.time() - time_sql_begin
+        time_sql_spent_secs = time.time() - time_sql_begin
+        time_sql_spent_ms = secs_to_ms(time_sql_spent_secs)
 
-        time_spent = time.time() - time_begin
-        self.logger.debug("DBManager processed " + str(len(meas_dicts)) + " measurements in " + str(time_spent) + " seconds. " +
-                         "Grouping by table " + str(time_grouping_spent) + " seconds, DB interaction " + str(time_sql_spent) + " seconds.")
+        time_spent_secs = time.time() - time_begin
+        time_spent_ms = secs_to_ms(time_spent_secs)
+        self.logger.debug("DBManager processed " + str(len(meas_dicts)) + " measurements in " + str(time_spent_ms) + " ms. " +
+                         "Grouping by table " + str(time_grouping_spent_ms) + " ms, DB interaction " + str(time_sql_spent_ms) + " ms.")
 
     def create_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
