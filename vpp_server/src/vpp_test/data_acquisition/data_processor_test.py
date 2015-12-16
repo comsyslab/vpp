@@ -1,6 +1,6 @@
 import unittest
 
-from vpp.data_acquisition.processing_strategy import DefaultProcessingStrategy
+from vpp.data_acquisition.processing_strategy import DefaultMeasurementProcessingStrategy
 
 
 class DefaultDataProcessorTest(unittest.TestCase):
@@ -19,7 +19,7 @@ class DefaultDataProcessorTest(unittest.TestCase):
         db_manager = DBManagerStub()
         self.assertEqual(db_manager.meas_dicts, None)
 
-        data_processor = DefaultProcessingStrategy()
+        data_processor = DefaultMeasurementProcessingStrategy()
         data_processor.process_data(data, db_manager=db_manager)
         self.assertEqual(len(db_manager.meas_dicts), 1)
 
@@ -45,7 +45,7 @@ class DefaultDataProcessorTest(unittest.TestCase):
         self.assertEqual(db_manager.sensor_attribute, None)
         self.assertEqual(db_manager.sensor_unit, None)
 
-        data_processor = DefaultProcessingStrategy()
+        data_processor = DefaultMeasurementProcessingStrategy()
         data_processor.process_data(data, db_manager=db_manager)
 
         self.assertEqual(db_manager.sensor_id, sensor_id)

@@ -8,7 +8,7 @@ import time
 from psycopg2._psycopg import IntegrityError
 
 from vpp.config.config_ini_parser import ConfigIniParser
-from vpp.database.entities.core_entities import Controller, Device
+from vpp.database.entities.core_entities import Controller, Device, PredictionEndpoint
 from vpp.database.entities.core_entities import Sensor
 
 from vpp.database.schema_manager import SchemaManager
@@ -97,7 +97,7 @@ class DBManager(object):
         time_spent_secs = time.time() - time_begin
         time_spent_ms = secs_to_ms(time_spent_secs)
         self.logger.debug("DBManager processed " + str(len(meas_dicts)) + " measurements in " + str(time_spent_ms) + " ms. " +
-                         "Grouping by table " + str(time_grouping_spent_ms) + " ms, DB interaction " + str(time_sql_spent_ms) + " ms.")
+                          "Grouping by table " + str(time_grouping_spent_ms) + " ms, DB interaction " + str(time_sql_spent_ms) + " ms.")
 
     def create_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
@@ -105,7 +105,7 @@ class DBManager(object):
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
         try:
             self.session.execute(sql)
-            self.logger.debug("Created new measurement " + str(value) + " for sensor " + str(sensor_id))
+            self.logger.debug("Stored new measurement " + str(value) + " for sensor " + str(sensor_id))
         except Exception as e:
             self.logger.exception(e)
 
@@ -117,8 +117,37 @@ class DBManager(object):
     def get_controller(self, controller_id):
         return self.session.query(Controller).filter_by(id=controller_id).all()
 
+    def create_new_prediction_endpoint(self, id, attribute, unit, description=None):
+        endpoint = PredictionEndpoint(id=id, attribute=attribute, unit=unit, description=description)
+        self.persist_entity(endpoint)
+        return endpoint
+
+    def get_prediction_endpoint(self, id):
+        return self.session.query(PredictionEndpoint).filter_by(id=id).first()
+
+    def delete_prediction_endpoint(self, id):
+        self._pred_endpoint_query(id).delete()
+
+    def _pred_endpoint_query(self, id):
+        return self.session.query(PredictionEndpoint).filter(PredictionEndpoint.id == str(id))
+
+    def create_new_prediction(self, pred_endpoint_id, timestamp, value, time_received, value_interval=None):
+        timestamp_dt = iso8601.parse_date(timestamp)
+        time_received_dt = iso8601.parse_date(time_received)
+
+        table = self.schema_manager.get_or_create_prediction_subtable(timestamp_dt)
+        sql = table.insert().values(prediction_endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval)
+        try:
+            self.session.execute(sql)
+            self.logger.debug("Stored new prediction " + str(value) + " for endpoint" + str(pred_endpoint_id))
+        except Exception as e:
+            self.logger.exception(e)
+
     def persist_entity(self, object):
         self.session.add(object)
+
+    def flush(self):
+        self.session.flush()
 
     def commit(self):
         self.session.commit()

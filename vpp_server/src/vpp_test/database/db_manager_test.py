@@ -1,5 +1,6 @@
 import unittest
 
+import datetime
 from sqlalchemy.exc import IntegrityError
 
 from vpp.database.db_manager import DBManager
@@ -54,6 +55,60 @@ class DBManagerTest(unittest.TestCase):
 
         if not exception :
             self.fail("Committing sensor with duplicate ID should fail!")
+
+    def test_create_new_pred_endpoint(self):
+        db_manager = self.get_new_db_manager()
+
+        endpoint_id = 'thor_987'
+        attribute = 'wind speed'
+        unit = 'm/s'
+        endpoint = db_manager.create_new_prediction_endpoint(endpoint_id, attribute, unit)
+        try:
+            db_manager.commit()
+        except Exception as e:
+            db_manager.rollback()
+            db_manager.close()
+            self.fail(e.message)
+            return
+
+        db_manager.close()
+
+        db_manager = self.get_new_db_manager()
+        retrieved_endpoint = db_manager.get_prediction_endpoint(endpoint_id)
+        self.assertIsNotNone(retrieved_endpoint)
+
+        self.assertEqual(endpoint_id, retrieved_endpoint.id)
+        self.assertEqual(attribute, retrieved_endpoint.attribute)
+        self.assertEqual(unit, retrieved_endpoint.unit)
+
+        db_manager.delete_prediction_endpoint(endpoint_id)
+        db_manager.close()
+
+
+    def test_create_new_prediction(self):
+        db_manager = self.get_new_db_manager()
+
+        endpoint_id = 'thor_456'
+        attribute = 'wind speed'
+        unit = 'm/s'
+        endpoint = db_manager.create_new_prediction_endpoint(endpoint_id, attribute, unit)
+
+        try:
+            db_manager.commit()
+        except Exception as e:
+            db_manager.rollback()
+            db_manager.close()
+            self.fail(e.message)
+            return
+
+
+        timestamp = datetime.datetime.now().isoformat()
+        value = 35
+        db_manager.create_new_prediction(endpoint_id, timestamp, value, timestamp)
+
+        db_manager.delete_prediction_endpoint(endpoint_id)
+        db_manager.close()
+
 
     def get_new_db_manager(self):
         db_string = "postgresql://ubbe:ubbep4ss@localhost/vpp"
