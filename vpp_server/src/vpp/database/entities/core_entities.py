@@ -99,3 +99,21 @@ class DeviceLocation(DeclarativeBase):
     from_time = Column(DateTime(timezone=True), nullable=False)
     to_time = Column(DateTime(timezone=True))
 
+
+class PredictionEndpoint(DeclarativeBase):
+    __tablename__ = 'PredictionEndpoint'
+
+    id = Column(String, primary_key=True)
+
+    attribute = Column(String, nullable=False)
+    unit = Column(String, nullable=False)
+    description = Column(String)
+    #prediction_source_id = Column(Integer, ForeignKey('Device.id', ondelete='CASCADE'), nullable=False)
+
+
+'''class PredictionSource(DeclarativeBase):
+    __tablename__ = 'PredictionSource'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    description = Column(String)'''

@@ -4,7 +4,7 @@ import time
 
 import pytz
 import tzlocal
-from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String
+from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String, Time
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -21,7 +21,7 @@ class SchemaManager(object):
         self.logger = logging.getLogger(__name__)
         self.engine = engine
         self.measurement_base_table_name = 'Measurement'
-        self.timezone = tzlocal.get_localzone()
+        self.prediction_base_table_name = 'Prediction'
         self.timezone_utc = pytz.timezone('UTC')
         self.partition_length_hours = ConfigIniParser().get_measurement_partition_period()
 
@@ -36,16 +36,18 @@ class SchemaManager(object):
               "COMMENT ON SCHEMA public IS 'standard public schema';"
         self.engine.execute(sql)
 
-
     def drop_measurement_tables(self):
+        self._drop_table_cascading(self.measurement_base_table_name)
+
+    def _drop_table_cascading(self, table_name):
         #drop base table with cascade
-        sql = 'DROP TABLE IF EXISTS \"' + self.measurement_base_table_name + '\" CASCADE;'
+        sql = 'DROP TABLE IF EXISTS \"' + table_name + '\" CASCADE;'
         self.engine.execute(sql)
 
     def create_missing_tables(self):
         DeclarativeBase.metadata.create_all(self.engine)
         self.create_measurement_basetable()
-        #self.get_or_create_measurement_subtable(dt.datetime.now(self.timezone))
+        self.create_prediction_basetable()
 
     def create_measurement_basetable(self):
         self.measurement_base_table = Table(self.measurement_base_table_name,
@@ -57,11 +59,30 @@ class SchemaManager(object):
                                  extend_existing=True)
         self.measurement_base_table.create(self.engine, checkfirst=True)
 
+    def create_prediction_basetable(self):
+        self.prediction_base_table = Table(self.prediction_base_table_name,
+                                           DeclarativeBase.metadata,
+                                           Column('id', Integer, primary_key=True),
+                                           Column('prediction_endpoint_id', String, ForeignKey('PredictionEndpoint.id'), nullable=False),
+                                           Column('timestamp', DateTime(timezone=True), nullable=False),
+                                           Column('value', String, nullable=False),
+                                           Column('time_received', DateTime(timezone=True), nullable=False),
+                                           Column('value_interval', Time),
+                                           extend_existing=True)
+        self.prediction_base_table.create(self.engine, checkfirst=True)
+
     def get_or_create_measurement_subtable(self, timestamp):
-        table_name = self.get_partition_table_name(timestamp)
+        table_name = self.get_partition_subtable_name(self.measurement_base_table_name, timestamp)
         table = self.lookup_table(table_name)
         if table is None:
             table = self._create_measurement_subtable(timestamp)
+        return table
+
+    def get_or_create_prediction_subtable(self, timestamp):
+        table_name = self.get_partition_subtable_name(self.prediction_base_table_name, timestamp)
+        table = self.lookup_table(table_name)
+        if table is None:
+            table = self._create_prediction_subtable(timestamp)
         return table
 
     def drop_measurement_subtable(self, timestamp):
@@ -74,39 +95,49 @@ class SchemaManager(object):
         self.engine.execute(sql)
 
     def _create_measurement_subtable(self, timestamp):
+        table_name = self._create_partition_subtable(self.measurement_base_table_name, timestamp)
+        sql = 'ALTER TABLE"' + table_name + '" ADD FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id) ON DELETE CASCADE;'
+        self.engine.execute(sql)
+        return self.lookup_table(table_name)
+
+    def _create_prediction_subtable(self, timestamp):
+        table_name = self._create_partition_subtable(self.prediction_base_table_name, timestamp)
+        sql = 'ALTER TABLE "' + table_name + '" ADD FOREIGN KEY (prediction_endpoint_id) REFERENCES "PredictionEndpoint" (id) ON DELETE CASCADE;'
+        self.engine.execute(sql)
+        return self.lookup_table(table_name)
+
+    def _create_partition_subtable(self, base_table_name, timestamp):
         '''Create initial subtable for the present day'''
         part_start, part_end = self._get_partition_boundary_timestamps(timestamp)
 
         primary_key_sql = 'PRIMARY KEY (id)'
-
         timestamp_constraint_sql = 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
-        foreign_key_sql = 'FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id)'
+        constraint_sql = primary_key_sql + ', ' + timestamp_constraint_sql
 
-        constraint_sql = primary_key_sql + ', ' + timestamp_constraint_sql + ', ' + foreign_key_sql
-        table_name = self.get_partition_table_name(timestamp)
+        table_name = self.get_partition_subtable_name(base_table_name, timestamp)
 
-        sql = 'CREATE TABLE IF NOT EXISTS \"' + table_name + '\"' + \
-              '(' + constraint_sql + ')' + \
-              ' INHERITS (\"' + self.measurement_base_table_name + '\");'
+        sql = 'CREATE TABLE IF NOT EXISTS "' + table_name + '"' + \
+              '(' + constraint_sql + ') ' + \
+              'INHERITS ("' + base_table_name + '");'
 
         result_proxy = self.engine.execute(sql)
 
         result_proxy.close()
         self.logger.info("Created table " + table_name)
-        return self.lookup_table(table_name)
+        return table_name
 
-    def get_partition_table_name(self, timestamp):
+    def get_partition_subtable_name(self, base_table_name, timestamp):
         """
         :param timestamp: datetime with timezone
         """
         part_start, _ = self._get_partition_boundary_timestamps(timestamp)
         part_start_string = self._date_string_rep(part_start)
-        return self.measurement_base_table_name + '_' + part_start_string
+        return base_table_name + '_' + part_start_string
 
     def _get_partition_boundary_timestamps(self, timestamp):
         partition_length_seconds = int(dt.timedelta(hours=self.partition_length_hours).total_seconds())
 
-        seconds_since_epoch = self._convert_datetime_to_epoch(timestamp)
+        seconds_since_epoch = self._convert_datetime_to_time_since_epoch(timestamp)
         partition_count_since_epoch = int(seconds_since_epoch/partition_length_seconds)
 
         partition_start_seconds = partition_count_since_epoch * partition_length_seconds
@@ -117,7 +148,7 @@ class SchemaManager(object):
 
         return start_time_utc_w_tz, end_time_utc_w_tz
 
-    def _convert_datetime_to_epoch(self, timestamp_w_timezone):
+    def _convert_datetime_to_time_since_epoch(self, timestamp_w_timezone):
         epoch = dt.datetime(1970,1,1, tzinfo=self.timezone_utc)
         seconds = (timestamp_w_timezone - epoch).total_seconds()
         return seconds
@@ -125,7 +156,6 @@ class SchemaManager(object):
     def _date_string_rep(self, datetime):
         str_rep = str(datetime)
         str_rep_tz_stripped = str_rep[:len(str_rep)-6]
-
         return self._replace_with_underscores(str_rep_tz_stripped)
 
     def _replace_with_underscores(self, string):
