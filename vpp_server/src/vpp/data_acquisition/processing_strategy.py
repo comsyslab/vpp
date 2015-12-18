@@ -47,10 +47,8 @@ class DefaultMeasurementProcessingStrategy(AbstractProcessingStrategy):
         except IntegrityError as e:
             self.logger.exception(e)
 
-
-
     def _process_measurements(self, meas_dicts):
-        self.db_manager.create_new_measurements(meas_dicts)
+        self.db_manager.store_new_data_bulk(meas_dicts)
 
 
 class DefaultPredictionProcessingStrategy(AbstractProcessingStrategy):
@@ -65,25 +63,38 @@ class DefaultPredictionProcessingStrategy(AbstractProcessingStrategy):
         self._process_predictions(pred_dicts)
         self.db_manager.close()
 
-    def _process_endpoints(self, sensor_dicts_for_db):
-        for sensor_dict in sensor_dicts_for_db:
-            id = sensor_dict['sensor_id']
-            new_attribute = sensor_dict['attribute']
-            new_unit = sensor_dict['unit']
+    def _process_endpoints(self, endpoint_dicts):
+        '''
+        :param endpoint_dicts: List of dicts each containing: {'id', 'attribute', 'unit', 'description'}
+        '''
 
-            existing_sensor_entity = self.db_manager.get_device(id)
-            if existing_sensor_entity:
-                existing_sensor_entity.attribute = new_attribute
-                existing_sensor_entity.unit = new_unit
+        for endpoint_dict in endpoint_dicts:
+            id = endpoint_dict['id']
+            new_attribute = endpoint_dict['attribute']
+            new_unit = endpoint_dict['unit']
+            description = endpoint_dict['description']
+
+            existing_endpoint = self.db_manager.get_prediction_endpoint(id)
+            if existing_endpoint:
+                existing_endpoint.attribute = new_attribute
+                existing_endpoint.unit = new_unit
             else:
-                self.db_manager.create_new_sensor(id, new_attribute, new_unit)
+                self.db_manager.store_new_prediction_endpoint(id, new_attribute, new_unit, description)
         try:
             self.db_manager.commit()
-            self.logger.info("Processed " + str(len(sensor_dicts_for_db)) + " sensors.")
+            self.logger.info("Processed " + str(len(endpoint_dicts)) + " endpoints.")
+
         except IntegrityError as e:
             self.logger.exception(e)
 
-
-
-    def _process_predictions(self, meas_dicts):
-        pass
+    def _process_predictions(self, pred_dicts):
+        '''
+        :param pred_dicts: List of dicts each containing: {'endpoint_id', 'timestamp', 'value', 'time_received', 'value_interval'}
+        '''
+        for pred_dict in pred_dicts:
+            #self.db_manager.store_new_prediction(pred_dict['endpoint_id'],
+            #                                     pred_dict['timestamp'],
+            #                                     pred_dict['value'],
+            #                                     pred_dict['time_received'],
+            #                                     pred_dict['value_interval'])
+            self.db_manager.store_new_data_bulk(pred_dicts)

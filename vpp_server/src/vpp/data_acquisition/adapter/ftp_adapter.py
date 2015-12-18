@@ -1,5 +1,6 @@
 from ftplib import FTP, error_perm
 
+import re
 
 from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractFetchingAdapter
 
@@ -13,28 +14,48 @@ class FTPAdapter(AbstractFetchingAdapter):
 
 
     def fetch_data(self):
-        self.message = ''
-        ftp = FTP(self.ftp_config.host)
+        self.ftp = FTP(self.ftp_config.host)
         try :
-            ftp.login(self.ftp_config.username, self.ftp_config.password)
+            self.ftp.login(self.ftp_config.username, self.ftp_config.password)
         except error_perm as e:
             self.logger.exception(e)
 
-        command = 'RETR ' + self.ftp_config.file
+        self.retrieve_file_list()
+
+        regex_string = self.ftp_config.file_pattern
+        file_bodies = []
+        for file_name in self.file_names:
+            if re.match(regex_string, file_name):
+                self._file_contents = ''
+                self.retrieve_file(file_name)
+                file_bodies.append(self._file_contents)
+
+        return file_bodies
+
+    def retrieve_file_list(self):
+        self.file_names = []
+        command = 'NLST'
+        try:
+            response_code = self.ftp.retrlines(command, self._receive_file_name)
+        except Exception as e:
+            self.logger.exception(e)
+
+    def retrieve_file(self, file):
+        command = 'RETR ' + file
         response_code = ''
         try:
-            response_code = ftp.retrlines(command, self.receive_line)
+            response_code = self.ftp.retrlines(command, self._receive_line)
         except error_perm as e:
             self.logger.exception(e)
-
         if response_code.startswith('226'):
-            self.logger.debug("FTPAdapter fetched file " + self.ftp_config.file + " from " + self.ftp_config.host)
+            self.logger.debug("FTPAdapter fetched file " + file + " from " + self.ftp_config.host)
 
-        return self.message
+    def _receive_file_name(self, file_name):
+        self.file_names.append(file_name)
 
-    def receive_line(self, line):
+    def _receive_line(self, line):
         decoded_line = line.decode(self.ftp_config.encoding) + '\n'
-        self.message += decoded_line
+        self._file_contents += decoded_line
 
 
 class FTPConfigTest(object):
@@ -46,6 +67,7 @@ class FTPConfigTest(object):
 
 if __name__ == '__main__':
     #quick test
-    config = FTPConfigTest()
-    ftp_adapter = FTPAdapter(None, config)
-    print ftp_adapter.fetch_data()
+    pass
+    #config = FTPConfigTest()
+    #ftp_adapter = FTPAdapter(None, config)
+    #print ftp_adapter.fetch_data()

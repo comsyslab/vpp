@@ -5,6 +5,9 @@ import sys
 import unittest
 from array import array
 
+import datetime
+
+from vpp.data_acquisition.interpreter.energinet_co2_interpreter import EnerginetCO2Interpreter
 from vpp.data_acquisition.interpreter.energinet_online_interpreter import EnerginetOnlineInterpreter
 from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmDataInterpreter
@@ -100,70 +103,108 @@ class DataInterpreterTest(unittest.TestCase):
         self.assertEqual(len(meas_dicts), 20)
 
         index = 0
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_1', 'Centrale kraftværker DK1', 'MW', 441)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_1', 'Centrale kraftværker DK1', 'MW', 441)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_2', 'Centrale kraftværker DK2', 'MW', 297)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_2', 'Centrale kraftværker DK2', 'MW', 297)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_3', 'Decentrale kraftværker DK1', 'MW', 210)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_3', 'Decentrale kraftværker DK1', 'MW', 210)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_4', 'Decentrale kraftværker DK2', 'MW', 63)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_4', 'Decentrale kraftværker DK2', 'MW', 63)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_5', 'Vindmøller DK1', 'MW', 2541)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_5', 'Vindmøller DK1', 'MW', 2541)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_6', 'Vindmøller DK2', 'MW', 696)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_6', 'Vindmøller DK2', 'MW', 696)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_7', 'Udveksling Jylland-Norge', 'MW', -949)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_7', 'Udveksling Jylland-Norge', 'MW', -949)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_8', 'Udveksling Jylland-Sverige', 'MW', -734)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_8', 'Udveksling Jylland-Sverige', 'MW', -734)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_9', 'Udveksling Jylland-Tyskland', 'MW', 986)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_9', 'Udveksling Jylland-Tyskland', 'MW', 986)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_10', 'Udveksling Sjælland-Sverige', 'MW', -1058)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_10', 'Udveksling Sjælland-Sverige', 'MW', -1058)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_11', 'Udveksling Sjælland-Tyskland', 'MW', 600)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_11', 'Udveksling Sjælland-Tyskland', 'MW', 600)
 
         index+= 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_12', 'Udveksling Bornholm-Sverige', 'MW', -7)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_12', 'Udveksling Bornholm-Sverige', 'MW', -7)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_13', 'Udveksling Fyn-Sjaelland', 'MW', -590)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_13', 'Udveksling Fyn-Sjaelland', 'MW', -590)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_14', 'Temperatur i Malling', 'deg_C', 11)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_14', 'Temperatur i Malling', 'deg_C', 11)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_15', 'Vindhastighed i Malling', 'm/s', 6)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_15', 'Vindhastighed i Malling', 'm/s', 6)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_16', 'CO2 udledning', 'g/kWh', 144)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_16', 'CO2 udledning', 'g/kWh', 144)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_17', 'Havmøller DK', 'MW', 1172)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_17', 'Havmøller DK', 'MW', 1172)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_18', 'Landmøller DK', 'MW', 2065)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_18', 'Landmøller DK', 'MW', 2065)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_19', 'Solceller DK1', 'MW', 123)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_19', 'Solceller DK1', 'MW', 123)
 
         index += 1
-        self.assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_20', 'Solceller DK2', 'MW', 456)
+        self._assert_match(sensor_dicts[index], meas_dicts[index], 'energinet_20', 'Solceller DK2', 'MW', 456)
 
-    def assert_match(self, sensor_dict, meas_dict, sensor_id_expected, attribute_expected, unit_expected, value_expected):
+    def _assert_match(self, sensor_dict, meas_dict, sensor_id_expected, attribute_expected, unit_expected, value_expected):
         self.assertEqual(sensor_dict['sensor_id'], sensor_id_expected)
         self.assertEqual(sensor_dict['attribute'], attribute_expected)
         self.assertEqual(sensor_dict['unit'], unit_expected)
         self.assertEqual(meas_dict['value'], str(value_expected))
+
+    def test_energinet_CO2(self):
+        data = '20151027\n' \
+               'Timeinterval;CO2\n'\
+               '00:00-01:00;224\n'\
+               '01:00-02:00;233\n'\
+               '23:00-24:00;261'
+
+        interpreter = EnerginetCO2Interpreter()
+
+        result = interpreter.interpret_data(data)
+
+        endpoints= result['endpoints']
+        self.assertEqual(len(endpoints), 1)
+
+        endpoint = endpoints[0]
+        endpoint_id = 'energinet_CO2'
+        self.assertEqual(endpoint['id'], endpoint_id)
+        self.assertEqual(endpoint['attribute'], 'CO2 emission')
+        self.assertEqual(endpoint['unit'], 'g/kWh')
+        self.assertEqual(endpoint['description'], 'Predicted CO2 emissions per kWh produced in the Danish power grid.')
+
+
+        predictions = result['predictions']
+        self.assertEqual(len(predictions), 3)
+
+        pred = predictions[0]
+        '''endpoint_id': endpoint_id,
+                          'timestamp': timestamp.isoformat(),
+                          'value': value,
+                          'time_received': time_received,
+                          'value_interval': interval}'''
+
+        self.assertEqual(pred['endpoint_id'], endpoint_id)
+        self.assertEqual(pred['timestamp'], '2015-10-27T00:00:00+01:00')
+        self.assertEqual(pred['value'], '224')
+        #self.assertEqual(pred['time_received'], '')
+        self.assertEqual(pred['value_interval'], datetime.timedelta(hours=1))
 
 
 if __name__ == '__main__':

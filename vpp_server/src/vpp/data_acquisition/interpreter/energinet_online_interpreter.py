@@ -28,8 +28,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
         self.units = units
 
-    def interpret_data(self, data_string):
-
+    def _interpret_string(self, data_string):
         data = " 1 Centrale kraftværker DK1\n" \
                " 2 Centrale kraftværker DK2\n" \
                " 3 Decentrale kraftværker DK1\n" \
@@ -50,14 +49,12 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
                "18 Landmøller DK\n" \
                "19 Solceller DK1\n" \
                "20 Solceller DK2\n" \
-               "\n"\
+               "\n" \
                "Dato og tid      ;      1 ;      2 ;      3 ;      4 ;      5 ;      6 ;      7 ;      8 ;      9 ;     10 ;     11 ;     12 ;     13 ;     14 ;     15 ;     16 ;     17 ;     18 ;     19 ;     20 ;" \
                "2014-08-19 00:05 ;    441 ;    297 ;    210 ;     63 ;   2541 ;    696 ;   -949 ;   -734 ;    986 ;  -1058 ;    600 ;     -7 ;   -590 ;     11 ;      6 ;    144 ;   1172 ;   2065 ;    123 ;    456 ;"
-
         lines = data_string.splitlines()
         sensors = self.parse_sensors(lines)
         measurements = self.parse_measurements(lines)
-
         return {'measurements': measurements, 'sensors': sensors}
 
     def parse_sensors(self, lines):
@@ -120,7 +117,14 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
     def parse_timestamp(self, date_string):
         tzinfo_cph = pytz.timezone('Europe/Copenhagen')
-        parsed = datetime.datetime.strptime(date_string.strip(), '%Y-%m-%d %H:%M')
+        try:
+            date_string_stripped = date_string.strip()
+            parsed = datetime.datetime.strptime(date_string_stripped, '%Y-%m-%d %H:%M')
+        except AttributeError as e:
+            self.logger.exception(e)
+        except:
+            self.logger.error("Unexpected exception parsing timestamp")
+
         meas_time = tzinfo_cph.localize(parsed)
         return meas_time.isoformat()
 
@@ -135,3 +139,8 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
         self.logger.info("No measurements in EnerginetOnline file. Could not find heading line starting with 'Dato og tid'")
         return -1
 
+
+if __name__ == '__main__':
+    string = '2014-08-19 00:00'
+    parsed = datetime.datetime.strptime(string, '%Y-%m-%d %H:%M')
+    print parsed

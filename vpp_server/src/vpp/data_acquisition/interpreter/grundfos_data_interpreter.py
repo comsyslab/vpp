@@ -14,7 +14,7 @@ class GrundfosDataInterpreter(AbstractDataInterpreter):
         self.logger = logging.getLogger(__name__)
         self.device_prefix = device_prefix
 
-    def interpret_data(self, data_string):
+    def _interpret_string(self, data_string):
         measurements = []
         sensors = []
         data_prefix_stripped = data_string[8:]
@@ -25,9 +25,7 @@ class GrundfosDataInterpreter(AbstractDataInterpreter):
             sensors = self._parse_sensors(data_prefix_stripped)
         else:
             self.logger.warning("Could not parse message with unknown prefix: " + data_string[:20])
-
-        return {'measurements':measurements, 'sensors':sensors}
-
+        return {'measurements': measurements, 'sensors': sensors}
 
     def _parse_measurements(self, data_string):
         '''Example data_string:

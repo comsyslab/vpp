@@ -34,7 +34,7 @@ def create_sensor():
 def create_measurement():
     db_manager = DBManager()
 
-    measurement = db_manager.create_new_measurement('temp_sensor_1', "2015-11-18T09:30:32.747Z", 1.37)
+    measurement = db_manager.store_new_measurement('temp_sensor_1', "2015-11-18T09:30:32.747Z", 1.37)
 
     measurements = db_manager.get_measurements_for_sensor('temp_sensor_1')
     for m in measurements:

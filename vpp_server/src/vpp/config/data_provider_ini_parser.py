@@ -89,4 +89,5 @@ class FTPConfig(FetchingAdapterConfig):
         self.host = parser.get(section_name, 'host')
         self.port = int(parser.get(section_name, 'port'))
         self.file = parser.get(section_name, 'file')
+        self.file_pattern = parser.get(section_name, 'file_pattern')
         self.encoding = parser.get(section_name, 'encoding')
