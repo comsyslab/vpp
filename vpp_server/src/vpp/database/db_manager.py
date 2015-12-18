@@ -62,32 +62,28 @@ class DBManager(object):
     def _device_query(self, id):
         return self.session.query(Device).filter(Device.id == str(id))
 
-    def create_new_measurements(self, meas_dicts):
+    def store_new_data_bulk(self, data_dicts):
         time_begin = time.time()
 
-        table_to_meas_dicts = {}
+        table_to_data_map = {}
 
         time_grouping_begin = time.time()
-        for meas in meas_dicts:
-            sensor_id = meas['sensor_id']
-            timestamp = meas['timestamp']
-            value = meas['value']
-            datetime_w_timezone = iso8601.parse_date(timestamp)
-            table = self.schema_manager.get_or_create_measurement_subtable(datetime_w_timezone)
-            table_name = table.name
-            if not table_name in table_to_meas_dicts:
-                table_to_meas_dicts[table_name] = []
-            table_to_meas_dicts[table_name].append({'sensor_id': sensor_id, 'timestamp': timestamp, 'value': value})
+        for data_dict in data_dicts:
+            table = self._get_table_for_data_dict(data_dict)
+
+            if not table.name in table_to_data_map:
+                table_to_data_map[table.name] = []
+            table_to_data_map[table.name].append(data_dict)
         time_grouping_spent_secs = time.time() - time_grouping_begin
         time_grouping_spent_ms = secs_to_ms(time_grouping_spent_secs)
 
         time_sql_begin = time.time()
-        for table_name, meas_list in table_to_meas_dicts.iteritems():
+        for table_name, mapped_data_dicts in table_to_data_map.iteritems():
             table = self.schema_manager.lookup_table(table_name)
-            sql = table.insert().values(meas_list)
+            sql = table.insert().values(mapped_data_dicts)
             try:
                 self.session.execute(sql)
-                self.logger.info("Created " + str(len(meas_list)) + " measurements in table " + table_name)
+                self.logger.info("Created " + str(len(mapped_data_dicts)) + " measurements in table " + table_name)
             except Exception as e:
                 self.logger.exception(e)
 
@@ -96,10 +92,26 @@ class DBManager(object):
 
         time_spent_secs = time.time() - time_begin
         time_spent_ms = secs_to_ms(time_spent_secs)
-        self.logger.debug("DBManager processed " + str(len(meas_dicts)) + " measurements in " + str(time_spent_ms) + " ms. " +
+        self.logger.debug("DBManager processed " + str(len(data_dicts)) + " measurements in " + str(time_spent_ms) + " ms. " +
                           "Grouping by table " + str(time_grouping_spent_ms) + " ms, DB interaction " + str(time_sql_spent_ms) + " ms.")
 
-    def create_new_measurement(self, sensor_id, timestamp, value):
+    def _get_table_for_data_dict(self, data_dict):
+        if 'time_received' in data_dict:
+            return self.get_prediction_table(data_dict)
+        else:
+            return self.get_measurement_table(data_dict)
+
+    def get_prediction_table(self, data_dict):
+        timestamp = data_dict['time_received']
+        datetime_w_timezone = iso8601.parse_date(timestamp)
+        return self.schema_manager.get_or_create_prediction_subtable(datetime_w_timezone)
+
+    def get_measurement_table(self, data_dict):
+        timestamp = data_dict['timestamp']
+        datetime_w_timezone = iso8601.parse_date(timestamp)
+        return self.schema_manager.get_or_create_measurement_subtable(datetime_w_timezone)
+
+    def store_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
         table = self.schema_manager.get_or_create_measurement_subtable(datetime_w_timezone)
         sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
@@ -117,7 +129,7 @@ class DBManager(object):
     def get_controller(self, controller_id):
         return self.session.query(Controller).filter_by(id=controller_id).all()
 
-    def create_new_prediction_endpoint(self, id, attribute, unit, description=None):
+    def store_new_prediction_endpoint(self, id, attribute, unit, description=None):
         endpoint = PredictionEndpoint(id=id, attribute=attribute, unit=unit, description=description)
         self.persist_entity(endpoint)
         return endpoint
@@ -131,12 +143,22 @@ class DBManager(object):
     def _pred_endpoint_query(self, id):
         return self.session.query(PredictionEndpoint).filter(PredictionEndpoint.id == str(id))
 
-    def create_new_prediction(self, pred_endpoint_id, timestamp, value, time_received, value_interval=None):
+    def store_new_prediction(self, pred_endpoint_id, timestamp, value, time_received, value_interval=None):
+        '''
+        :param pred_endpoint_id: string
+        :param timestamp: datetime.datetime
+        :param value: string
+        :param time_received: datetime.datetime
+        :param value_interval: datetime.timedelta
+        '''
         timestamp_dt = iso8601.parse_date(timestamp)
         time_received_dt = iso8601.parse_date(time_received)
 
-        table = self.schema_manager.get_or_create_prediction_subtable(timestamp_dt)
-        sql = table.insert().values(prediction_endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval)
+        interval_sql_value = str(value_interval.days) +  ' days ' + str(value_interval.seconds) + ' seconds'
+        #1 year 2 months 3 days 4 hours 5 minutes 6 seconds
+
+        table = self.schema_manager.get_or_create_prediction_subtable(time_received_dt)
+        sql = table.insert().values(endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval)
         try:
             self.session.execute(sql)
             self.logger.debug("Stored new prediction " + str(value) + " for endpoint" + str(pred_endpoint_id))

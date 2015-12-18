@@ -8,6 +8,7 @@ from vpp.core import domain_object_factory
 from vpp.core.abstract_process import AbstractVPPProcess
 from vpp.data_acquisition.data_provider import DataProvider
 from vpp.database.db_manager import DBManager
+from vpp.util import util
 
 
 class DataProviderProcess(AbstractVPPProcess):
@@ -17,6 +18,7 @@ class DataProviderProcess(AbstractVPPProcess):
         self._start_data_providers()
 
     def _init_data_providers(self):
+        util.init_strptime()
         self.data_providers = []
         data_provider_config_dir = '../resources/data_providers'
         for file_name in os.listdir(data_provider_config_dir):

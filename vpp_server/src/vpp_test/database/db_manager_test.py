@@ -62,7 +62,7 @@ class DBManagerTest(unittest.TestCase):
         endpoint_id = 'thor_987'
         attribute = 'wind speed'
         unit = 'm/s'
-        endpoint = db_manager.create_new_prediction_endpoint(endpoint_id, attribute, unit)
+        endpoint = db_manager.store_new_prediction_endpoint(endpoint_id, attribute, unit)
         try:
             db_manager.commit()
         except Exception as e:
@@ -91,7 +91,7 @@ class DBManagerTest(unittest.TestCase):
         endpoint_id = 'thor_456'
         attribute = 'wind speed'
         unit = 'm/s'
-        endpoint = db_manager.create_new_prediction_endpoint(endpoint_id, attribute, unit)
+        endpoint = db_manager.store_new_prediction_endpoint(endpoint_id, attribute, unit)
 
         try:
             db_manager.commit()
@@ -104,7 +104,9 @@ class DBManagerTest(unittest.TestCase):
 
         timestamp = datetime.datetime.now().isoformat()
         value = 35
-        db_manager.create_new_prediction(endpoint_id, timestamp, value, timestamp)
+        value_interval = datetime.timedelta(minutes=30)
+
+        db_manager.store_new_prediction(endpoint_id, timestamp, value, timestamp, value_interval)
 
         db_manager.delete_prediction_endpoint(endpoint_id)
         db_manager.close()

@@ -82,7 +82,7 @@ class RabbitMQAdapter(AbstractListeningAdapter):
 
     def _receive_data(self, channel, method, properties, body):
         self.logger.info("RabbitMQAdapter " + str(self.exchange.url) + " received message: " + body[:100])
-        self.data_provider.interpret_and_process_data(str(body))
+        self.data_provider.interpret_and_process_data([str(body)])
 
 
     def stop(self):

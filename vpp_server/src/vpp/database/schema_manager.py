@@ -4,7 +4,7 @@ import time
 
 import pytz
 import tzlocal
-from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String, Time
+from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String, Time, Interval
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -63,11 +63,11 @@ class SchemaManager(object):
         self.prediction_base_table = Table(self.prediction_base_table_name,
                                            DeclarativeBase.metadata,
                                            Column('id', Integer, primary_key=True),
-                                           Column('prediction_endpoint_id', String, ForeignKey('PredictionEndpoint.id'), nullable=False),
+                                           Column('endpoint_id', String, ForeignKey('PredictionEndpoint.id'), nullable=False),
                                            Column('timestamp', DateTime(timezone=True), nullable=False),
                                            Column('value', String, nullable=False),
                                            Column('time_received', DateTime(timezone=True), nullable=False),
-                                           Column('value_interval', Time),
+                                           Column('value_interval', Interval),
                                            extend_existing=True)
         self.prediction_base_table.create(self.engine, checkfirst=True)
 
@@ -95,23 +95,23 @@ class SchemaManager(object):
         self.engine.execute(sql)
 
     def _create_measurement_subtable(self, timestamp):
-        table_name = self._create_partition_subtable(self.measurement_base_table_name, timestamp)
+        table_name = self._create_partition_subtable(self.measurement_base_table_name, timestamp, 'timestamp')
         sql = 'ALTER TABLE"' + table_name + '" ADD FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id) ON DELETE CASCADE;'
         self.engine.execute(sql)
         return self.lookup_table(table_name)
 
     def _create_prediction_subtable(self, timestamp):
-        table_name = self._create_partition_subtable(self.prediction_base_table_name, timestamp)
-        sql = 'ALTER TABLE "' + table_name + '" ADD FOREIGN KEY (prediction_endpoint_id) REFERENCES "PredictionEndpoint" (id) ON DELETE CASCADE;'
+        table_name = self._create_partition_subtable(self.prediction_base_table_name, timestamp, 'time_received')
+        sql = 'ALTER TABLE "' + table_name + '" ADD FOREIGN KEY (endpoint_id) REFERENCES "PredictionEndpoint" (id) ON DELETE CASCADE;'
         self.engine.execute(sql)
         return self.lookup_table(table_name)
 
-    def _create_partition_subtable(self, base_table_name, timestamp):
+    def _create_partition_subtable(self, base_table_name, timestamp, timestamp_name='timestamp'):
         '''Create initial subtable for the present day'''
         part_start, part_end = self._get_partition_boundary_timestamps(timestamp)
 
         primary_key_sql = 'PRIMARY KEY (id)'
-        timestamp_constraint_sql = 'CHECK (timestamp >= \'' + str(part_start) + '\' AND timestamp < \'' + str(part_end) + '\')'
+        timestamp_constraint_sql = 'CHECK (' + timestamp_name + ' >= \'' + str(part_start) + '\' AND ' + timestamp_name + ' < \'' + str(part_end) + '\')'
         constraint_sql = primary_key_sql + ', ' + timestamp_constraint_sql
 
         table_name = self.get_partition_subtable_name(base_table_name, timestamp)
