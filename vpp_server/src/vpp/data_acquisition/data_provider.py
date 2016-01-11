@@ -1,7 +1,7 @@
 import logging
 import time
 
-from vpp.config.data_provider_ini_parser import DataProviderIniParser
+from vpp.config.data_provider_ini_parser import DataProviderConfig
 from vpp.core import domain_object_factory
 from vpp.util import util
 
@@ -12,14 +12,14 @@ class DataProvider(object):
         self.logger = logging.getLogger(__name__)
         self.name = ini_file_name
 
-        ini_parser = DataProviderIniParser(ini_file_name)
+        ini_parser = DataProviderConfig(ini_file_name)
 
         self.data_adapter = domain_object_factory.get_data_adapter(self, ini_parser)
 
-        interpreter_fqn = ini_parser.get_interpreter_fqn()
+        interpreter_fqn = ini_parser.interpreter_fqn
         self.data_interpreter = domain_object_factory.instantiate_fqn(interpreter_fqn, ini_parser=ini_parser)
 
-        processor_fqn = ini_parser.get_processor_fqn()
+        processor_fqn = ini_parser.processor_fqn
         self.data_processor = domain_object_factory.instantiate_fqn(processor_fqn)
 
 

@@ -17,7 +17,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
         self.sensor_id = 'nordpool_elspot_odense'
         self.fetching_config = None
         if ini_parser:
-            self.fetching_config = ini_parser.get_ftp_config()
+            self.fetching_config = ini_parser.ftp_config
 
     def _interpret_string(self, data_string):
         data_w_dots = data_string.replace(',', '.')
