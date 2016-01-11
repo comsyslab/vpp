@@ -10,9 +10,9 @@ __author__ = 'ubbe'
 
 class SmartAmmDataInterpreter(AbstractDataInterpreter):
 
-    def __init__(self, device_prefix='smartamm'):
+    def __init__(self, ini_parser = None):
         self.logger = logging.getLogger(__name__)
-        self.device_prefix = device_prefix
+        self.device_prefix = 'smartamm'
 
 
 

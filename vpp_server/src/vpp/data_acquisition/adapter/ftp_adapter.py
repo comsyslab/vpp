@@ -2,6 +2,8 @@ from ftplib import FTP, error_perm
 
 import re
 
+import datetime
+
 from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractFetchingAdapter
 
 
@@ -29,7 +31,6 @@ class FTPAdapter(AbstractFetchingAdapter):
                 self._file_contents = ''
                 self.retrieve_file(file_name)
                 file_bodies.append(self._file_contents)
-
         return file_bodies
 
     def retrieve_file_list(self):
@@ -56,18 +57,3 @@ class FTPAdapter(AbstractFetchingAdapter):
     def _receive_line(self, line):
         decoded_line = line.decode(self.ftp_config.encoding) + '\n'
         self._file_contents += decoded_line
-
-
-class FTPConfigTest(object):
-    def __init__(self):
-        self.host = 'localhost'
-        self.username = 'ftp_user'
-        self.password = 'ftp4ccess'
-        self.file = 'file.txt'
-
-if __name__ == '__main__':
-    #quick test
-    pass
-    #config = FTPConfigTest()
-    #ftp_adapter = FTPAdapter(None, config)
-    #print ftp_adapter.fetch_data()

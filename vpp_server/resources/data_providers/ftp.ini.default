@@ -1,7 +1,7 @@
 [data_provider]
 adapter = vpp.data_acquisition.adapter.ftp_adapter.FTPAdapter
 interpreter = vpp.data_acquisition.interpreter.[FILL IN]
-processor = vpp.data_acquisition.processing_strategy.DefaultProcessingStrategy
+processor = vpp.data_acquisition.processing_strategy.DefaultMeasurementProcessingStrategy
 
 [fetch]
 interval = 600
@@ -11,7 +11,7 @@ username = anonymous
 password =
 host = localhost
 port = 21
-file = [FILL IN]
+file_pattern = [FILL IN]
 encoding = utf-8
 
 
