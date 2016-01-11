@@ -6,7 +6,7 @@ class AbstractDataInterpreter(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self):
+    def __init__(self, ini_parser = None):
         self.logger = logging.getLogger(__name__)
 
     def interpret_data(self, *data_strings):

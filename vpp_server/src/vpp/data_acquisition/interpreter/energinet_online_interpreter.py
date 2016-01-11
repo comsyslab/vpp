@@ -12,7 +12,7 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 
 class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
-    def __init__(self):
+    def __init__(self, ini_parser = None):
         self.logger = logging.getLogger(__name__)
         self._init_units_map()
 

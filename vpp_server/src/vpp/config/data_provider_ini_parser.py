@@ -6,7 +6,7 @@ class DataProviderIniParser(object):
 
     def __init__(self, file_name):
         self.logger = logging.getLogger(__name__)
-        self.safe_config_parser = SafeConfigParser()
+        self.safe_config_parser = ErrorHandlingConfigParser(SafeConfigParser())
         self.parse_file(file_name)
 
     def parse_file(self, file_name):
@@ -35,6 +35,26 @@ class DataProviderIniParser(object):
     def get_ftp_config(self):
         return FTPConfig(self.safe_config_parser)
 
+
+class ErrorHandlingConfigParser(object):
+    def __init__(self, config_parser):
+        self.parser = config_parser
+
+    def get(self, section_name, property_name):
+        try:
+            return self.parser.get(section_name, property_name)
+        except:
+            return None
+
+    def read(self, file_name):
+        self.file_name = file_name
+        return self.parser.read(file_name)
+
+    def set(self, section, option, value=None):
+        self.parser.set(section, option, value)
+        file = open(self.file_name, mode='w')
+        self.parser.write(file)
+        file.close()
 
 
 class Exchange(object):
@@ -76,7 +96,17 @@ class SslOptions(object):
 
 class FetchingAdapterConfig(object):
     def __init__(self, parser):
+        self.parser = parser
         self.interval = parser.get('fetch', 'interval')
+
+
+    @property
+    def last_fetch(self):
+        return self.parser.get('fetch', 'last_fetch')
+
+    @last_fetch.setter
+    def last_fetch(self, value):
+        self.parser.set('fetch', 'last_fetch', value)
 
 
 class FTPConfig(FetchingAdapterConfig):
@@ -88,6 +118,5 @@ class FTPConfig(FetchingAdapterConfig):
         self.password = parser.get(section_name, 'password')
         self.host = parser.get(section_name, 'host')
         self.port = int(parser.get(section_name, 'port'))
-        self.file = parser.get(section_name, 'file')
         self.file_pattern = parser.get(section_name, 'file_pattern')
         self.encoding = parser.get(section_name, 'encoding')

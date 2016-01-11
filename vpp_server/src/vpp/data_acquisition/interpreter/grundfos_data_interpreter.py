@@ -10,9 +10,9 @@ __author__ = 'ubbe'
 
 class GrundfosDataInterpreter(AbstractDataInterpreter):
 
-    def __init__(self, device_prefix='grundfos'):
+    def __init__(self, ini_parser = None):
         self.logger = logging.getLogger(__name__)
-        self.device_prefix = device_prefix
+        self.device_prefix = 'grundfos'
 
     def _interpret_string(self, data_string):
         measurements = []

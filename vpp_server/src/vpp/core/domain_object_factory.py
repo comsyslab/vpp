@@ -4,9 +4,9 @@ from importlib import import_module
 from vpp.util import util
 
 
-def instantiate_fqn(name, *args):
+def instantiate_fqn(name, *args, **kwargs):
     class_ = get_class_from_fqn(name)
-    return class_(*args)
+    return class_(*args, **kwargs)
 
 
 def get_class_from_fqn(name):
