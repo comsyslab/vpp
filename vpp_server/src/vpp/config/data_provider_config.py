@@ -2,38 +2,45 @@ import logging
 from ConfigParser import SafeConfigParser
 
 
-class DataProviderIniParser(object):
+class DataProviderConfig(object):
 
     def __init__(self, file_name):
         self.logger = logging.getLogger(__name__)
-        self.safe_config_parser = ErrorHandlingConfigParser(SafeConfigParser())
-        self.parse_file(file_name)
+        self.config_parser = ErrorHandlingConfigParser(SafeConfigParser())
+        self._parse_file(file_name)
 
-    def parse_file(self, file_name):
-        ok_list = self.safe_config_parser.read(file_name)
+    def _parse_file(self, file_name):
+        ok_list = self.config_parser.read(file_name)
         if len(ok_list) == 0:
             self.logger.error("Could not read config file " + file_name)
 
-    def get_adapter_fqn(self):
-        return self.safe_config_parser.get('data_provider', 'adapter')
+    @property
+    def adapter_fqn(self):
+        return self.config_parser.get('data_provider', 'adapter')
 
-    def get_interpreter_fqn(self):
-        return self.safe_config_parser.get('data_provider', 'interpreter')
+    @property
+    def interpreter_fqn(self):
+        return self.config_parser.get('data_provider', 'interpreter')
 
-    def get_processor_fqn(self):
-        return self.safe_config_parser.get('data_provider', 'processor')
+    @property
+    def processor_fqn(self):
+        return self.config_parser.get('data_provider', 'processor')
 
-    def get_rabbitmq_exchange(self):
-        return Exchange(self.safe_config_parser)
+    @property
+    def rabbitmq_exchange(self):
+        return Exchange(self.config_parser)
 
-    def get_rabbitmq_queue(self):
-        return Queue(self.safe_config_parser)
+    @property
+    def rabbitmq_queue(self):
+        return Queue(self.config_parser)
 
-    def get_rabbitmq_ssl_options(self):
-        return SslOptions(self.safe_config_parser)
+    @property
+    def rabbitmq_ssl_options(self):
+        return SslOptions(self.config_parser)
 
-    def get_ftp_config(self):
-        return FTPConfig(self.safe_config_parser)
+    @property
+    def ftp_config(self):
+        return FTPConfig(self.config_parser)
 
 
 class ErrorHandlingConfigParser(object):
@@ -98,7 +105,6 @@ class FetchingAdapterConfig(object):
     def __init__(self, parser):
         self.parser = parser
         self.interval = parser.get('fetch', 'interval')
-
 
     @property
     def last_fetch(self):

@@ -18,7 +18,7 @@ def get_class_from_fqn(name):
 
 
 def get_data_adapter(data_provider, ini_parser):
-        adapter_fqn = ini_parser.get_adapter_fqn()
+        adapter_fqn = ini_parser.adapter_fqn
 
         from vpp.data_acquisition.adapter.rabbit_mq_adapter import RabbitMQAdapter
         rabbit_mq_adapter_fqn = util.get_fully_qualified_name(RabbitMQAdapter)
@@ -35,14 +35,14 @@ def get_data_adapter(data_provider, ini_parser):
 
 
 def create_rabbit_mq_adapter(adapter_fqn, data_provider, ini_parser):
-    exchange = ini_parser.get_rabbitmq_exchange()
-    queue = ini_parser.get_rabbitmq_queue()
-    ssl_options = ini_parser.get_rabbitmq_ssl_options()
+    exchange = ini_parser.rabbitmq_exchange
+    queue = ini_parser.rabbitmq_queue
+    ssl_options = ini_parser.rabbitmq_ssl_options
     adapter = instantiate_fqn(adapter_fqn, data_provider, exchange, queue, ssl_options)
     return adapter
 
 
 def create_ftp_adapter(adapter_fqn, data_provider, ini_parser):
-    ftp_config = ini_parser.get_ftp_config()
+    ftp_config = ini_parser.ftp_config
     adapter = instantiate_fqn(adapter_fqn, data_provider, ftp_config)
     return adapter
