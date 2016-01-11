@@ -1,71 +1,13 @@
 # coding=UTF-8
 
-import logging
-import sys
-import unittest
-from array import array
-
 import datetime
+import unittest
 
 from vpp.data_acquisition.interpreter.energinet_co2_interpreter import EnerginetCO2Interpreter
 from vpp.data_acquisition.interpreter.energinet_online_interpreter import EnerginetOnlineInterpreter
-from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
-from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmDataInterpreter
 
 
-class DataInterpreterTest(unittest.TestCase):
-
-    def test_grundfos_interpreter(self):
-
-        json = 'GFKRE003{"version":3, "timestamp":"2014-10-08T09:30:32.750Z",' \
-               '"reading":[{"sensorId":1152,"appartmentId":3,"value":1024.0,"timestamp":"2014-10-08T09:30:32.747Z"}]' \
-               '}'
-
-
-        interpreter = GrundfosDataInterpreter()
-
-        meas_dicts = interpreter.interpret_data(json)['measurements']
-
-        self.assertEqual(len(meas_dicts), 1)
-
-        self.assertEqual(meas_dicts[0]['sensor_id'], 'grundfos_1152')
-        self.assertEqual(meas_dicts[0]['timestamp'], "2014-10-08T09:30:32.747Z")
-        self.assertEqual(meas_dicts[0]['value'], 1024.0)
-
-
-    def test_smartamm_interpreter(self):
-
-        logging.basicConfig(level=logging.INFO,
-                            stream=sys.stdout,
-                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                            datefmt='%y-%m-%d %H:%M:%S')
-
-
-        json = 'SAMRE001{'\
-                    '"Attributes":{'\
-                        '"InstantaneousDemand":185},'\
-                    '"Time":"2015-11-18T07:36:51.588Z",'\
-                    '"Device":"0015BC001B0211D5",'\
-                    '"Gateway":"0015BC001C00076D",'\
-                    '"Endpoint":2,'\
-                    '"Cluster":"Metering"}'''
-
-
-        interpreter = SmartAmmDataInterpreter()
-
-        data_dict = interpreter.interpret_data(json)
-        meas_dicts = data_dict['measurements']
-        sensor_dicts = data_dict['sensors']
-
-        self.assertEqual(len(sensor_dicts), 1)
-        self.assertEqual(sensor_dicts[0]['sensor_id'], 'smartamm_0015BC001B0211D5_InstantaneousDemand')
-        self.assertEqual(sensor_dicts[0]['attribute'], 'InstantaneousDemand')
-        self.assertEqual(sensor_dicts[0]['unit'], 'W')
-
-        self.assertEqual(len(meas_dicts), 1)
-        self.assertEqual(meas_dicts[0]['sensor_id'], 'smartamm_0015BC001B0211D5_InstantaneousDemand')
-        self.assertEqual(meas_dicts[0]['timestamp'], "2015-11-18T07:36:51.588Z")
-        self.assertEqual(meas_dicts[0]['value'], 185)
+class EnerginetOnlineInterpreterTest(unittest.TestCase):
 
     def test_energinet_online_interpreter(self):
         data = " 1 Centrale kraftværker DK1\n" \
@@ -167,45 +109,6 @@ class DataInterpreterTest(unittest.TestCase):
         self.assertEqual(sensor_dict['attribute'], attribute_expected)
         self.assertEqual(sensor_dict['unit'], unit_expected)
         self.assertEqual(meas_dict['value'], str(value_expected))
-
-    def test_energinet_CO2(self):
-        data = '20151027\n' \
-               'Timeinterval;CO2\n'\
-               '00:00-01:00;224\n'\
-               '01:00-02:00;233\n'\
-               '23:00-24:00;261'
-
-        interpreter = EnerginetCO2Interpreter()
-
-        result = interpreter.interpret_data(data)
-
-        endpoints= result['endpoints']
-        self.assertEqual(len(endpoints), 1)
-
-        endpoint = endpoints[0]
-        endpoint_id = 'energinet_CO2'
-        self.assertEqual(endpoint['id'], endpoint_id)
-        self.assertEqual(endpoint['attribute'], 'CO2 emission')
-        self.assertEqual(endpoint['unit'], 'g/kWh')
-        self.assertEqual(endpoint['description'], 'Predicted CO2 emissions per kWh produced in the Danish power grid.')
-
-
-        predictions = result['predictions']
-        self.assertEqual(len(predictions), 3)
-
-        pred = predictions[0]
-        '''endpoint_id': endpoint_id,
-                          'timestamp': timestamp.isoformat(),
-                          'value': value,
-                          'time_received': time_received,
-                          'value_interval': interval}'''
-
-        self.assertEqual(pred['endpoint_id'], endpoint_id)
-        self.assertEqual(pred['timestamp'], '2015-10-27T00:00:00+01:00')
-        self.assertEqual(pred['value'], '224')
-        #self.assertEqual(pred['time_received'], '')
-        self.assertEqual(pred['value_interval'], datetime.timedelta(hours=1))
-
 
 if __name__ == '__main__':
     unittest.main()
