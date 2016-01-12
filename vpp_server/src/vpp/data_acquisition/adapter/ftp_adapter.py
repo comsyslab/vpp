@@ -10,9 +10,9 @@ from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractFetchingA
 
 class FTPAdapter(AbstractFetchingAdapter):
 
-    def __init__(self, data_provider, ftp_config):
-        super(FTPAdapter, self).__init__(data_provider, ftp_config)
-        self.ftp_config = ftp_config
+    def __init__(self, data_provider, data_provider_config):
+        super(FTPAdapter, self).__init__(data_provider, data_provider_config)
+        self.ftp_config = data_provider_config.ftp_config
 
 
     def fetch_data(self):
