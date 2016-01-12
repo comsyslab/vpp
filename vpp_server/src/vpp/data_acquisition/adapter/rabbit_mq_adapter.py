@@ -10,13 +10,13 @@ __author__ = 'ubbe'
 
 class RabbitMQAdapter(AbstractListeningAdapter):
 
-    def __init__(self, data_provider, exchange, queue, ssl_options):
+    def __init__(self, data_provider, data_provider_config):
         super(RabbitMQAdapter, self).__init__(data_provider)
         self._init_logging()
         self.retry_count = 0
-        self.exchange = exchange
-        self.queue = queue
-        self.ssl_options = ssl_options
+        self.exchange = data_provider_config.rabbitmq_exchange
+        self.queue = data_provider_config.rabbitmq_queue
+        self.ssl_options = data_provider_config.rabbitmq_ssl_options
 
 
     def _init_logging(self):

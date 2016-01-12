@@ -11,13 +11,13 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 
 class NordpoolspotInterpreter(AbstractDataInterpreter):
 
-    def __init__(self, ini_parser = None):
+    def __init__(self, data_provider_config = None):
         self.logger = logging.getLogger(__name__)
         self.timezone = pytz.timezone('Europe/Copenhagen')
         self.sensor_id = 'nordpool_elspot_odense'
         self.fetching_config = None
-        if ini_parser:
-            self.fetching_config = ini_parser.ftp_config
+        if data_provider_config:
+            self.fetching_config = data_provider_config.ftp_config
 
     def _interpret_string(self, data_string):
         data_w_dots = data_string.replace(',', '.')
