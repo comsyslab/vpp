@@ -146,16 +146,16 @@ class DBManager(object):
     def store_new_prediction(self, pred_endpoint_id, timestamp, value, time_received, value_interval=None):
         '''
         :param pred_endpoint_id: string
-        :param timestamp: datetime.datetime
+        :param timestamp: iso8601 string
         :param value: string
-        :param time_received: datetime.datetime
+        :param time_received: iso8601 string
         :param value_interval: datetime.timedelta
         '''
         timestamp_dt = iso8601.parse_date(timestamp)
         time_received_dt = iso8601.parse_date(time_received)
 
-        interval_sql_value = str(value_interval.days) +  ' days ' + str(value_interval.seconds) + ' seconds'
-        #1 year 2 months 3 days 4 hours 5 minutes 6 seconds
+        #interval_sql_value = str(value_interval.days) +  ' days ' + str(value_interval.seconds) + ' seconds'
+        #Format: '1 year 2 months 3 days 4 hours 5 minutes 6 seconds'
 
         table = self.schema_manager.get_or_create_prediction_subtable(time_received_dt)
         sql = table.insert().values(endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval)
