@@ -26,7 +26,7 @@ class DefaultMeasurementProcessingStrategy(AbstractProcessingStrategy):
         sensor_dicts = data['sensors']
         self.db_manager = db_manager
         self._process_sensors(sensor_dicts)
-        self._process_measurements(meas_dicts)
+        self._process_data(meas_dicts)
         self.db_manager.close()
 
     def _process_sensors(self, sensor_dicts_for_db):
@@ -47,7 +47,7 @@ class DefaultMeasurementProcessingStrategy(AbstractProcessingStrategy):
         except IntegrityError as e:
             self.logger.exception(e)
 
-    def _process_measurements(self, meas_dicts):
+    def _process_data(self, meas_dicts):
         self.db_manager.store_new_data_bulk(meas_dicts)
 
 
@@ -60,7 +60,7 @@ class DefaultPredictionProcessingStrategy(AbstractProcessingStrategy):
         pred_dicts = data['predictions']
         self.db_manager = db_manager
         self._process_endpoints(endpoint_dicts)
-        self._process_predictions(pred_dicts)
+        self._process_data(pred_dicts)
         self.db_manager.close()
 
     def _process_endpoints(self, endpoint_dicts):
@@ -87,14 +87,8 @@ class DefaultPredictionProcessingStrategy(AbstractProcessingStrategy):
         except IntegrityError as e:
             self.logger.exception(e)
 
-    def _process_predictions(self, pred_dicts):
+    def _process_data(self, pred_dicts):
         '''
         :param pred_dicts: List of dicts each containing: {'endpoint_id', 'timestamp', 'value', 'time_received', 'value_interval'}
         '''
-        for pred_dict in pred_dicts:
-            #self.db_manager.store_new_prediction(pred_dict['endpoint_id'],
-            #                                     pred_dict['timestamp'],
-            #                                     pred_dict['value'],
-            #                                     pred_dict['time_received'],
-            #                                     pred_dict['value_interval'])
-            self.db_manager.store_new_data_bulk(pred_dicts)
+        self.db_manager.store_new_data_bulk(pred_dicts)
