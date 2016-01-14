@@ -29,29 +29,6 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
         self.units = units
 
     def _interpret_string(self, data_string):
-        data = " 1 Centrale kraftværker DK1\n" \
-               " 2 Centrale kraftværker DK2\n" \
-               " 3 Decentrale kraftværker DK1\n" \
-               " 4 Decentrale kraftværker DK2\n" \
-               " 5 Vindmøller DK1\n" \
-               " 6 Vindmøller DK2\n" \
-               " 7 Udveksling Jylland-Norge\n" \
-               " 8 Udveksling Jylland-Sverige\n" \
-               " 9 Udveksling Jylland-Tyskland\n" \
-               "10 Udveksling Sjælland-Sverige\n" \
-               "11 Udveksling Sjælland-Tyskland\n" \
-               "12 Udveksling Bornholm-Sverige\n" \
-               "13 Udveksling Fyn-Sjaelland\n" \
-               "14 Temperatur i Malling\n" \
-               "15 Vindhastighed i Malling\n" \
-               "16 CO2 udledning\n" \
-               "17 Havmøller DK\n" \
-               "18 Landmøller DK\n" \
-               "19 Solceller DK1\n" \
-               "20 Solceller DK2\n" \
-               "\n" \
-               "Dato og tid      ;      1 ;      2 ;      3 ;      4 ;      5 ;      6 ;      7 ;      8 ;      9 ;     10 ;     11 ;     12 ;     13 ;     14 ;     15 ;     16 ;     17 ;     18 ;     19 ;     20 ;" \
-               "2014-08-19 00:05 ;    441 ;    297 ;    210 ;     63 ;   2541 ;    696 ;   -949 ;   -734 ;    986 ;  -1058 ;    600 ;     -7 ;   -590 ;     11 ;      6 ;    144 ;   1172 ;   2065 ;    123 ;    456 ;"
         lines = data_string.splitlines()
         sensors = self.parse_sensors(lines)
         measurements = self.parse_measurements(lines)
@@ -138,9 +115,3 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
                 return i
         self.logger.info("No measurements in EnerginetOnline file. Could not find heading line starting with 'Dato og tid'")
         return -1
-
-
-if __name__ == '__main__':
-    string = '2014-08-19 00:00'
-    parsed = datetime.datetime.strptime(string, '%Y-%m-%d %H:%M')
-    print parsed
