@@ -41,6 +41,7 @@ class DefaultMeasurementProcessingStrategy(AbstractProcessingStrategy):
                 existing_sensor_entity.unit = new_unit
             else:
                 self.db_manager.create_new_sensor(id, new_attribute, new_unit)
+                self.db_manager.flush()
         try:
             self.db_manager.commit()
             self.logger.info("Processed " + str(len(sensor_dicts_for_db)) + " sensors.")

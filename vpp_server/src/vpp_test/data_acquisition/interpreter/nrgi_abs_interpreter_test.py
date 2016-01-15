@@ -9,7 +9,7 @@ from vpp.data_acquisition.interpreter.thor_interpreter import ThorInterpreter
 
 class NrgiAbsInterpreterTest(unittest.TestCase):
 
-    def test_nergi_abs_interpreter(self):
+    def test_nrgi_abs_interpreter(self):
         data_string = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n\
                        <absolutevalues req-id="b5a41bfb-fa9b-464f-8009-728068fd131d">\n\
                            <installationNumber>571313115104260611</installationNumber>\n\
@@ -28,7 +28,7 @@ class NrgiAbsInterpreterTest(unittest.TestCase):
         sensors = result['sensors']
 
         self.assertEqual(len(sensors), 1)
-        expected_sensor_id = 'nrgi_571313115104260611'
+        expected_sensor_id = 'nrgi_571313115104260611_abs'
         self.assertEqual(sensors[0]['sensor_id'], expected_sensor_id)
         self.assertEqual(sensors[0]['attribute'], 'meter-reading')
         self.assertEqual(sensors[0]['unit'], 'kWh')

@@ -6,9 +6,10 @@ import pytz
 from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractDataInterpreter
 
 
-class NrgiAbsInterpreter(AbstractDataInterpreter):
+class NrgiDeltaInterpreter(AbstractDataInterpreter):
 
     def __init__(self, data_provider_config=None):
+
         self.fetching_config = None
         if data_provider_config:
             self.fetching_config = data_provider_config.ftp_config
@@ -18,9 +19,9 @@ class NrgiAbsInterpreter(AbstractDataInterpreter):
         root = ElementTree.fromstring(data_string)
         install_no = root.find('installationNumber').text
 
-        sensor_id = 'nrgi_' + install_no + '_abs'
+        sensor_id = 'nrgi_' + install_no + '_delta'
         sensors = [{'sensor_id': sensor_id,
-                    'attribute': 'meter-reading',
+                    'attribute': 'meter-delta',
                     'unit_prefix': "",
                     'unit': 'kWh'}]
 
