@@ -22,6 +22,9 @@ class FTPAdapter(AbstractFetchingAdapter):
         except error_perm as e:
             self.logger.exception(e)
 
+        if self.ftp_config.remote_dir:
+            self.ftp.cwd(self.ftp_config.remote_dir)
+
         self.retrieve_file_list()
 
         regex_string = self.ftp_config.file_pattern
