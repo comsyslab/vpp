@@ -123,7 +123,6 @@ class FTPConfig(FetchingAdapterConfig):
         self.username = parser.get(section_name, 'username')
         self.password = parser.get(section_name, 'password')
         self.host = parser.get(section_name, 'host')
-        self.port = int(parser.get(section_name, 'port'))
         self.remote_dir = parser.get(section_name, 'remote_dir')
         self.file_pattern = parser.get(section_name, 'file_pattern')
         self.encoding = parser.get(section_name, 'encoding')
