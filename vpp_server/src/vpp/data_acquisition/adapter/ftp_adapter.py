@@ -30,10 +30,13 @@ class FTPAdapter(AbstractFetchingAdapter):
         regex_string = self.ftp_config.file_pattern
         file_bodies = []
         for file_name in self.file_names:
-            if re.match(regex_string, file_name):
+            if re.match(regex_string, file_name) and \
+               not self.file_date_helper.file_already_processed(file_name):
                 self._file_contents = ''
                 self.retrieve_file(file_name)
+
                 file_bodies.append(self._file_contents)
+                self.file_date_helper.update_newest_file()
         return file_bodies
 
     def retrieve_file_list(self):

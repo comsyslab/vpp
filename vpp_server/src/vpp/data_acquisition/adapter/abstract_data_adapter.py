@@ -3,6 +3,7 @@ import threading
 import time
 from abc import ABCMeta, abstractmethod
 
+from vpp.data_acquisition.adapter.file_date_helper import FileDateHelper
 from vpp.data_acquisition.data_provider_timer import DataProviderTimer
 
 
@@ -67,6 +68,7 @@ class AbstractFetchingAdapter(AbstractDataAdapter):
     def __init__(self, data_provider, data_provider_config):
         super(AbstractFetchingAdapter, self).__init__(data_provider)
         self.config = data_provider_config
+        self.file_date_helper = FileDateHelper(data_provider_config.ftp_config)
 
     def get_interval(self):
         return int(self.config.ftp_config.interval)
