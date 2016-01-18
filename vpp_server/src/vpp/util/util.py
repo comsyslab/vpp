@@ -27,5 +27,4 @@ def load_and_set_log_level():
     root_logger.setLevel(new_level_string)
     new_level = root_logger.getEffectiveLevel()
     if new_level != current_level:
-
-        root_logger.info(get_thread_info() + "Changed log level to " + new_level_string + '(' + str(new_level) + '), ' + str(root_logger.handlers[0].level))
+        root_logger.info(get_thread_info() + "Changed log level to " + new_level_string + ' (' + str(new_level) + ')')
