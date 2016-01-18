@@ -1,11 +1,9 @@
 import logging
 import os
-import threading
 import time
 from logging.handlers import RotatingFileHandler
 
-from vpp.config.config_ini_parser import ConfigIniParser
-from vpp.core.process_manager import ProcessWrapper
+from vpp.core.process_handle import ProcessHandle
 from vpp.data_acquisition.data_provider_process import DataProviderProcess
 from vpp.database.db_maintainer_process import DBMaintainerProcess
 from vpp.util import util
@@ -25,10 +23,10 @@ class Coordinator:
     def init_processes(self):
         self.processes = []
 
-        process_data_provider = ProcessWrapper(DataProviderProcess)
+        process_data_provider = ProcessHandle(DataProviderProcess)
         self.processes.append(process_data_provider)
 
-        process_db_maintainer = ProcessWrapper(DBMaintainerProcess)
+        process_db_maintainer = ProcessHandle(DBMaintainerProcess)
         #self.processes.append(process_db_maintainer)
 
     def start_processes(self):
@@ -39,6 +37,7 @@ class Coordinator:
         stop_file_name = "stop"
         while not os.path.isfile(stop_file_name):
             time.sleep(5)
+            util.load_and_set_log_level()
 
         self.logger.info(util.get_thread_info() + "File " + stop_file_name + " found, stopping application...")
         self.stop_processes()
@@ -55,20 +54,18 @@ class Coordinator:
             process.join()
 
 
-
 def init_logging():
     log_file_name = '../logs/console.log'
 
     print "Output is sent to " + os.path.abspath(log_file_name)
 
-    root_logger = logging.getLogger()
-    root_logger.setLevel(ConfigIniParser().get_log_level())
-
     handler = RotatingFileHandler(log_file_name, maxBytes=5242880, backupCount=10)
     formatter = logging.Formatter(fmt='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     handler.setFormatter(formatter)
 
+    root_logger = logging.getLogger()
     root_logger.addHandler(handler)
+    util.load_and_set_log_level()
 
 
 if __name__ == '__main__':
