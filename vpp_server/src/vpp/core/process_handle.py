@@ -9,7 +9,7 @@ import logging
 from multiprocessing import Process, Queue
 
 
-class ProcessWrapper(object):
+class ProcessHandle(object):
 
     def __init__(self, process_class):
         self.logger = logging.getLogger(__name__)

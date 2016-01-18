@@ -4,13 +4,14 @@ import os
 import threading
 from abc import ABCMeta, abstractmethod
 
+import time
 from enum import Enum
 
 
 from vpp.core import domain_object_factory
 from vpp.data_acquisition.data_provider import DataProvider
 from vpp.database.db_manager import DBManager
-
+from vpp.util import util
 
 
 class AbstractVPPProcess(object):
@@ -24,7 +25,9 @@ class AbstractVPPProcess(object):
         self.in_queue = in_queue
         self.command = None
         self.start()
+        self.run_check_log_level_thread()
         self.listen_for_commands()
+
 
     def listen_for_commands(self):
         while self.command is None or self.command.index != self.Commands.STOP.index:
@@ -33,6 +36,16 @@ class AbstractVPPProcess(object):
             self.logger.debug(multiprocessing.current_process().name + " received command " + str(self.command))
         self.stop()
 
+    def run_check_log_level_thread(self):
+        thread = threading.Thread(target=self._periodically_check_log_level)
+        thread.setDaemon(True)
+        thread.start()
+        self.logger.info("Started log level thread")
+
+    def _periodically_check_log_level(self):
+        while True:
+            time.sleep(30)
+            util.load_and_set_log_level()
 
     @abstractmethod
     def start(self):
