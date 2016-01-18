@@ -1,0 +1,7 @@
+Install python 2.7.11
+Install git 2.7.0-64bit
+Clone from https://github.com/comsyslab/vpp.git
+
+install postgresql DB
+
+pip install -r resources\requirements.txt
