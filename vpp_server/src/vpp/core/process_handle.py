@@ -1,4 +1,8 @@
+import multiprocessing
+from multiprocessing import Queue, Process
 import threading
+
+
 
 from vpp.core.abstract_process import AbstractVPPProcess
 from vpp.util import util
@@ -6,7 +10,7 @@ from vpp.util import util
 __author__ = 'ubbe'
 
 import logging
-from multiprocessing import Process, Queue
+
 
 
 class ProcessHandle(object):
@@ -17,13 +21,37 @@ class ProcessHandle(object):
 
     def start(self):
         self.out_queue = Queue()
-        self.process = Process(name=self.process_class.__name__, target=self.process_class, args=(self.out_queue,))
+        self.log_queue = Queue()
+        self._run_log_queue_thread()
+        self.process = Process(name=self.process_class.__name__, target=self.process_class, args=(self.out_queue, self.log_queue))
         self.process.start()
+
+    def _run_log_queue_thread(self):
+        self.log_thread = threading.Thread(target=self._listen_on_log_queue)
+        self.log_thread.setDaemon(False)
+        self.log_thread.start()
+
+    def _listen_on_log_queue(self):
+        record = None
+        while record != 'STOP':
+            try:
+                record = self.log_queue.get()
+                logger = logging.getLogger(record.name)
+                if record.levelno >= logger.getEffectiveLevel():
+                    logger.handle(record)
+            except IOError:
+                break
+            except Exception as e:
+                self.logger.exception(e.message)
 
     def stop(self):
         self.out_queue.put(AbstractVPPProcess.Commands.STOP)
         self.logger.debug(util.get_thread_info() + "ProcessManager sent stop to " + self.process.name)
         self.out_queue.close()
+
+        self.log_queue.put('STOP')
+        self.log_queue.close()
+
         thread = threading.Thread(target=self._kill_after_timeout)
         thread.setDaemon(False)
         thread.start()

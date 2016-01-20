@@ -32,6 +32,7 @@ class Coordinator:
     def start_processes(self):
         for process in self.processes:
             process.start()
+        self.logger.info('Started processes')
 
     def check_for_stop(self):
         stop_file_name = "stop"

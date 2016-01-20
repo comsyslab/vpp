@@ -5,6 +5,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 
+from vpp.core.queue_handler import QueueHandler
 from vpp.util import util
 
 
@@ -14,12 +15,14 @@ class AbstractVPPProcess(object):
 
     Commands = Enum('Commands', 'STOP', 'START')
 
-    def __init__(self, in_queue):
+    def __init__(self, in_queue, log_queue=None):
         self.logger = logging.getLogger(__name__)
         self.in_queue = in_queue
+        self.log_queue = log_queue
         self.command = None
+
+        self.setup_log_handler()
         self.start()
-        self.run_check_log_level_thread()
         self.listen_for_commands()
 
 
@@ -30,16 +33,11 @@ class AbstractVPPProcess(object):
             self.logger.debug(multiprocessing.current_process().name + " received command " + str(self.command))
         self.stop()
 
-    def run_check_log_level_thread(self):
-        thread = threading.Thread(target=self._periodically_check_log_level)
-        thread.setDaemon(True)
-        thread.start()
-        self.logger.info("Started log level thread")
-
-    def _periodically_check_log_level(self):
-        while True:
-            time.sleep(30)
-            util.load_and_set_log_level()
+    def setup_log_handler(self):
+        handler = QueueHandler(self.log_queue)
+        root_logger = logging.getLogger()
+        root_logger.handlers = []
+        root_logger.addHandler(handler)
 
     @abstractmethod
     def start(self):
