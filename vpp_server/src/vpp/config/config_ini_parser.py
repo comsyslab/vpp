@@ -1,12 +1,14 @@
 import logging
+import os
 from ConfigParser import SafeConfigParser
 
 
 class ConfigIniParser(object):
 
-    def __init__(self, file_name='../resources/config.ini'):
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.config_parser = SafeConfigParser()
+        file_name = os.path.join('..', 'resources', 'config.ini')
         self._load_file(file_name)
 
     def _load_file(self, file_name):

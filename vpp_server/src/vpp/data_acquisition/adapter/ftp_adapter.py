@@ -36,7 +36,8 @@ class FTPAdapter(AbstractFetchingAdapter):
                 self.retrieve_file(file_name)
 
                 file_bodies.append(self._file_contents)
-                self.file_date_helper.update_newest_file()
+
+                self.file_date_helper.update_newest_filename(file_name)
         return file_bodies
 
     def retrieve_file_list(self):
