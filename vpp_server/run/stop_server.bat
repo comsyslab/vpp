@@ -1,1 +1,2 @@
-copy NUL stop
+@echo off
+copy NUL stop >nul
