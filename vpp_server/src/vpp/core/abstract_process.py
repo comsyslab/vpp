@@ -1,12 +1,9 @@
 import logging
 import multiprocessing
-import threading
-import time
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 
 from vpp.core.queue_handler import QueueHandler
-from vpp.util import util
 
 
 class AbstractVPPProcess(object):
@@ -24,7 +21,6 @@ class AbstractVPPProcess(object):
         self.setup_log_handler()
         self.start()
         self.listen_for_commands()
-
 
     def listen_for_commands(self):
         while self.command is None or self.command.index != self.Commands.STOP.index:
