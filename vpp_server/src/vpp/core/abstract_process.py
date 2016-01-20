@@ -1,16 +1,10 @@
 import logging
 import multiprocessing
-import os
 import threading
-from abc import ABCMeta, abstractmethod
-
 import time
+from abc import ABCMeta, abstractmethod
 from enum import Enum
 
-
-from vpp.core import domain_object_factory
-from vpp.data_acquisition.data_provider import DataProvider
-from vpp.database.db_manager import DBManager
 from vpp.util import util
 
 
