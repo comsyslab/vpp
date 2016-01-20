@@ -32,13 +32,13 @@ class ProcessHandle(object):
         self.log_thread.start()
 
     def _listen_on_log_queue(self):
-        record = None
+        record = self.log_queue.get()
         while record != 'STOP':
             try:
-                record = self.log_queue.get()
                 logger = logging.getLogger(record.name)
                 if record.levelno >= logger.getEffectiveLevel():
                     logger.handle(record)
+                record = self.log_queue.get()
             except IOError:
                 break
             except Exception as e:
