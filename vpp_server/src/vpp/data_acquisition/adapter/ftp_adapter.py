@@ -1,3 +1,4 @@
+from _socket import gaierror
 from ftplib import FTP, error_perm
 
 import re
@@ -16,11 +17,15 @@ class FTPAdapter(AbstractFetchingAdapter):
 
 
     def fetch_data(self):
-        self.ftp = FTP(self.ftp_config.host)
-        try :
+        self.logger.debug("FTPAdapter fetching %s", self.ftp_config.file_pattern)
+        file_bodies = []
+        return file_bodies
+        try:
+            self.ftp = FTP(self.ftp_config.host)
             self.ftp.login(self.ftp_config.username, self.ftp_config.password)
-        except error_perm as e:
+        except (error_perm, gaierror) as e:
             self.logger.exception(e)
+            return file_bodies
 
         if self.ftp_config.remote_dir:
             self.ftp.cwd(self.ftp_config.remote_dir)
@@ -28,7 +33,7 @@ class FTPAdapter(AbstractFetchingAdapter):
         self.retrieve_file_list()
 
         regex_string = self.ftp_config.file_pattern
-        file_bodies = []
+
         for file_name in self.file_names:
             if re.match(regex_string, file_name) and \
                not self.file_date_helper.file_already_processed(file_name):
