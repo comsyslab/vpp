@@ -21,19 +21,21 @@ __author__ = 'ubbe'
 class DBManager(object):
 
     def __init__(self, db_string=None, autoflush=True):
-        self.logger = logging.getLogger(__name__)
+        try:
+            self.logger = logging.getLogger(__name__)
 
-        if not db_string:
-            db_string = ConfigIniParser().get_db_string()
+            if not db_string:
+                db_string = ConfigIniParser().get_db_string()
 
-        self.engine = sqlalchemy.create_engine(db_string, echo=False)
+            self.engine = sqlalchemy.create_engine(db_string, echo=False)
 
-        self.schema_manager = SchemaManager(self.engine)
+            self.schema_manager = SchemaManager(self.engine)
 
-        self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
-        self.session = self.SessionCls()
-        self.session.autoflush = autoflush
-
+            self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
+            self.session = self.SessionCls()
+            self.session.autoflush = autoflush
+        except Exception as e:
+            self.logger.exception('Exception initializing DBManager: ' + e.message)
 
     def drop_tables(self):
         self.schema_manager.recreate_schema()
