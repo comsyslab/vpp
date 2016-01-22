@@ -43,6 +43,7 @@ class ProcessHandle(object):
                 break
             except Exception as e:
                 self.logger.exception(e.message)
+        self.logger.debug(util.get_thread_info() + ' Log queue listener thread exited.')
 
     def stop(self):
         self.out_queue.put(AbstractVPPProcess.Commands.STOP)

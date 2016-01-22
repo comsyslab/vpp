@@ -32,6 +32,7 @@ class AbstractVPPProcess(object):
     def setup_log_handler(self):
         handler = QueueHandler(self.log_queue)
         root_logger = logging.getLogger()
+        root_logger.setLevel(0)
         root_logger.handlers = []
         root_logger.addHandler(handler)
 
