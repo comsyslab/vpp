@@ -81,6 +81,7 @@ class DefaultPredictionProcessingStrategy(AbstractProcessingStrategy):
                 existing_endpoint.unit = new_unit
             else:
                 self.db_manager.store_new_prediction_endpoint(id, new_attribute, new_unit, description)
+                self.db_manager.flush()
         try:
             self.db_manager.commit()
             self.logger.info("Processed " + str(len(endpoint_dicts)) + " endpoints.")

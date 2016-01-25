@@ -2,7 +2,7 @@ import logging
 import threading
 
 import pika
-from pika.exceptions import ChannelClosed, ConnectionClosed, AMQPConnectionError
+from pika.exceptions import ChannelClosed, ConnectionClosed, AMQPConnectionError, IncompatibleProtocolError
 from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractListeningAdapter
 
 __author__ = 'ubbe'
@@ -22,25 +22,31 @@ class RabbitMQAdapter(AbstractListeningAdapter):
     def _init_logging(self):
         self.logger = logging.getLogger(__name__)
         pika_logger = logging.getLogger('pika')
-        pika_logger.setLevel(logging.INFO)
+        pika_logger.setLevel('INFO')
 
     def _listen_for_data(self):
         self._init_connection()
+        if self.connection is None:
+            return
         self._init_channel()
         self._declare_queue()
         self._bind_queue()
         self._consume()
 
     def _init_connection(self):
+        self.connection = None
         try:
             self.connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host=self.exchange.url, credentials=self.get_credentials(),
                                           ssl=self.exchange.ssl, port=self.exchange.port))
+        except IncompatibleProtocolError as e:
+            self.logger.exception('IncompatibleProtocolError ' + e.message)
         except (ConnectionClosed, AMQPConnectionError) as e:
             self.logger.debug(e.message)
             self.logger.info("RabbitMQ connect to " + self.exchange.url + " failed. Will retry in " + str(
                 self.retry_delay_long) + " seconds.")
             self._schedule_reconnect()
+        self.logger.debug("RabbitMQ connect to " + self.exchange.url + " successful.")
 
     def _consume(self):
         self.consumer_tag = self.channel.basic_consume(self._receive_data,
@@ -56,6 +62,7 @@ class RabbitMQAdapter(AbstractListeningAdapter):
             self.logger.info("RabbitMQAdapter channel closed.")
         except Exception as e:
             self.logger.exception(e)
+        self.logger.debug("Listening adapter " + str(self.exchange.url) + " exited.")
 
     def _bind_queue(self):
         for routing_key in self.queue.routing_keys:
@@ -86,6 +93,7 @@ class RabbitMQAdapter(AbstractListeningAdapter):
 
 
     def stop(self):
+        self.logger.debug("Listening adapter " + str(self.exchange.url) + " cancelling message consumption...")
         self.channel.basic_cancel(self.consumer_tag)
         self.channel.stop_consuming()
         self.channel.close()

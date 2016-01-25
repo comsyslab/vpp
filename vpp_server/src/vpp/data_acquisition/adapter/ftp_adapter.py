@@ -19,7 +19,6 @@ class FTPAdapter(AbstractFetchingAdapter):
     def fetch_data(self):
         self.logger.debug("FTPAdapter fetching %s", self.ftp_config.file_pattern)
         file_bodies = []
-        return file_bodies
         try:
             self.ftp = FTP(self.ftp_config.host)
             self.ftp.login(self.ftp_config.username, self.ftp_config.password)
@@ -35,14 +34,20 @@ class FTPAdapter(AbstractFetchingAdapter):
         regex_string = self.ftp_config.file_pattern
 
         for file_name in self.file_names:
-            if re.match(regex_string, file_name) and \
-               not self.file_date_helper.file_already_processed(file_name):
-                self._file_contents = ''
-                self.retrieve_file(file_name)
+            if not re.match(regex_string, file_name):
+                self.logger.debug('File ' + file_name + ' skipped. did not match regex ' + regex_string)
+                continue
+            if self.file_date_helper.file_already_processed(file_name, regex_string):
+                self.logger.debug('File ' + file_name + ' skipped since it is already processed.')
+                continue
 
-                file_bodies.append(self._file_contents)
+            self._file_contents = ''
+            self.retrieve_file(file_name)
 
-                self.file_date_helper.update_newest_filename(file_name)
+            file_bodies.append(self._file_contents)
+
+            self.file_date_helper.update_newest_filename(file_name, regex_string)
+        self.logger.debug('FTPAdapter returned ' + str(len(file_bodies)) + ' file bodies.')
         return file_bodies
 
     def retrieve_file_list(self):
@@ -64,6 +69,8 @@ class FTPAdapter(AbstractFetchingAdapter):
             self.logger.debug("FTPAdapter fetched file " + file + " from " + self.ftp_config.host)
 
     def _receive_file_name(self, file_name):
+        if file_name.startswith('./'):
+            file_name = file_name[2:]
         self.file_names.append(file_name)
 
     def _receive_line(self, line):
