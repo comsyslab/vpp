@@ -11,8 +11,6 @@ __author__ = 'ubbe'
 
 import logging
 
-
-
 class ProcessHandle(object):
 
     def __init__(self, process_class):
@@ -50,9 +48,6 @@ class ProcessHandle(object):
         self.logger.debug(util.get_thread_info() + "ProcessManager sent stop to " + self.process.name)
         self.out_queue.close()
 
-        self.log_queue.put('STOP')
-        self.log_queue.close()
-
         thread = threading.Thread(target=self._kill_after_timeout)
         thread.setDaemon(False)
         thread.start()
@@ -67,6 +62,8 @@ class ProcessHandle(object):
             self.logger.info(util.get_thread_info() + "Timeout exceeded, forcefully terminating process " + self.process.name)
         else:
             self.logger.info(util.get_thread_info() + self.process.name + " exited gracefully")
+        self.log_queue.put('STOP')
+        self.log_queue.close()
 
     def join(self):
         self.logger.debug(util.get_thread_info() + "Joining process " + self.process.name)
