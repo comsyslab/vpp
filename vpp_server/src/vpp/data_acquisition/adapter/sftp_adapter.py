@@ -34,7 +34,7 @@ class SFTPAdapter(AbstractFetchingAdapter):
             for file_name in file_names:
 
                 if not re.match(file_pattern_regex, file_name) or \
-                   self.file_date_helper.file_already_processed(file_name, file_pattern_regex):
+                        self.file_date_helper.file_already_processed(file_name):
                     continue
 
                 string_io = StringIO.StringIO()
@@ -42,11 +42,11 @@ class SFTPAdapter(AbstractFetchingAdapter):
                 self.logger.info("Retrieved file " + file_name)
                 file_contents = string_io.getvalue()
                 file_bodies.append(file_contents)
-                file_date = self.file_date_helper.get_file_date(file_name, file_pattern_regex)
+                file_date = self.file_date_helper.get_file_date(file_name)
                 if file_date > newest_file_date:
                     newest_file_date = file_date
 
-            self.file_date_helper.update_newest_file(newest_file_date)
+            self.file_date_helper.update_latest_fetch_date(newest_file_date)
 
             return file_bodies
 

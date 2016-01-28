@@ -16,7 +16,7 @@ class FileDateHelperTest(TestCase):
 
     def check_file_name(self, file_name, regex, expected_year, expected_month, expected_day, expected_hour):
         date_helper = FileDateHelper(None)
-        date = date_helper.get_file_date(file_name, regex)
+        date = date_helper.get_file_date(file_name)
         self.assertEqual(date.year, expected_year)
         self.assertEqual(date.month, expected_month)
         self.assertEqual(date.day, expected_day)
@@ -28,8 +28,8 @@ class FileDateHelperTest(TestCase):
         file_name_2 = 'delta-2014-03-03.xml'
         regex = 'delta-(2014)-([0-1][0-9])-([0-3][0-9])\.xml'
 
-        self.assertTrue(date_helper.file_already_processed(file_name_1, regex))
-        self.assertFalse(date_helper.file_already_processed(file_name_2, regex))
+        self.assertTrue(date_helper.file_already_processed(file_name_1))
+        self.assertFalse(date_helper.file_already_processed(file_name_2))
 
     def test_date_already_processed(self):
         date_helper = FileDateHelper(FTPConfig())
@@ -55,7 +55,7 @@ class FileDateHelperTest(TestCase):
         date_helper = FileDateHelper(ftp_config)
         file_name = 'delta-2016-07-28.xml'
         regex = 'delta-(2016)-([0-1][0-9])-([0-3][0-9])\.xml'
-        date_helper.update_newest_filename(file_name, regex)
+        date_helper.update_latest_fetch_for_file(file_name)
         expected_date = datetime.datetime(2016, 7, 28)
         self.assertEqual(ftp_config.last_fetch, expected_date.isoformat())
 
@@ -63,7 +63,7 @@ class FileDateHelperTest(TestCase):
         ftp_config = FTPConfig()
         date_helper = FileDateHelper(ftp_config)
         new_date = datetime.datetime(2016, 2, 25)
-        date_helper.update_newest_file(new_date)
+        date_helper.update_latest_fetch_date(new_date)
         self.assertEqual(ftp_config.last_fetch, new_date.isoformat())
 
 

@@ -7,6 +7,7 @@ import iso8601
 import pytz
 import tzlocal
 
+from vpp.data_acquisition.adapter.file_date_helper import FileDateHelper
 from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractDataInterpreter
 
 
@@ -15,6 +16,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
     def __init__(self, data_provider_config = None):
         self.logger = logging.getLogger(__name__)
         self._init_units_map()
+        self.date_helper = FileDateHelper(data_provider_config.ftp_config, 'interpreter')
 
     def _init_units_map(self):
         units = [''] * 21
@@ -73,18 +75,28 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             if len(line.strip()) == 0:
                 continue
             values = line.split(';')
-            timestamp = self.parse_timestamp(str(values[0]))
+            timestamp_naive = self.parse_timestamp(str(values[0]))
+
+            if self.date_helper.date_already_processed(timestamp_naive):
+                self.logger.debug('Measurements for date ' + timestamp_naive.isoformat() + ' already processed. Skipping.')
+                continue
+
+            timestamp_localized = self.localize(timestamp_naive)
+
             values = values[1:]
             values = self.drop_empty_end_elem(values)
+
             for index in range(len(values)):
                 sensor_id = self.get_sensor_id(attribute_ids[index])
                 value = values[index].strip()
 
                 measurement = {'sensor_id': sensor_id,
-                               'timestamp': timestamp,
+                               'timestamp': timestamp_localized,
                                'value': value}
 
                 measurements.append(measurement)
+
+            self.date_helper.update_latest_fetch_date(timestamp_naive)
 
         return measurements
 
@@ -93,15 +105,19 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             return list[:len(list)-1]
 
     def parse_timestamp(self, date_string):
-        tzinfo_cph = pytz.timezone('Europe/Copenhagen')
+
         try:
             date_string_stripped = date_string.strip()
-            parsed = datetime.datetime.strptime(date_string_stripped, '%Y-%m-%d %H:%M')
+            return datetime.datetime.strptime(date_string_stripped, '%Y-%m-%d %H:%M')
         except AttributeError as e:
             self.logger.exception(e)
         except:
             self.logger.error("Unexpected exception parsing timestamp")
 
+
+
+    def localize(self, parsed):
+        tzinfo_cph = pytz.timezone('Europe/Copenhagen')
         meas_time = tzinfo_cph.localize(parsed)
         return meas_time.isoformat()
 
