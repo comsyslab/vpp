@@ -20,7 +20,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
         self.fetching_config = None
         if data_provider_config:
             self.fetching_config = data_provider_config.ftp_config
-        self.date_helper = FileDateHelper(self.fetching_config)
+        self.date_helper = FileDateHelper(self.fetching_config, 'interpreter')
 
     def _interpret_string(self, data_string):
         data_w_dots = data_string.replace(',', '.')
@@ -78,8 +78,6 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
 
             timestamp_naive = datetime.datetime(date.year, date.month, date.day, hour)
 
-
-
             if i == 3 and values[i + 1].strip(): # Check if this is just before leaving DST
                 timestamp_w_tz = self.localize_timestamp_just_before_dst_end(timestamp_naive)
             else:
@@ -92,7 +90,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
             measurements.append(measurement)
 
         if len(measurements) > 0:
-            self.date_helper.update_newest_file(date)
+            self.date_helper.update_latest_fetch_date(date)
 
         return measurements
 

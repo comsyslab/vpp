@@ -1,3 +1,4 @@
+import calendar
 from _socket import gaierror
 from ftplib import FTP, error_perm
 
@@ -29,15 +30,17 @@ class FTPAdapter(AbstractFetchingAdapter):
         if self.ftp_config.remote_dir:
             self.ftp.cwd(self.ftp_config.remote_dir)
 
-        self.retrieve_file_list()
+        self.retrieve_file_list_simple()
 
         regex_string = self.ftp_config.file_pattern
 
-        for file_name in self.file_names:
+        for file_name in self.files:
+
             if not re.match(regex_string, file_name):
                 self.logger.debug('File ' + file_name + ' skipped. did not match regex ' + regex_string)
                 continue
-            if self.file_date_helper.file_already_processed(file_name, regex_string):
+
+            if self.file_date_helper.file_already_processed(file_name):
                 self.logger.debug('File ' + file_name + ' skipped since it is already processed.')
                 continue
 
@@ -46,15 +49,22 @@ class FTPAdapter(AbstractFetchingAdapter):
 
             file_bodies.append(self._file_contents)
 
-            self.file_date_helper.update_newest_filename(file_name, regex_string)
+            self.file_date_helper.update_latest_fetch_for_file(file_name)
         self.logger.debug('FTPAdapter returned ' + str(len(file_bodies)) + ' file bodies.')
         return file_bodies
 
-    def retrieve_file_list(self):
-        self.file_names = []
+    def retrieve_file_list_simple(self):
+        self.files = []
         command = 'NLST'
         try:
             response_code = self.ftp.retrlines(command, self._receive_file_name)
+        except Exception as e:
+            self.logger.exception(e)
+
+    def retrieve_file_list_detailed(self):
+        self.files = []
+        try:
+            self.ftp.dir(self._receive_file_entry)
         except Exception as e:
             self.logger.exception(e)
 
@@ -71,7 +81,45 @@ class FTPAdapter(AbstractFetchingAdapter):
     def _receive_file_name(self, file_name):
         if file_name.startswith('./'):
             file_name = file_name[2:]
-        self.file_names.append(file_name)
+        self.files.append(file_name)
+
+    def _receive_file_entry(self, file_entry):
+        if file_entry.startswith('total'):
+            return
+        elements = file_entry.split()
+        file_name_index = len(elements) - 1
+        time_index = file_name_index - 1
+        day_index = time_index - 1
+        month_name_index = day_index - 1
+
+        file_name = elements[file_name_index]
+
+        if file_name == '.' or file_name == '..':
+            return
+
+        if file_name.startswith('./'):
+            file_name = file_name[2:]
+
+        time = elements[time_index]
+
+        if time.find(':') > 0:
+            hour = int(time.split(':')[0])
+            minute = int(time.split(':')[1])
+            year = datetime.datetime.now().year
+        else:
+            year = int(time)
+            hour = 0
+            minute = 0
+
+        day = int(elements[day_index])
+        month_name = elements[month_name_index]
+        month = list(calendar.month_abbr).index(month_name)
+
+        modified_date = datetime.datetime(year, month, day, hour, minute)
+        if modified_date > datetime.datetime.now():
+            modified_date.year = modified_date.year - 1
+
+        self.files.append((file_name, modified_date))
 
     def _receive_line(self, line):
         decoded_line = line.decode(self.ftp_config.encoding) + '\n'
