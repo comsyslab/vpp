@@ -2,6 +2,5 @@ SQLAlchemy==1.0.9
 enum==0.4.6
 iso8601==0.1.11
 pika==0.9.13
-psycopg2==2.4.5
 tzlocal==1.2
 pysftp==0.2.8
