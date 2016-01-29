@@ -106,6 +106,10 @@ class FetchingAdapterConfig(object):
         self.parser = parser
         self.interval = parser.get('fetch', 'interval')
         self.fetch_again_when_date_equal = bool(parser.get('fetch', 'fetch_again_when_date_equal'))
+        try:
+            self.fetch_again_hours = int(parser.get('fetch', 'fetch_again_hours'))
+        except:
+            self.fetch_again_hours = 0
 
     @property
     def last_fetch_adapter(self):
@@ -134,5 +138,4 @@ class FTPConfig(FetchingAdapterConfig):
         self.host = parser.get(section_name, 'host')
         self.remote_dir = parser.get(section_name, 'remote_dir')
         self.file_pattern = parser.get(section_name, 'file_pattern')
-        self.file_date_mode = parser.get(section_name, 'file_date_mode')
         self.encoding = parser.get(section_name, 'encoding')
