@@ -5,6 +5,9 @@ processor = vpp.data_acquisition.processing_strategy.DefaultMeasurementProcessin
 
 [fetch]
 interval = 600
+adapter_date_strategy = vpp.data_acquisition.adapter.adapter_date_strategy.DefaultAdapterFileDateStrategy
+fetch_again_when_date_equal = False
+fetch_again_hours = 0
 
 [ftp]
 username = anonymous
