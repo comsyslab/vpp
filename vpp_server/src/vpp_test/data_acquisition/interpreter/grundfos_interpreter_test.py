@@ -11,6 +11,7 @@ from vpp.data_acquisition.interpreter.energinet_co2_interpreter import Energinet
 from vpp.data_acquisition.interpreter.energinet_online_interpreter import EnerginetOnlineInterpreter
 from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmDataInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class GrundfosInterpreterTest(unittest.TestCase):
@@ -21,7 +22,7 @@ class GrundfosInterpreterTest(unittest.TestCase):
                '"reading":[{"sensorId":1152,"appartmentId":3,"value":1024.0,"timestamp":"2014-10-08T09:30:32.747Z"}]' \
                '}'
 
-        interpreter = GrundfosDataInterpreter()
+        interpreter = GrundfosDataInterpreter(DataProviderConfigStub())
 
         meas_dicts = interpreter.interpret_data(json)['measurements']
 

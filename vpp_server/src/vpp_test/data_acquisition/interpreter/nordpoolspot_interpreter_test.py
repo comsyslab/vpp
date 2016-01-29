@@ -2,6 +2,7 @@
 import unittest
 
 from vpp.data_acquisition.interpreter.nordpoolspot_interpreter import NordpoolspotInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class NordpoolspotInterpreterTest(unittest.TestCase):
@@ -21,7 +22,7 @@ class NordpoolspotInterpreterTest(unittest.TestCase):
                        28.10.15;;;;;;;;;;;;;;;;;;;;;;;;;;28.10.15;;;;;;;;;\n\
                        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
 
-        interpreter = NordpoolspotInterpreter()
+        interpreter = NordpoolspotInterpreter(DataProviderConfigStub())
 
         result = interpreter.interpret_data(data_string)
         meas_dicts = result['measurements']
@@ -106,7 +107,7 @@ class NordpoolspotInterpreterTest(unittest.TestCase):
                        ;1;2;3A;3B;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;Kjøredag;\n\
                        25.10.15;194,09;203,24;219,68;123,45;219,16;219,31;216,11;205,92;270,49;279,94;301,96;308,13;334,76;343,10;327,99;326,21;343,47;385,95;432,37;372,48;325,47;244,30;242,44;229,50;226,97;29.12.14;282,21;;;;Odense priser for Elspot i 2015;;;;'
 
-        interpreter = NordpoolspotInterpreter()
+        interpreter = NordpoolspotInterpreter(DataProviderConfigStub())
 
         result = interpreter.interpret_data(data_string)
         meas_dicts = result['measurements']

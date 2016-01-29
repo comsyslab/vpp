@@ -8,7 +8,7 @@ from vpp.data_acquisition.interpreter.nrgi_delta_interpreter import NrgiDeltaInt
 from vpp.data_acquisition.interpreter.thor_interpreter import ThorInterpreter
 
 
-class NrgiAbsInterpreterTest(unittest.TestCase):
+class NrgiDeltaInterpreterTest(unittest.TestCase):
 
     def test_nergi_abs_interpreter(self):
         data_string = '<deltavalues req-id="0bd5f90a-b28a-45bc-8112-634c1bd3de03">\n\

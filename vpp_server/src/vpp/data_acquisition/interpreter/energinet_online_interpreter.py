@@ -14,7 +14,7 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 
 class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
-    def __init__(self, data_provider_config = None):
+    def __init__(self, data_provider_config):
         self.logger = logging.getLogger(__name__)
         self._init_units_map()
         self.date_helper = DefaultInterpreterDateStrategy(data_provider_config.ftp_config)
@@ -78,7 +78,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             values = line.split(';')
             timestamp_naive = self.parse_timestamp(str(values[0]))
 
-            if self.date_helper.should_process_date(timestamp_naive):
+            if not self.date_helper.should_process_date(timestamp_naive):
                 self.logger.debug('Measurements for date ' + timestamp_naive.isoformat() + ' already processed. Skipping.')
                 continue
 
@@ -132,3 +132,5 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
                 return i
         self.logger.info("No measurements in EnerginetOnline file. Could not find heading line starting with 'Dato og tid'")
         return -1
+
+
