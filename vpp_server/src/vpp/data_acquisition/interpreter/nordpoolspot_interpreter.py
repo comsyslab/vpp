@@ -61,7 +61,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
 
         date = self.get_date(date_string)
 
-        if self.date_helper.should_process_date(date):
+        if not self.date_helper.should_process_date(date):
             self.logger.debug('Measurements for date ' + date.isoformat() + ' already processed. Skipping.')
             return measurements
 

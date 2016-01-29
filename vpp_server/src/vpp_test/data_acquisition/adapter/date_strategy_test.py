@@ -4,7 +4,7 @@ from unittest import TestCase
 from vpp.data_acquisition.adapter.adapter_date_strategy import DefaultAdapterFileDateStrategy
 
 
-class FileDateHelperTest(TestCase):
+class DefaultDateStrategyTest(TestCase):
 
     def test_get_file_date_1(self):
         regex = 'delta-571313115104.{6}-(2016)-([0-1][0-9])-([0-3][0-9])\.xml'
@@ -28,30 +28,30 @@ class FileDateHelperTest(TestCase):
         file_name_1 = 'delta-2014-03-02.xml'
         file_name_2 = 'delta-2014-03-03.xml'
 
-        self.assertTrue(date_helper.should_fetch_file(file_name_1))
-        self.assertFalse(date_helper.should_fetch_file(file_name_2))
+        self.assertFalse(date_helper.should_fetch_file(file_name_1))
+        self.assertTrue(date_helper.should_fetch_file(file_name_2))
 
     def test_date_already_processed(self):
         date_helper = DefaultAdapterFileDateStrategy(FTPConfig())
         date_1 = datetime.datetime(2014, 3, 2)
         date_2 = datetime.datetime(2014, 3, 3)
-        self.assertTrue(date_helper.should_process_date(date_1))
-        self.assertFalse(date_helper.should_process_date(date_2))
+        self.assertFalse(date_helper.should_process_date(date_1))
+        self.assertTrue(date_helper.should_process_date(date_2))
 
     def test_date_already_processed_2(self):
         date_helper = DefaultAdapterFileDateStrategy(FTPConfig(fetch_again_hours=24, fetch_again_when_date_equal=True))
 
         date_0 = datetime.datetime(2014, 2, 28)
-        self.assertTrue(date_helper.should_process_date(date_0))
+        self.assertFalse(date_helper.should_process_date(date_0))
 
         date_1 = datetime.datetime(2014, 3, 1)
-        self.assertFalse(date_helper.should_process_date(date_1))
+        self.assertTrue(date_helper.should_process_date(date_1))
 
         date_2 = datetime.datetime(2014, 3, 2)
-        self.assertFalse(date_helper.should_process_date(date_2))
+        self.assertTrue(date_helper.should_process_date(date_2))
 
         date_3 = datetime.datetime(2014, 3, 3)
-        self.assertFalse(date_helper.should_process_date(date_3))
+        self.assertTrue(date_helper.should_process_date(date_3))
 
     def test_get_last_fetch_date_from_config_1(self):
         date_helper = DefaultAdapterFileDateStrategy(FTPConfig())

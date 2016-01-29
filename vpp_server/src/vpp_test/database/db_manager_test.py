@@ -113,7 +113,7 @@ class DBManagerTest(unittest.TestCase):
 
 
     def get_new_db_manager(self):
-        db_string = "postgresql://ubbe:ubbep4ss@localhost/vpp"
+        db_string = "postgresql://ubbe:M1thmpw1@radagast3.netlab.eng.au.dk/vpp"
         return DBManager(db_string=db_string)
 
 
