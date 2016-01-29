@@ -7,7 +7,8 @@ import iso8601
 import pytz
 import tzlocal
 
-from vpp.data_acquisition.adapter.file_date_helper import FileDateHelper
+from vpp.data_acquisition.adapter.adapter_date_strategy import DefaultAdapterFileDateStrategy
+from vpp.data_acquisition.interpreter.interpreter_date_strategy import DefaultInterpreterDateStrategy
 from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractDataInterpreter
 
 
@@ -16,7 +17,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
     def __init__(self, data_provider_config = None):
         self.logger = logging.getLogger(__name__)
         self._init_units_map()
-        self.date_helper = FileDateHelper(data_provider_config.ftp_config, 'interpreter')
+        self.date_helper = DefaultInterpreterDateStrategy(data_provider_config.ftp_config)
 
     def _init_units_map(self):
         units = [''] * 21
@@ -77,7 +78,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             values = line.split(';')
             timestamp_naive = self.parse_timestamp(str(values[0]))
 
-            if self.date_helper.date_already_processed(timestamp_naive):
+            if self.date_helper.should_process_date(timestamp_naive):
                 self.logger.debug('Measurements for date ' + timestamp_naive.isoformat() + ' already processed. Skipping.')
                 continue
 

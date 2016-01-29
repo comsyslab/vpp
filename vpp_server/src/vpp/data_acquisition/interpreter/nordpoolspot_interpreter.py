@@ -6,8 +6,9 @@ import iso8601
 import pytz
 import tzlocal
 
-from vpp.data_acquisition.adapter import file_date_helper
-from vpp.data_acquisition.adapter.file_date_helper import FileDateHelper
+from vpp.data_acquisition.adapter import adapter_date_strategy
+from vpp.data_acquisition.adapter.adapter_date_strategy import DefaultAdapterFileDateStrategy
+from vpp.data_acquisition.interpreter.interpreter_date_strategy import DefaultInterpreterDateStrategy
 from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractDataInterpreter
 
 
@@ -20,7 +21,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
         self.fetching_config = None
         if data_provider_config:
             self.fetching_config = data_provider_config.ftp_config
-        self.date_helper = FileDateHelper(self.fetching_config, 'interpreter')
+        self.date_helper = DefaultInterpreterDateStrategy(self.fetching_config)
 
     def _interpret_string(self, data_string):
         data_w_dots = data_string.replace(',', '.')
@@ -60,7 +61,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
 
         date = self.get_date(date_string)
 
-        if self.date_helper.date_already_processed(date):
+        if self.date_helper.should_process_date(date):
             self.logger.debug('Measurements for date ' + date.isoformat() + ' already processed. Skipping.')
             return measurements
 
