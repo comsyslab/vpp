@@ -106,6 +106,7 @@ class FetchingAdapterConfig(object):
         self.parser = parser
         self.interval = parser.get('fetch', 'interval')
         self.fetch_again_when_date_equal = bool(parser.get('fetch', 'fetch_again_when_date_equal'))
+        self.adapter_date_strategy_fqn =  parser.get('fetch', 'adapter_date_strategy')
         try:
             self.fetch_again_hours = int(parser.get('fetch', 'fetch_again_hours'))
         except:
