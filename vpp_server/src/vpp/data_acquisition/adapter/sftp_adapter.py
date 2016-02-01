@@ -7,7 +7,7 @@ import iso8601
 import pysftp
 
 from vpp.data_acquisition.adapter.abstract_data_adapter import AbstractFetchingAdapter
-
+from vpp.util import util
 
 
 class SFTPAdapter(AbstractFetchingAdapter):
@@ -29,7 +29,7 @@ class SFTPAdapter(AbstractFetchingAdapter):
             file_pattern_regex = self.ftp_config.file_pattern
             file_bodies = []
 
-            newest_file_date = datetime.datetime(1970, 1, 1)
+            newest_file_date = util.get_base_date()
 
             for file_name in file_names:
 

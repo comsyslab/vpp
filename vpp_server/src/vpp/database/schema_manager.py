@@ -149,7 +149,7 @@ class SchemaManager(object):
         return start_time_utc_w_tz, end_time_utc_w_tz
 
     def _convert_datetime_to_time_since_epoch(self, timestamp_w_timezone):
-        epoch = dt.datetime(1970,1,1, tzinfo=self.timezone_utc)
+        epoch = util.get_base_date(tzinfo=self.timezone_utc)
         seconds = (timestamp_w_timezone - epoch).total_seconds()
         return seconds
 

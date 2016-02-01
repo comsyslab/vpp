@@ -4,13 +4,14 @@ import re
 
 import iso8601
 
+from vpp.util import util
+
 
 class DefaultAdapterFileDateStrategy(object):
 
     def __init__(self, ftp_config):
         self.logger = logging.getLogger(__name__)
         self.ftp_config = ftp_config
-        self.base_date = datetime.datetime(1970, 1, 1)
 
     def get_date_from_filename(self, file_name):
         regex = self.ftp_config.file_pattern
@@ -69,7 +70,7 @@ class DefaultAdapterFileDateStrategy(object):
 
     def _get_last_fetch_date_from_config(self):
         if not self.ftp_config.last_fetch_adapter:
-            return self.base_date
+            return util.get_base_date()
         date_from_config = iso8601.parse_date(self.ftp_config.last_fetch_adapter, default_timezone=None)
         return date_from_config
 
