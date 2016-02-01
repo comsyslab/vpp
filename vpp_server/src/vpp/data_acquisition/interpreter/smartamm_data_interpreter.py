@@ -33,7 +33,7 @@ class SmartAmmDataInterpreter(AbstractDataInterpreter):
                     "Endpoint":2,
                     "Cluster":"Metering"}'''
         if not data_string.startswith("SAMRE001"):
-            self.logger.warning("Could not parse message with unknown prefix: " + data_string[:20])
+            self.logger.info("Discarded message with unknown prefix: " + data_string[:20])
             return result
         data_prefix_stripped = data_string[8:]
         try:
