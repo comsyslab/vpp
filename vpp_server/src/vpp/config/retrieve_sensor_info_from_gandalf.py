@@ -20,8 +20,10 @@ def process_sensors(result):
             created_count += 1
         else:
             existing_count += 1
+        if created_count%100 == 0 or existing_count%100 == 0:
+            print "Progress: Created " + str(created_count) + " sensors, skipped " + str(existing_count) + " existing."
     db_manager.close()
-    print "Created " + str(created_count) + " sensors, skipped " + str(existing_count) + " existing."
+    print "Finished: Created " + str(created_count) + " sensors, skipped " + str(existing_count) + " existing."
 
 def fetch_sensors_from_gandalf():
     conn = get_connection()
