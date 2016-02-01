@@ -81,6 +81,8 @@ class DBManager(object):
 
         time_sql_begin = time.time()
         for table_name, mapped_data_dicts in table_to_data_map.iteritems():
+            if len(mapped_data_dicts) == 0:
+                continue
             table = self.schema_manager.lookup_table(table_name)
             sql = table.insert().values(mapped_data_dicts)
             try:
