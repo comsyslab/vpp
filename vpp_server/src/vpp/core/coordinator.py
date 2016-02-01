@@ -1,7 +1,11 @@
 import logging
+
 import os
 import time
-from logging.handlers import RotatingFileHandler
+from logging import FileHandler
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
+
+from cloghandler import ConcurrentRotatingFileHandler
 
 from vpp.core.process_handle import ProcessHandle
 from vpp.data_acquisition.data_provider_process import DataProviderProcess
@@ -59,8 +63,7 @@ def init_logging():
     log_file_name = '../logs/console.log'
 
     print "Output is sent to " + os.path.abspath(log_file_name)
-
-    handler = RotatingFileHandler(log_file_name, maxBytes=5242880, backupCount=10)
+    handler = FileHandler(log_file_name)
     formatter = logging.Formatter(fmt='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     handler.setFormatter(formatter)
 

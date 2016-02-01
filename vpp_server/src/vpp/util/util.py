@@ -29,5 +29,6 @@ def load_and_set_log_level():
     if new_level != current_level:
         root_logger.info(get_thread_info() + "Changed log level to " + new_level_string + ' (' + str(new_level) + ')')
 
+
 def get_base_date(tzinfo=None):
     return datetime.datetime(1970, 1, 1, tzinfo=tzinfo)
