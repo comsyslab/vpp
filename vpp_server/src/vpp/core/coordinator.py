@@ -1,11 +1,7 @@
 import logging
-
 import os
 import time
 from logging import FileHandler
-from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
-
-from cloghandler import ConcurrentRotatingFileHandler
 
 from vpp.core.process_handle import ProcessHandle
 from vpp.data_acquisition.data_provider_process import DataProviderProcess
