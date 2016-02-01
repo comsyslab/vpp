@@ -23,7 +23,7 @@ class GrundfosDataInterpreter(AbstractDataInterpreter):
         elif data_string.startswith("GFKSC002"):
             sensors = self._parse_sensors(data_prefix_stripped)
         else:
-            self.logger.warning("Could not parse message with unknown prefix: " + data_string[:20])
+            self.logger.info("Discarded message with unknown prefix: " + data_string[:20])
         return {'measurements': measurements, 'sensors': sensors}
 
     def _parse_measurements(self, data_string):
