@@ -1,5 +1,7 @@
 import iso8601
 
+from vpp.util import util
+
 
 class DefaultInterpreterDateStrategy(object):
 
@@ -20,5 +22,5 @@ class DefaultInterpreterDateStrategy(object):
 
     def _get_fetch_date_from_config(self):
         if not self.ftp_config.last_fetch_interpreter:
-            return self.base_date
+            return util.get_base_date()
         return iso8601.parse_date(self.ftp_config.last_fetch_interpreter, default_timezone=None)
