@@ -39,7 +39,9 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
     def parse_sensors(self, lines):
         sensors = []
-        for line_number in range(0, 20):
+
+        end_of_sensors_line = self._find_end_of_sensors_line(lines)
+        for line_number in range(0, end_of_sensors_line):
             expected_attribute_id = line_number + 1
             line = lines[line_number]
             parsed_attribute_id = int(line[:2])
@@ -58,6 +60,13 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             sensors.append(sensor)
         return sensors
 
+    def _find_end_of_sensors_line(self, lines):
+        end_of_sensors_line = 0
+        for line_number in range(0, len(lines)):
+            if lines[line_number].strip() == '':
+                end_of_sensors_line = line_number
+        return end_of_sensors_line
+
     def parse_measurements(self, lines):
         measurements = []
 
@@ -68,7 +77,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
         heading_line = lines[heading_line_no]
         attribute_ids_raw = heading_line.split(';')[1:]
-        attribute_ids = self.drop_empty_end_elem(attribute_ids_raw)
+        attribute_ids = self._drop_empty_end_elem(attribute_ids_raw)
         first_data_line = heading_line_no + 1
         data_lines = lines[first_data_line:]
 
@@ -85,7 +94,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             timestamp_localized = self.localize(timestamp_naive)
 
             values = values[1:]
-            values = self.drop_empty_end_elem(values)
+            values = self._drop_empty_end_elem(values)
 
             for index in range(len(values)):
                 sensor_id = self.get_sensor_id(attribute_ids[index])
@@ -101,7 +110,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
         return measurements
 
-    def drop_empty_end_elem(self, list):
+    def _drop_empty_end_elem(self, list):
         if not list[len(list)-1]:
             return list[:len(list)-1]
 
@@ -112,10 +121,8 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             return datetime.datetime.strptime(date_string_stripped, '%Y-%m-%d %H:%M')
         except AttributeError as e:
             self.logger.exception(e)
-        except:
-            self.logger.error("Unexpected exception parsing timestamp")
-
-
+        except Exception as e:
+            self.logger.error("Unexpected exception parsing timestamp: " + e.message)
 
     def localize(self, parsed):
         tzinfo_cph = pytz.timezone('Europe/Copenhagen')
@@ -130,7 +137,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
         for i in range(0, len(lines)):
             if lines[i].startswith('Dato og tid'):
                 return i
-        self.logger.info("No measurements in EnerginetOnline file. Could not find heading line starting with 'Dato og tid'")
+        self.logger.warning("No measurements in EnerginetOnline file. Could not find heading line starting with 'Dato og tid'")
         return -1
 
 
