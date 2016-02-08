@@ -39,14 +39,17 @@ class RabbitMQAdapter(AbstractListeningAdapter):
             self.connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host=self.exchange.url, credentials=self.get_credentials(),
                                           ssl=self.exchange.ssl, port=self.exchange.port))
+            self.logger.debug("RabbitMQ connect to " + self.exchange.url + " successful.")
         except IncompatibleProtocolError as e:
             self.logger.exception('IncompatibleProtocolError ' + e.message)
         except (ConnectionClosed, AMQPConnectionError) as e:
             self.logger.debug(e.message)
-            self.logger.info("RabbitMQ connect to " + self.exchange.url + " failed. Will retry in " + str(
-                self.retry_delay_long) + " seconds.")
+            self.logger.info("RabbitMQ connect to " + self.exchange.url + " failed. Will retry in " +
+                             str(self.retry_delay_long) + " seconds.")
             self._schedule_reconnect()
-        self.logger.debug("RabbitMQ connect to " + self.exchange.url + " successful.")
+        except Exception as e:
+            self.logger.exception('Exception initializing RabbitMQ connection: ' + e.message)
+
 
     def _consume(self):
         self.consumer_tag = self.channel.basic_consume(self._receive_data,
@@ -56,8 +59,9 @@ class RabbitMQAdapter(AbstractListeningAdapter):
         try:
             self.channel.start_consuming()
         except ConnectionClosed:
-            self.logger.info("RabbitMQAdapter lost connection to " + self.exchange.url + ", reconnecting...")
-            self._listen_for_data()
+            self.logger.info("RabbitMQAdapter lost connection to " + self.exchange.url +
+                             ", reconnecting in " + str(self.retry_delay_long) + " seconds.")
+            self._schedule_reconnect()
         except ChannelClosed:
             self.logger.info("RabbitMQAdapter channel closed.")
         except Exception as e:
