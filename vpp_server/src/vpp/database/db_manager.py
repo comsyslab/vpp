@@ -73,8 +73,9 @@ class DBManager(object):
         for data_dict in data_dicts:
             table = self._get_table_for_data_dict(data_dict)
 
-            if not table.name in table_to_data_map:
+            if table.name not in table_to_data_map:
                 table_to_data_map[table.name] = []
+
             table_to_data_map[table.name].append(data_dict)
         time_grouping_spent_secs = time.time() - time_grouping_begin
         time_grouping_spent_ms = secs_to_ms(time_grouping_spent_secs)
@@ -90,6 +91,7 @@ class DBManager(object):
                 self.logger.info("Created " + str(len(mapped_data_dicts)) + " measurements in table " + table_name)
             except Exception as e:
                 self.logger.exception(e)
+                self.logger.exception(mapped_data_dicts)
 
         time_sql_spent_secs = time.time() - time_sql_begin
         time_sql_spent_ms = secs_to_ms(time_sql_spent_secs)
