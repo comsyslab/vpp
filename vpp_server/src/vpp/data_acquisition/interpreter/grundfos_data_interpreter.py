@@ -57,6 +57,7 @@ class GrundfosDataInterpreter(AbstractDataInterpreter):
 
 
     def _parse_sensors(self, data_string):
+        self.logger.WARNING("Received Grundfos sensor data\n " + data_string + "\n")
         '''Example data_string
         {
         'appartmentCharacteristic': [
