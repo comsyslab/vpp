@@ -86,7 +86,7 @@ class SchemaManager(object):
         return table
 
     def drop_measurement_subtable(self, timestamp):
-        table_name = self.get_partition_table_name(timestamp)
+        table_name = self.get_partition_subtable_name(self.measurement_base_table_name, timestamp)
         self.drop_table(table_name)
 
     def drop_table(self, table_name):
