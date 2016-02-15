@@ -27,7 +27,7 @@ class Coordinator:
         self.processes.append(process_data_provider)
 
         process_db_maintainer = ProcessHandle(DBMaintainerProcess)
-        #self.processes.append(process_db_maintainer)
+        self.processes.append(process_db_maintainer)
 
     def start_processes(self):
         for process in self.processes:
