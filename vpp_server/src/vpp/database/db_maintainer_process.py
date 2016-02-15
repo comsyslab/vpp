@@ -41,7 +41,8 @@ class DBMaintainerProcess(AbstractVPPProcess):
 
         self.lock.acquire()
         if self.keep_running:
-            self.timer = threading.Timer(time_to_next_run, self.run_maintenance_task).start()
+            self.timer = threading.Timer(time_to_next_run, self.run_maintenance_task)
+            self.timer.start()
         self.lock.release()
 
 
