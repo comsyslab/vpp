@@ -3,6 +3,7 @@ import unittest
 import datetime
 from sqlalchemy.exc import IntegrityError
 
+from vpp.config.config_ini_parser import ConfigIniParser
 from vpp.database.db_manager import DBManager
 
 
@@ -112,9 +113,22 @@ class DBManagerTest(unittest.TestCase):
         db_manager.close()
 
 
+    def test_create_new_data_bulk_empty(self):
+        db_manager = self.get_new_db_manager()
+
+        data_dicts = [{'timestamp': u'2016-02-15T15:46:09.740Z', 'sensor_id': u'smartamm_0015BC00260000BA_InstantaneousDemand', 'value': 55},
+                      {'timestamp': u'2016-02-15T15:46:09.740Z', 'sensor_id': u'smartamm_0015BC00260000BA_CurrentSummationDelivered', 'value': 1920517}]
+        db_manager.store_new_data_bulk(data_dicts)
+
+        try:
+            db_manager.commit()
+        except Exception as e:
+            db_manager.rollback()
+            db_manager.close()
+            self.fail(e.message)
+            return
+
+        db_manager.close()
+
     def get_new_db_manager(self):
-        db_string = "postgresql://ubbe:M1thmpw1@radagast3.netlab.eng.au.dk/vpp"
-        return DBManager(db_string=db_string)
-
-
-
+        return DBManager()
