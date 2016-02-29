@@ -13,7 +13,7 @@ class SmartAmmDataInterpreter(AbstractDataInterpreter):
     def __init__(self, data_provider_config = None):
         self.logger = logging.getLogger(__name__)
         self.device_prefix = 'smartamm'
-
+        self.unit_dict = self._create_unit_dict()
 
 
     def _interpret_string(self, data_string):
@@ -65,21 +65,37 @@ class SmartAmmDataInterpreter(AbstractDataInterpreter):
 
         return self.device_prefix + '_' + device_mac + '_' + attribute
 
+    def _create_unit_dict(self):
+        unit_dict = {}
+
+        unit_watthour = 'Wh'
+        unit_dict['CurrentSummationReceived'] = unit_watthour
+        unit_dict['CurrentSummationDelivered'] = unit_watthour
+        unit_dict['CurrentTier1SummationDelivered'] = unit_watthour
+        unit_dict['CurrentTier2SummationDelivered'] = unit_watthour
+
+        unit_watt = 'W'
+        unit_dict['InstantaneousDemand'] = unit_watt
+        unit_dict['ActivePower'] = unit_watt
+        unit_dict['ReactivePower'] = unit_watt
+        unit_dict['ActivePowerPhB'] = unit_watt
+        unit_dict['ReactivePowerPhB'] = unit_watt
+        unit_dict['ActivePowerPhC'] = unit_watt
+        unit_dict['ReactivePowerPhC'] = unit_watt
+
+        unit_celcius = 'deg_C'
+        unit_dict['MeasuredValue_Temperature'] = unit_celcius
+
+        unit_dict['Status'] = None
+
+        return unit_dict
 
     def _lookup_unit(self, attribute):
-        if attribute == 'CurrentSummationReceived' or \
-           attribute == 'CurrentSummationDelivered' or \
-           attribute == 'CurrentTier1SummationDelivered' or \
-           attribute == 'CurrentTier2SummationDelivered':
-            return 'Wh'
-        elif attribute == 'InstantaneousDemand':
-            return 'W'
-        elif attribute == 'MeasuredValue_Temperature':
-            return 'deg_C'
-        elif attribute.startswith('ZoneStatus[Alarm'):
-            return 'open/closed'
-        elif attribute == 'Status':
-            return None
-        else:
+        try:
+            return self.unit_dict[attribute]
+        except KeyError:
+            if attribute.startswith('ZoneStatus[Alarm'):
+                return 'open/closed'
+
             self.logger.warning("Could not get unit for unknown attribute " + attribute + ".")
             return None
