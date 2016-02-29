@@ -83,6 +83,16 @@ class SmartAmmDataInterpreter(AbstractDataInterpreter):
         unit_dict['ActivePowerPhC'] = unit_watt
         unit_dict['ReactivePowerPhC'] = unit_watt
 
+        unit_centivolts= 'cV' #centivolts
+        unit_dict['RMSVoltage'] = unit_centivolts
+        unit_dict['RMSVoltagePhB'] = unit_centivolts
+        unit_dict['RMSVoltagePhC'] = unit_centivolts
+
+        unit_milliampere = 'mA'
+        unit_dict['RMSCurrent'] = unit_milliampere
+        unit_dict['RMSCurrentPhB'] = unit_milliampere
+        unit_dict['RMSCurrentPhC'] = unit_milliampere
+
         unit_celcius = 'deg_C'
         unit_dict['MeasuredValue_Temperature'] = unit_celcius
 
