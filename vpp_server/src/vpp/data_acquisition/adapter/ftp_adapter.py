@@ -20,6 +20,7 @@ class FTPAdapter(AbstractFetchingAdapter):
     def fetch_data(self):
         self.logger.debug("FTPAdapter fetching %s", self.ftp_config.file_pattern)
         file_bodies = []
+
         try:
             self.ftp = FTP(self.ftp_config.host)
             self.ftp.login(self.ftp_config.username, self.ftp_config.password)
@@ -38,7 +39,6 @@ class FTPAdapter(AbstractFetchingAdapter):
         regex_string = self.ftp_config.file_pattern
 
         for file_name in self.files:
-
             if not re.match(regex_string, file_name):
                 self.logger.debug('File ' + file_name + ' skipped. did not match regex ' + regex_string)
                 continue
@@ -59,10 +59,7 @@ class FTPAdapter(AbstractFetchingAdapter):
     def retrieve_file_list_simple(self):
         self.files = []
         command = 'NLST'
-        try:
-            response_code = self.ftp.retrlines(command, self._receive_file_name)
-        except Exception as e:
-            self.logger.exception(e)
+        response_code = self.ftp.retrlines(command, self._receive_file_name)
 
     def retrieve_file(self, file):
         command = 'RETR ' + file
