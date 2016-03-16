@@ -26,8 +26,14 @@ class NrgiDeltaInterpreter(AbstractDataInterpreter):
                     'unit': 'kWh'}]
 
         meter_readings_tag = root.find('meter-readings')
-        readings_tags = meter_readings_tag.findall('meter-reading')
         measurements = []
+
+        if meter_readings_tag == None:
+            self.logger.debug("No tag <meter-readings> in data string " + data_string)
+            return {'sensors': sensors, 'measurements': measurements}
+
+        readings_tags = meter_readings_tag.findall('meter-reading')
+
         for reading_tag in readings_tags:
             date_string = reading_tag.find('date').text
             value = reading_tag.find('value').text
