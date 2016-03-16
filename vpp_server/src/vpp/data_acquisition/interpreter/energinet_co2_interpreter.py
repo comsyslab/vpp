@@ -16,6 +16,9 @@ class EnerginetCO2Interpreter(AbstractDataInterpreter):
                     'description': 'Predicted CO2 emissions per kWh produced in the Danish power grid.'}
         timezone = pytz.timezone('Europe/Copenhagen')
         lines = data_string.splitlines()
+        if len(lines) == 0:
+            return
+
         try:
             first_line = lines[0]
             date = datetime.datetime.strptime(first_line, '%Y%m%d')
