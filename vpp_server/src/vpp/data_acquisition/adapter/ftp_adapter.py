@@ -27,10 +27,13 @@ class FTPAdapter(AbstractFetchingAdapter):
             self.logger.exception("Exception initializing FTP connection: " + e.message, e)
             return file_bodies
 
-        if self.ftp_config.remote_dir:
-            self.ftp.cwd(self.ftp_config.remote_dir)
-
-        self.retrieve_file_list_simple()
+        try:
+            if self.ftp_config.remote_dir:
+                self.ftp.cwd(self.ftp_config.remote_dir)
+            self.retrieve_file_list_simple()
+        except Exception as e:
+            self.logger.exception("Exception retrieving file list from " + self.ftp_config.host + ": " + e.message, e)
+            return file_bodies
 
         regex_string = self.ftp_config.file_pattern
 
