@@ -20,12 +20,17 @@ class QueueHandler(logging.Handler):
         Writes the LogRecord to the queue.
         """
         try:
-            ei = record.exc_info
-            if ei:
-                dummy = self.format(record) # just to get traceback text into record.exc_text
-                record.exc_info = None  # not needed any more
+            self.decorate_record(record)
             self.queue.put_nowait(record)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception as exc:
             self.handleError(record)
+
+    def decorate_record(self, record):
+        try:
+            if record.exc_info:
+                dummy = self.format(record)  # just to get traceback text into record.exc_text
+                record.exc_info = None  # not needed any more
+        except:
+            pass
