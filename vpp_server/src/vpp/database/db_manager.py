@@ -127,9 +127,22 @@ class DBManager(object):
         except Exception as e:
             self.logger.exception(e)
 
+    def get_sensors(self):
+        table = self.schema_manager.lookup_table("Sensor")
+        sql = table.select()
+        return self.session.execute(sql)
+
     def get_measurements_for_sensor(self, sensor_id):
         table = self.schema_manager.lookup_table(self.schema_manager.measurement_base_table_name)
         sql = table.select('sensor_id=\'' + str(sensor_id) + '\'')
+        return self.session.execute(sql)
+
+    def get_measurements_for_sensor_in_interval(self, sensor_id, interval_start, interval_end):
+        table = self.schema_manager.lookup_table(self.schema_manager.measurement_base_table_name)
+        sql = table.select("sensor_id='" + str(sensor_id) + "' AND timestamp > '" + interval_start + "' AND timestamp < '" + interval_end + "'")
+
+        string = "sensor_id='{}' AND timestamp > '{}' AND timestamp < '{}'".format(sensor_id, interval_start, interval_end)
+        sql = table.select("sensor_id='" + str(sensor_id) + "' AND timestamp > '" + interval_start + "' AND timestamp < '" + interval_end + "'")
         return self.session.execute(sql)
 
     def get_controller(self, controller_id):
