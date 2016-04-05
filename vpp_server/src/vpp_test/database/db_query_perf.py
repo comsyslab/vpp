@@ -11,27 +11,34 @@ class DBQueryPerf():
         self.db_manager = DBManager()
 
         sensors = self.db_manager.get_sensors().fetchall()
-        count = 0
+        index = 0
+        processed_count = 0
         combined_time = 0
         combined_meas = 0.0
+
         for sensor in sensors:
+            if index % 100 != 0:
+                index += 1
+                continue
+
             start_time = time.time()
             result = self.query.doQuery(self.db_manager, sensor.id)
             end_time = time.time()
             time_spent = end_time - start_time
-
+            processed_count += 1
             combined_time += time_spent
             combined_meas += len(result)
 
-            count += 1
-            if count % 200 == 0:
-                print "Processed {} sensors".format(count)
+            if index % 500 == 0:
+                print "Scanned {} sensors".format(index)
+            index += 1
+
         self.db_manager.close()
 
-        avg_time = combined_time / len(sensors)
-        avg_meas = combined_meas / len(sensors)
+        avg_time = combined_time / processed_count
+        avg_meas = combined_meas / processed_count
 
-        return str(len(sensors)) + ' sensors, avg ' + str(avg_meas) + ' measurements, avg fetch time ' + str(avg_time) + ' secs'
+        return str(processed_count) + ' sensors, avg ' + str(avg_meas) + ' measurements, avg fetch time ' + str(avg_time) + ' secs'
 
 class SimpleMeasQuery:
     def doQuery(self, db_manager, sensor_id):
@@ -39,8 +46,10 @@ class SimpleMeasQuery:
 
 class ComplexMeasQuery:
     def doQuery(self, db_manager, sensor_id):
-        interval_start = '2016-02-01 11:55:00.0+00'
-        interval_end = '2016-02-01 11:56:00.0+00'
+        #interval_start = '2016-02-01 11:55:00.0+00'
+        interval_start = '2016-04-03 14:00:00+02'
+        #interval_end = '2016-02-01 11:56:00.0+00'
+        interval_end = '2016-04-04 14:00:00+02'
         return db_manager.get_measurements_for_sensor_in_interval(sensor_id, interval_start, interval_end).fetchall()
 
 
