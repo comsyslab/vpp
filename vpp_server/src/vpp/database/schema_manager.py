@@ -89,6 +89,10 @@ class SchemaManager(object):
         table_name = self.get_partition_subtable_name(self.measurement_base_table_name, timestamp)
         self.drop_table(table_name)
 
+    def drop_prediction_subtable(self, timestamp):
+        table_name = self.get_partition_subtable_name(self.prediction_base_table_name, timestamp)
+        self.drop_table(table_name)
+
     def drop_table(self, table_name):
         sql = 'DROP TABLE IF EXISTS "' + table_name + '";'
         self.logger.debug(util.get_thread_info() + sql)
