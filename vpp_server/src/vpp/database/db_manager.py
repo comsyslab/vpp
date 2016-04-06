@@ -142,6 +142,10 @@ class DBManager(object):
         sql = 'SELECT DISTINCT ON (sensor_id) "{0}".* from "{0}" WHERE sensor_id=\'{1}\' order by sensor_id, timestamp desc'.format(self.schema_manager.measurement_base_table_name, sensor_id_to_lookup)
         return self.session.execute(sql)
 
+    def get_latest_measurement_for_sensor2(self, sensor_id_to_lookup):
+        sql = 'SELECT * from "{0}" WHERE sensor_id=\'{1}\' ORDER BY timestamp desc LIMIT 1'.format(self.schema_manager.measurement_base_table_name, sensor_id_to_lookup)
+        return self.session.execute(sql)
+
 
     def get_measurements_for_sensor_in_interval(self, sensor_id, interval_start, interval_end):
         table = self.schema_manager.lookup_table(self.schema_manager.measurement_base_table_name)
