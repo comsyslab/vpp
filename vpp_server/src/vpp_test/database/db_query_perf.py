@@ -44,19 +44,37 @@ class SimpleMeasQuery:
     def doQuery(self, db_manager, sensor_id):
         return db_manager.get_measurements_for_sensor(sensor_id).fetchall()
 
-class ComplexMeasQuery:
+class ComplexMeasQuery1:
     def doQuery(self, db_manager, sensor_id):
         #interval_start = '2016-02-01 11:55:00.0+00'
-        interval_start = '2016-04-03 14:00:00+02'
+        interval_start = '2016-04-05 23:00:00+02'
         #interval_end = '2016-02-01 11:56:00.0+00'
-        interval_end = '2016-04-04 14:00:00+02'
+        interval_end = '2016-04-06 11:00:00+02'
         return db_manager.get_measurements_for_sensor_in_interval(sensor_id, interval_start, interval_end).fetchall()
+
+class ComplexMeasQuery2:
+    def doQuery(self, db_manager, sensor_id):
+        #interval_start = '2016-02-01 11:55:00.0+00'
+        interval_start = '2016-04-06 05:00:00+02'
+        #interval_end = '2016-02-01 11:56:00.0+00'
+        interval_end = '2016-04-06 11:00:00+02'
+        return db_manager.get_measurements_for_sensor_in_interval(sensor_id, interval_start, interval_end).fetchall()
+
+class LatestValueQuery:
+    def doQuery(self, db_manager, sensor_id):
+        return db_manager.get_latest_measurement_for_sensor(sensor_id).fetchall()
 
 
 if __name__ == '__main__':
 
-    result = DBQueryPerf(SimpleMeasQuery()).measurements_for_all_sensors()
-    print "All measurements: " + result
+    #result = LatestValueQuery().doQuery(DBManager(), 'grundfos_1545')
 
-    result = DBQueryPerf(ComplexMeasQuery()).measurements_for_all_sensors()
-    print "Measurements in interval: " + result
+    result = DBQueryPerf(LatestValueQuery()).measurements_for_all_sensors()
+    print "LatestValueQuery: " + result
+
+    result = DBQueryPerf(ComplexMeasQuery1()).measurements_for_all_sensors()
+    print "ComplexMeasQuery1 (latest 12 hours): " + result
+
+    result = DBQueryPerf(ComplexMeasQuery2()).measurements_for_all_sensors()
+    print "ComplexMeasQuery2 (latest 6 hours):" + result
+
