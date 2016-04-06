@@ -62,7 +62,7 @@ class ComplexMeasQuery2:
 
 class LatestValueQuery:
     def doQuery(self, db_manager, sensor_id):
-        return db_manager.get_latest_measurement_for_sensor(sensor_id).fetchall()
+        return db_manager.get_latest_measurement_for_sensor2(sensor_id).fetchall()
 
 
 if __name__ == '__main__':
@@ -70,11 +70,11 @@ if __name__ == '__main__':
     #result = LatestValueQuery().doQuery(DBManager(), 'grundfos_1545')
 
     result = DBQueryPerf(LatestValueQuery()).measurements_for_all_sensors()
-    print "LatestValueQuery: " + result
+    print "LatestValueQuery (using LIMIT): " + result
 
-    result = DBQueryPerf(ComplexMeasQuery1()).measurements_for_all_sensors()
-    print "ComplexMeasQuery1 (latest 12 hours): " + result
+    #result = DBQueryPerf(ComplexMeasQuery1()).measurements_for_all_sensors()
+    #print "ComplexMeasQuery1 (latest 12 hours): " + result
 
-    result = DBQueryPerf(ComplexMeasQuery2()).measurements_for_all_sensors()
-    print "ComplexMeasQuery2 (latest 6 hours):" + result
+    #result = DBQueryPerf(ComplexMeasQuery2()).measurements_for_all_sensors()
+    #print "ComplexMeasQuery2 (latest 6 hours):" + result
 
