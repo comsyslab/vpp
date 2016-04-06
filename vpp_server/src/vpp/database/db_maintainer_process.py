@@ -49,8 +49,9 @@ class DBMaintainerProcess(AbstractVPPProcess):
     def _do_maintenance(self):
         timestamp = datetime.datetime.now(tz=tzlocal.get_localzone()) - datetime.timedelta(seconds=self.window_seconds)
         db_manager = DBManager()
-        self.logger.info("DBMaintainerProcess dropping table for time " + str(timestamp))
+        self.logger.info("DBMaintainerProcess dropping subtables for time " + str(timestamp))
         db_manager.schema_manager.drop_measurement_subtable(timestamp)
+        db_manager.schema_manager.drop_prediction_subtable(timestamp)
         db_manager.close()
 
 
