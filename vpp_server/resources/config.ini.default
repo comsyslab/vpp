@@ -6,5 +6,13 @@ database=vpp
 measurement_partition_period_hours=24
 rolling_window_length_days=7
 
+[DB-DW]
+enabled=False
+user=[FILL IN]
+password=[FILL IN]
+host=localhost
+database=vpp_dw
+
+
 [LOG]
 level=DEBUG
