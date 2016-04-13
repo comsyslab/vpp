@@ -5,7 +5,7 @@ from logging import FileHandler
 
 from vpp.core.process_handle import ProcessHandle
 from vpp.data_acquisition.data_provider_process import DataProviderProcess
-from vpp.database.db_maintainer_process import DBMaintainerProcess
+from vpp.database.db_maintainer_process import DBMaintenanceProcess
 from vpp.util import util
 
 __author__ = 'ubbe'
@@ -26,7 +26,7 @@ class Coordinator:
         process_data_provider = ProcessHandle(DataProviderProcess)
         self.processes.append(process_data_provider)
 
-        process_db_maintainer = ProcessHandle(DBMaintainerProcess)
+        process_db_maintainer = ProcessHandle(DBMaintenanceProcess)
         self.processes.append(process_db_maintainer)
 
     def start_processes(self):

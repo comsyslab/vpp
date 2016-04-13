@@ -85,13 +85,13 @@ class SchemaManager(object):
             table = self._create_prediction_subtable(timestamp)
         return table
 
-    def drop_measurement_subtable(self, timestamp):
+    '''def drop_measurement_subtable(self, timestamp):
         table_name = self.get_partition_subtable_name(self.measurement_base_table_name, timestamp)
         self.drop_table(table_name)
 
     def drop_prediction_subtable(self, timestamp):
         table_name = self.get_partition_subtable_name(self.prediction_base_table_name, timestamp)
-        self.drop_table(table_name)
+        self.drop_table(table_name)'''
 
     def drop_table(self, table_name):
         sql = 'DROP TABLE IF EXISTS "' + table_name + '";'
@@ -129,6 +129,12 @@ class SchemaManager(object):
         result_proxy.close()
         self.logger.info("Created table " + table_name)
         return table_name
+
+    def get_prediction_subtable_name(self, timestamp):
+        return self.get_partition_subtable_name(self.prediction_base_table_name, timestamp)
+
+    def get_measurement_subtable_name(self, timestamp):
+        return self.get_partition_subtable_name(self.measurement_base_table_name, timestamp)
 
     def get_partition_subtable_name(self, base_table_name, timestamp):
         """
@@ -168,9 +174,12 @@ class SchemaManager(object):
     def lookup_table(self, name):
         try:
             table = Table(name, DeclarativeBase.metadata, autoload=True, autoload_with=self.engine)
-            return table
+            if not table.exists(bind=self.engine):
+                table = None
         except NoSuchTableError:
-            return None
+            table = None
+
+        return table
 
 
 class Measurement(object):

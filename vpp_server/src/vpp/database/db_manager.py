@@ -13,6 +13,7 @@ from vpp.database.entities.core_entities import Controller, Device, PredictionEn
 from vpp.database.entities.core_entities import Sensor
 
 from vpp.database.schema_manager import SchemaManager
+from vpp.database.sql_alch_util import create_engine_and_session
 from vpp.util import util
 from vpp.util.util import secs_to_ms
 
@@ -24,17 +25,11 @@ class DBManager(object):
     def __init__(self, db_string=None, autoflush=True):
         try:
             self.logger = logging.getLogger(__name__)
-
             if not db_string:
                 db_string = ConfigIniParser().get_db_string()
 
-            self.engine = sqlalchemy.create_engine(db_string, echo=False)
-
+            self.engine, self.session = create_engine_and_session(db_string)
             self.schema_manager = SchemaManager(self.engine)
-
-            self.SessionCls = sqlalchemy.orm.sessionmaker(bind=self.engine)
-            self.session = self.SessionCls()
-            self.session.autoflush = autoflush
         except Exception as e:
             self.logger.exception('Exception initializing DBManager: ' + e.message)
 
