@@ -31,7 +31,7 @@ class DataProviderTimer(object):
                 try:
                     self.data_adapter.fetch_and_process_data()
                 except Exception as e:
-                    self.logger.exception('Exception during fetch and processing of data: ' + e.message)
+                    self.logger.exception('Exception during fetch and processing of data: ' + str(e.message))
 
             time_until_fetch = self.last_fetch + self.fetch_interval - time.time()
             sleep_time = min(self.check_stop_interval, time_until_fetch)
