@@ -11,32 +11,48 @@ from vpp.database.db_manager import DBManager
 
 class DBMaintenance(object):
 
-    def __init__(self, window_length_days):
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
+
+        self.dw_enabled = None
+        self.db_string_dw = None
+        self.window_seconds = None
+        self.partitition_period_seconds = None
+        self.db_manager_local = None
+        self.db_manager_dw = None
+
+        self.parse_config()
+
+    def parse_config(self):
+        ini_parser = ConfigIniParser()
+        self.dw_enabled = ini_parser.get_dw_enabled()
+        self.db_string_dw = ini_parser.get_db_string('DB-DW')
+
+        window_length_days = ini_parser.get_rolling_window_length()
         self.window_seconds = int(datetime.timedelta(days=window_length_days).total_seconds())
+
+        partition_period_hours = ini_parser.get_measurement_partition_period()
+        self.partitition_period_seconds = int(datetime.timedelta(hours=partition_period_hours).total_seconds())
 
     def do_maintenance(self):
         self.db_manager_local = DBManager(autoflush=False)
+        self.db_manager_dw = DBManager(self.db_string_dw, autoflush=False)
 
-        #find subtables scheduled for transfer and deletion
-        partition_timestamp = datetime.datetime.now(tz=tzlocal.get_localzone()) - datetime.timedelta(seconds=self.window_seconds)
+        self._transfer_main_tables_to_dw()
 
-        if ConfigIniParser().get_dw_enabled():
-            self._transfer_to_dw(partition_timestamp)
-
-        self.logger.info("DBMaintenance dropping subtables for time " + str(partition_timestamp))
-        self.db_manager_local.commit() #Necessary to prevent DROP TABLE from blocking
-
-        meas_table_name = self.db_manager_local.schema_manager.get_measurement_subtable_name(partition_timestamp)
-        pred_table_name = self.db_manager_local.schema_manager.get_prediction_subtable_name(partition_timestamp)
-        self.db_manager_local.schema_manager.drop_table(meas_table_name)
-        self.db_manager_local.schema_manager.drop_table(pred_table_name)
+        #find subtables scheduled for transfer and deletion - and search back for any old tables
+        for part_back_index in range(0, 150):
+            secs_to_look_back = self.window_seconds + part_back_index * self.partitition_period_seconds
+            partition_timestamp = datetime.datetime.now(tz=tzlocal.get_localzone()) - datetime.timedelta(seconds=secs_to_look_back)
+            self._transfer_subtables_to_dw(partition_timestamp)
+            self._drop_for_timestamp(partition_timestamp)
 
         self.db_manager_local.close()
+        self.db_manager_dw.close()
 
-    def _transfer_to_dw(self, partition_timestamp):
-        db_string_dw = ConfigIniParser().get_db_string('DB-DW')
-        self.db_manager_dw = DBManager(db_string_dw, autoflush=False)
+    def _transfer_main_tables_to_dw(self):
+        if not self.dw_enabled:
+            return
 
         # copy regular tables to data warehouse
         self.db_manager_dw.create_missing_tables()
@@ -45,18 +61,31 @@ class DBMaintenance(object):
         for table in tables:
             self._copy_table_contents(table)
 
-        # create subtables in data warehouse
-        self.db_manager_dw.schema_manager.get_or_create_measurement_subtable(partition_timestamp)
-        self.db_manager_dw.schema_manager.get_or_create_prediction_subtable(partition_timestamp)
-        self.db_manager_dw.commit()
+    def _transfer_subtables_to_dw(self, partition_timestamp):
+        if not self.dw_enabled:
+            return
 
-        # transfer subtable contents to data warehouse
         meas_table_name = self.db_manager_local.schema_manager.get_measurement_subtable_name(partition_timestamp)
         pred_table_name = self.db_manager_local.schema_manager.get_prediction_subtable_name(partition_timestamp)
-        self._copy_table_contents(meas_table_name)
-        self._copy_table_contents(pred_table_name)
 
-        self.db_manager_dw.close()
+        if self._table_exists_locally(meas_table_name):
+            self.db_manager_dw.schema_manager.get_or_create_measurement_subtable(partition_timestamp)
+            self._copy_table_contents(meas_table_name)
+
+        if self._table_exists_locally(pred_table_name):
+            self.db_manager_dw.schema_manager.get_or_create_prediction_subtable(partition_timestamp)
+            self._copy_table_contents(pred_table_name)
+
+        self.db_manager_dw.commit()
+
+    def _drop_for_timestamp(self, timestamp):
+        self.logger.info("DBMaintenance dropping subtables for time " + str(timestamp))
+        self.db_manager_local.commit()  # Necessary to prevent DROP TABLE from blocking
+
+        meas_table_name = self.db_manager_local.schema_manager.get_measurement_subtable_name(timestamp)
+        pred_table_name = self.db_manager_local.schema_manager.get_prediction_subtable_name(timestamp)
+        self.db_manager_local.schema_manager.drop_table(meas_table_name)
+        self.db_manager_local.schema_manager.drop_table(pred_table_name)
 
     def _copy_table_contents(self, table_name):
         table_local = self.db_manager_local.schema_manager.lookup_table(table_name)
@@ -92,6 +121,8 @@ class DBMaintenance(object):
             __table__ = table
         return GenericMapper
 
+    def _table_exists_locally(self, table_name):
+        return self.db_manager_local.schema_manager.lookup_table(table_name) != None
 
 if __name__ == '__main__':
     pass
