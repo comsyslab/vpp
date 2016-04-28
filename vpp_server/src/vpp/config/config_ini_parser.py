@@ -8,6 +8,7 @@ class ConfigIniParser(object):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.config_parser = SafeConfigParser()
+
         file_name = os.path.join('..', 'resources', 'config.ini')
         self._load_file(file_name)
 
@@ -21,10 +22,10 @@ class ConfigIniParser(object):
         db_string = "postgresql://" + user + ":" + password + "@" + host + "/" + database_name
         return db_string
 
-    '''def get_db_string_dblink(self, section_name='DB'):
-        database_name, host, password, user = self.get_db_config(section_name)
+    def get_db_string_dblink(self, section_name='DB'):
+        database_name, host, password, user = self._get_db_config(section_name)
         db_string = 'user={} password={} host={} dbname={}'.format(user, password, host, database_name)
-        return db_string'''
+        return db_string
 
     def _get_db_config(self, section_name):
         user = self.config_parser.get(section_name, 'user')
