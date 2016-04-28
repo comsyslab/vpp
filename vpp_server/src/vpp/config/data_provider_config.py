@@ -6,8 +6,11 @@ class DataProviderConfig(object):
 
     def __init__(self, file_name):
         self.logger = logging.getLogger(__name__)
-        self.config_parser = ErrorHandlingConfigParser(SafeConfigParser())
+        self.config_parser = SafeConfigParser()
         self._parse_file(file_name)
+
+        sections = self.config_parser.sections()
+        print "hej"
 
     def _parse_file(self, file_name):
         ok_list = self.config_parser.read(file_name)

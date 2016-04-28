@@ -28,6 +28,9 @@ class DBMaintenance(object):
         self.dw_enabled = ini_parser.get_dw_enabled()
         self.db_string_dw = ini_parser.get_db_string('DB-DW')
 
+        self.db_string_dw_dblink = ini_parser.get_db_string_dblink('DB-DW')
+        self.db_string_local_dblink = ini_parser.get_db_string_dblink('DB')
+
         window_length_days = ini_parser.get_rolling_window_length()
         self.window_seconds = int(datetime.timedelta(days=window_length_days).total_seconds())
 
@@ -45,7 +48,7 @@ class DBMaintenance(object):
             secs_to_look_back = self.window_seconds + part_back_index * self.partitition_period_seconds
             partition_timestamp = datetime.datetime.now(tz=tzlocal.get_localzone()) - datetime.timedelta(seconds=secs_to_look_back)
             self._transfer_subtables_to_dw(partition_timestamp)
-            self._drop_for_timestamp(partition_timestamp)
+            #self._drop_for_timestamp(partition_timestamp)
 
         self.db_manager_local.close()
         self.db_manager_dw.close()
@@ -59,7 +62,7 @@ class DBMaintenance(object):
         tables = ['Building', 'FloorSection', 'Room', 'Device', 'Controller', 'Sensor', 'ControlAction',
                   'DeviceLocation', 'PredictionEndpoint']
         for table in tables:
-            self._copy_table_contents(table)
+            self._copy_table_contents_slow(table)
 
     def _transfer_subtables_to_dw(self, partition_timestamp):
         if not self.dw_enabled:
@@ -70,11 +73,11 @@ class DBMaintenance(object):
 
         if self._table_exists_locally(meas_table_name):
             self.db_manager_dw.schema_manager.get_or_create_measurement_subtable(partition_timestamp)
-            self._copy_table_contents(meas_table_name)
+            self._copy_meas_table_contents_sql(meas_table_name)
 
         if self._table_exists_locally(pred_table_name):
             self.db_manager_dw.schema_manager.get_or_create_prediction_subtable(partition_timestamp)
-            self._copy_table_contents(pred_table_name)
+            self._copy_pred_table_contents_sql(pred_table_name)
 
         self.db_manager_dw.commit()
 
@@ -87,7 +90,7 @@ class DBMaintenance(object):
         self.db_manager_local.schema_manager.drop_table(meas_table_name)
         self.db_manager_local.schema_manager.drop_table(pred_table_name)
 
-    def _copy_table_contents(self, table_name):
+    def _copy_table_contents_slow(self, table_name):
         table_local = self.db_manager_local.schema_manager.lookup_table(table_name)
         if table_local is None:
             self.logger.debug("Could not transfer non-existing table " + table_name + " to DW.")
@@ -114,6 +117,44 @@ class DBMaintenance(object):
             avg_time = (time_spent / count) * 1000
             string = 'Table %s transferred total of %d entries to DW in %.2f secs, average %.1f ms/entry' % (table_local.name, count, time_spent, avg_time)
             self.logger.debug(string)
+
+    def _copy_meas_table_contents_sql(self, table_name):
+        columns = 'sensor_id, timestamp , value'
+        columns_w_types = 'sensor_id character varying, timestamp timestamp with time zone, value character varying'
+        self._copy_table_contents_sql(table_name, columns, columns_w_types)
+
+    def _copy_pred_table_contents_sql(self, table_name):
+        columns = 'endpoint_id, timestamp, value, time_received, value_interval'
+        columns_w_types = 'endpoint_id character varying, timestamp timestamp with time zone, value character varying, time_received timestamp with time zone, value_interval interval'
+        self._copy_table_contents_sql(table_name, columns, columns_w_types)
+
+    def _copy_table_contents_sql(self, table_name, columns, columns_w_types):
+        '''sql_example = "CREATE EXTENSION IF NOT EXISTS dblink;"\
+              "SELECT dblink_exec('dbname=vpp port=5432 host=10.24.128.230 user=ubbe password=M1thmpw1', " \
+                                 "'CREATE EXTENSION IF NOT EXISTS dblink;"\
+                                  "INSERT INTO \"Measurement_2016_04_26_00_00_00\" (sensor_id, timestamp , value)"\
+                                      "SELECT *"\
+                                      "FROM dblink(''dbname=vpp port=5432 host=cx-14d94a.st.client.au.dk user=vpp password=comsysr00t'',"\
+                                                  "''SELECT sensor_id, timestamp , value FROM \"Measurement_2016_04_29_00_00_00\"'')"\
+                                      "AS meas(sensor_id character varying, timestamp timestamp with time zone, value character varying)"\
+              "');"'''
+
+        sql = "CREATE EXTENSION IF NOT EXISTS dblink;"\
+              "SELECT dblink_exec('" + self.db_string_dw_dblink + "', " \
+                                  "'CREATE EXTENSION IF NOT EXISTS dblink; "\
+                                   "INSERT INTO \"" + table_name + "\" (" + columns + ") "\
+                                       "SELECT * "\
+                                       "FROM dblink(''" + self.db_string_local_dblink + "'',"\
+                                                  "''SELECT " + columns + " FROM \"" + table_name + "\"'') "\
+                                       "AS meas(" + columns_w_types + ")"\
+              "');"
+
+        self.logger.debug("executing " + sql)
+        try:
+            result = self.db_manager_local.engine.execute(sql)
+        except Exception as e:
+            self.logger.exception("Exception while executing SQL: " + sql + ".\n Exception says: " + str(e.message))
+
 
     def _quick_mapper(self, table):
         Base = declarative_base()
