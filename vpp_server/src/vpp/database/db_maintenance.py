@@ -41,7 +41,7 @@ class DBMaintenance(object):
         self.db_manager_local = DBManager(autoflush=False)
         self.db_manager_dw = DBManager(self.db_string_dw, autoflush=False)
 
-        #self._transfer_main_tables_to_dw()
+        self._transfer_main_tables_to_dw()
 
         #find subtables scheduled for transfer and deletion - and search back for any old tables
         for part_back_index in range(0, 150):
