@@ -116,7 +116,7 @@ class DBMaintenance(object):
             time_spent = time.time() - time_start
             avg_time = (time_spent / count) * 1000
             string = 'Table %s transferred total of %d entries to DW in %.2f secs, average %.1f ms/entry' % (table_local.name, count, time_spent, avg_time)
-            self.logger.debug(string)
+            self.logger.info(string)
 
     def _copy_meas_table_contents_sql(self, table_name):
         columns = 'sensor_id, timestamp , value'
@@ -140,8 +140,8 @@ class DBMaintenance(object):
               "');"'''
 
         sql = "SELECT COUNT (*) FROM \""+ table_name +"\";"
-        result = self.db_manager_local.engine.execute(sql)
-        self.logger.info(dir(result))
+        result = self.db_manager_local.engine.execute(sql).first()
+        count = result[0]
 
         sql = "CREATE EXTENSION IF NOT EXISTS dblink;"\
               "SELECT dblink_exec('" + self.db_string_dw_dblink + "', " \
@@ -151,12 +151,16 @@ class DBMaintenance(object):
                                        "FROM dblink(''" + self.db_string_local_dblink + "'',"\
                                                     "''SELECT " + columns + " FROM \"" + table_name + "\"'') "\
                                        "AS meas(" + columns_w_types + ") "\
-                                       "ON CONFLICT DO UPDATE"\
               "');"
 
         self.logger.debug("Executing " + sql)
         try:
+            time_start = time.time()
             result = self.db_manager_local.engine.execute(sql)
+            time_spent = (time.time() - time_start) / 1000
+            avg_time = time_spent / count
+            string = 'Table %s transferred total of %d entries to DW in %.2f secs, average %.1f ms/entry' % (table_name, count, time_spent, avg_time)
+            self.logger.info(string)
         except Exception as e:
             self.logger.exception("Exception while executing SQL: " + sql + ".\n Exception says: " + str(e.message))
 
