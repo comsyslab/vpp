@@ -38,23 +38,22 @@ class DBMaintenance(object):
         self.partitition_period_seconds = int(datetime.timedelta(hours=partition_period_hours).total_seconds())
 
     def do_maintenance(self):
-        self.logger.info("In do maintenance 1")
         self.db_manager_local = DBManager(autoflush=False)
         self.db_manager_dw = DBManager(self.db_string_dw, autoflush=False)
 
-        self.logger.info("In do maintenance 2")
+        #transfer
         self._transfer_main_tables_to_dw()
-        self.logger.info("In do maintenance 3")
+
         #find subtables scheduled for transfer and deletion - and search back for any old tables
         for part_back_index in range(0, 150):
             secs_to_look_back = self.window_seconds + part_back_index * self.partitition_period_seconds
             partition_timestamp = datetime.datetime.now(tz=tzlocal.get_localzone()) - datetime.timedelta(seconds=secs_to_look_back)
             self._transfer_subtables_to_dw(partition_timestamp)
-            #self._drop_for_timestamp(partition_timestamp)
-        self.logger.info("In do maintenance 4")
+            self._drop_for_timestamp(partition_timestamp)
+
         self.db_manager_local.close()
         self.db_manager_dw.close()
-        self.logger.info("In do maintenance 5")
+
 
     def _transfer_main_tables_to_dw(self):
         if not self.dw_enabled:
