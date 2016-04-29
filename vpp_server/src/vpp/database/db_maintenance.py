@@ -139,17 +139,22 @@ class DBMaintenance(object):
                                       "AS meas(sensor_id character varying, timestamp timestamp with time zone, value character varying)"\
               "');"'''
 
+        sql = "SELECT COUNT (*) FROM \""+ table_name +"\";"
+        result = self.db_manager_local.engine.execute(sql)
+        self.logger.info(dir(result))
+
         sql = "CREATE EXTENSION IF NOT EXISTS dblink;"\
               "SELECT dblink_exec('" + self.db_string_dw_dblink + "', " \
                                   "'CREATE EXTENSION IF NOT EXISTS dblink; "\
                                    "INSERT INTO \"" + table_name + "\" (" + columns + ") "\
                                        "SELECT * "\
                                        "FROM dblink(''" + self.db_string_local_dblink + "'',"\
-                                                  "''SELECT " + columns + " FROM \"" + table_name + "\"'') "\
-                                       "AS meas(" + columns_w_types + ")"\
+                                                    "''SELECT " + columns + " FROM \"" + table_name + "\"'') "\
+                                       "AS meas(" + columns_w_types + ") "\
+                                       "ON CONFLICT DO UPDATE"\
               "');"
 
-        self.logger.debug("executing " + sql)
+        self.logger.debug("Executing " + sql)
         try:
             result = self.db_manager_local.engine.execute(sql)
         except Exception as e:
