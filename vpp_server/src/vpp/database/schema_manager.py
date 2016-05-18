@@ -115,7 +115,7 @@ class SchemaManager(object):
         part_start, part_end = self._get_partition_boundary_timestamps(timestamp)
 
         primary_key_sql = 'PRIMARY KEY (id)'
-        timestamp_constraint_sql = 'CHECK (' + timestamp_name + ' >= \'' + str(part_start) + '\' AND ' + timestamp_name + ' < \'' + str(part_end) + '\')'
+        timestamp_constraint_sql = 'CHECK (' + timestamp_name + ' >= \'' + str(part_start) + '\' AND ' + timestamp_name + ' <= \'' + str(part_end) + '\')'
         constraint_sql = primary_key_sql + ', ' + timestamp_constraint_sql
 
         table_name = self.get_partition_subtable_name(base_table_name, timestamp)
