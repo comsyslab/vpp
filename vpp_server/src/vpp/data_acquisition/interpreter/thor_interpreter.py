@@ -13,13 +13,11 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 
 class ThorInterpreter(AbstractDataInterpreter):
 
-    def __init__(self, data_provider_config = None):
+    def __init__(self, data_provider_config=None):
+        super(ThorInterpreter, self).__init__(data_provider_config)
         self.logger = logging.getLogger(__name__)
         self.timezone = pytz.timezone('Europe/Copenhagen')
-        self.endpoint_prefix = 'thor'
-        if data_provider_config:
-            self.fetching_config = data_provider_config.ftp_config
-
+        self.fetching_config = data_provider_config.ftp_config
 
     def _interpret_string(self, data_string):
 
@@ -36,11 +34,7 @@ class ThorInterpreter(AbstractDataInterpreter):
         pred_lines = lines[first_pred_line_no:eod_line_no]
         predictions = self._parse_predictions(endpoints, pred_lines)
 
-
-
         return {'endpoints': endpoints, 'predictions': predictions}
-
-
 
     def _find_station_name_line(self, lines):
         station_name_string = 'Station.Name'
@@ -74,7 +68,7 @@ class ThorInterpreter(AbstractDataInterpreter):
             unit = self._get_value(lines[i+1])
             value = self._get_value(lines[i+2])
             value = value.zfill(2)
-            id = self.endpoint_prefix + '_' + self.station_name + '_' + value
+            id = self.id_prefix + '_' + self.station_name + '_' + value
             endpoints.append({'id': id, 'attribute': attribute, 'unit': unit, 'description': ''})
 
         return endpoints

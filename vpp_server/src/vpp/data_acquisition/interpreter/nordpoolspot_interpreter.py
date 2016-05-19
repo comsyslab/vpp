@@ -15,12 +15,10 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 class NordpoolspotInterpreter(AbstractDataInterpreter):
 
     def __init__(self, data_provider_config = None):
+        super(NordpoolspotInterpreter, self).__init__(data_provider_config)
         self.logger = logging.getLogger(__name__)
         self.timezone = pytz.timezone('Europe/Copenhagen')
-        self.sensor_id = 'nordpool_elspot_odense'
-        self.fetching_config = None
-        if data_provider_config:
-            self.fetching_config = data_provider_config.ftp_config
+        self.fetching_config = data_provider_config.ftp_config
         self.date_helper = DefaultInterpreterDateStrategy(self.fetching_config)
 
     def _interpret_string(self, data_string):
@@ -33,11 +31,10 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
 
         measurements = self.parse_measurements(measurement_lines)
 
-        sensors = [{'sensor_id':self.sensor_id,
+        sensors = [{'sensor_id':self.id_prefix,
                     'attribute' : 'Price per megawatthour',
                     'unit_prefix': "",
                     'unit' : 'DKK/MWh'}]
-
 
         return {'sensors': sensors, 'measurements': measurements}
 
@@ -84,7 +81,7 @@ class NordpoolspotInterpreter(AbstractDataInterpreter):
             else:
                 timestamp_w_tz = self.timezone.localize(timestamp_naive)
 
-            measurement = {'sensor_id': self.sensor_id,
+            measurement = {'sensor_id': self.id_prefix,
                            'timestamp': timestamp_w_tz.isoformat(),
                            'value': value}
 

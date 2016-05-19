@@ -15,6 +15,7 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 class EnerginetOnlineInterpreter(AbstractDataInterpreter):
 
     def __init__(self, data_provider_config):
+        super(EnerginetOnlineInterpreter, self).__init__(data_provider_config)
         self.logger = logging.getLogger(__name__)
         self._init_units_map()
         self.date_helper = DefaultInterpreterDateStrategy(data_provider_config.ftp_config)
@@ -130,7 +131,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
         return meas_time.isoformat()
 
     def get_sensor_id(self, attribute_id):
-        return 'energinet_' + str(attribute_id).strip()
+        return self.id_prefix + '_' + str(attribute_id).strip()
 
 
     def find_heading_line_no(self, lines):

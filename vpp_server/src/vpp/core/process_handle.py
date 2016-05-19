@@ -31,6 +31,8 @@ class ProcessHandle(object):
 
     def _listen_on_log_queue(self):
         record = self.log_queue.get()
+        if record.msg.count('501') > 0:
+            pass
         while record != 'STOP':
             try:
                 logger = logging.getLogger(record.name)

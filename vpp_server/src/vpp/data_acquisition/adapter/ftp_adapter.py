@@ -25,7 +25,7 @@ class FTPAdapter(AbstractFetchingAdapter):
             self.ftp = FTP(self.ftp_config.host)
             self.ftp.login(self.ftp_config.username, self.ftp_config.password)
         except Exception as e:
-            self.logger.exception("Exception initializing FTP connection: " + str(e.message), e)
+            self.logger.exception("Exception initializing FTP connection: " + str(e.message))
             return file_bodies
 
         try:

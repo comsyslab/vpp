@@ -11,8 +11,8 @@ __author__ = 'ubbe'
 class SmartAmmDataInterpreter(AbstractDataInterpreter):
 
     def __init__(self, data_provider_config = None):
+        super(SmartAmmDataInterpreter, self).__init__(data_provider_config)
         self.logger = logging.getLogger(__name__)
-        self.device_prefix = 'smartamm'
         self.unit_dict = self._create_unit_dict()
 
 
@@ -63,7 +63,7 @@ class SmartAmmDataInterpreter(AbstractDataInterpreter):
         #if len(attribute) > max_length:
         #    attribute = attribute[:max_length]
 
-        return self.device_prefix + '_' + device_mac + '_' + attribute
+        return self.id_prefix + '_' + device_mac + '_' + attribute
 
     def _create_unit_dict(self):
         unit_dict = {}

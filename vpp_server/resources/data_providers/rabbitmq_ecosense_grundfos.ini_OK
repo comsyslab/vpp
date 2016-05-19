@@ -2,6 +2,7 @@
 adapter = vpp.data_acquisition.adapter.rabbit_mq_adapter.RabbitMQAdapter
 interpreter = vpp.data_acquisition.interpreter.grundfos_data_interpreter.GrundfosDataInterpreter
 processor = vpp.data_acquisition.processing_strategy.DefaultMeasurementProcessingStrategy
+id_prefix = grundfos
 
 [exchange]
 username = vpp4sgr
