@@ -2,12 +2,13 @@
 adapter = vpp.data_acquisition.adapter.ftp_adapter.FTPAdapter
 interpreter = vpp.data_acquisition.interpreter.thor_interpreter.ThorInterpreter
 processor = vpp.data_acquisition.processing_strategy.DefaultPredictionProcessingStrategy
+id_prefix = thor
 
 [fetch]
 interval = 600
 adapter_date_strategy = vpp.data_acquisition.adapter.adapter_date_strategy.DefaultAdapterFileDateStrategy
-last_fetch = 2016-01-28T05:00:00
-last_fetch_adapter = 2016-01-28T06:00:00
+last_fetch = 2016-05-10T05:00:00
+last_fetch_adapter = 2016-05-19T06:00:00
 
 [ftp]
 username = anonymous
@@ -17,4 +18,7 @@ port = 21
 remote_dir = dmu/vpp4sgr
 file_pattern = steffen_w([0-9]{4})([0-1][0-9])([0-3][0-9])([0-2][0-9])dat
 encoding = ascii
+
+[averaging]
+interval_secs = 300
 

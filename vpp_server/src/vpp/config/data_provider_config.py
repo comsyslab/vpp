@@ -27,6 +27,10 @@ class DataProviderConfig(object):
         return self.config_parser.get('data_provider', 'processor')
 
     @property
+    def id_prefix(self):
+        return self.config_parser.get('data_provider', 'id_prefix')
+
+    @property
     def rabbitmq_exchange(self):
         return Exchange(self.config_parser)
 

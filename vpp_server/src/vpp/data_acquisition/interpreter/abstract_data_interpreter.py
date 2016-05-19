@@ -1,4 +1,5 @@
 import logging
+from _ctypes import ArgumentError
 from abc import ABCMeta, abstractmethod
 
 
@@ -8,6 +9,12 @@ class AbstractDataInterpreter(object):
 
     def __init__(self, data_provider_config = None):
         self.logger = logging.getLogger(__name__)
+
+        if data_provider_config is None or data_provider_config.id_prefix is None:
+            raise ArgumentError("No data provider config provided, or config contained no id_prefix")
+
+        self.id_prefix = data_provider_config.id_prefix
+
 
     def interpret_data(self, *data_strings):
         measurements = []

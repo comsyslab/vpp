@@ -9,7 +9,7 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 class EnerginetCO2Interpreter(AbstractDataInterpreter):
 
     def _interpret_string(self, data_string):
-        endpoint_id = 'energinet_CO2'
+        endpoint_id = self.id_prefix
         endpoint = {'id': endpoint_id,
                     'attribute': 'CO2 emission',
                     'unit': 'g/kWh',

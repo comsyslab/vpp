@@ -9,17 +9,15 @@ from vpp.data_acquisition.interpreter.abstract_data_interpreter import AbstractD
 class NrgiDeltaInterpreter(AbstractDataInterpreter):
 
     def __init__(self, data_provider_config=None):
-
-        self.fetching_config = None
-        if data_provider_config:
-            self.fetching_config = data_provider_config.ftp_config
+        super(NrgiDeltaInterpreter, self).__init__(data_provider_config)
+        self.fetching_config = data_provider_config.ftp_config
 
     def _interpret_string(self, data_string):
 
         root = ElementTree.fromstring(data_string)
         install_no = root.find('installationNumber').text
 
-        sensor_id = 'nrgi_' + install_no + '_delta'
+        sensor_id = self.id_prefix + '_' + install_no
         sensors = [{'sensor_id': sensor_id,
                     'attribute': 'meter-delta',
                     'unit_prefix': "",
