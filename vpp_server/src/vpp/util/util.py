@@ -1,5 +1,6 @@
 import logging
 import multiprocessing
+import os
 import threading
 
 import datetime
@@ -15,6 +16,7 @@ def get_thread_info():
 
 def secs_to_ms(secs):
     return int(secs*1000)
+
 
 def init_strptime():
     datetime.datetime.strptime('', '')
@@ -32,3 +34,14 @@ def load_and_set_log_level():
 
 def get_base_date(tzinfo=None):
     return datetime.datetime(1970, 1, 1, tzinfo=tzinfo)
+
+
+def get_data_provider_ini_files():
+    data_provider_config_dir = '../resources/data_providers'
+    files = []
+    for file_name in os.listdir(data_provider_config_dir):
+        rel_file_path = data_provider_config_dir + os.sep + file_name
+        if os.path.isfile(rel_file_path) and rel_file_path.endswith('.ini'):
+            files.append(rel_file_path)
+
+    return files

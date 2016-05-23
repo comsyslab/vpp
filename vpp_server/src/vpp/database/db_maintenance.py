@@ -6,7 +6,9 @@ import tzlocal
 from sqlalchemy.ext.declarative import declarative_base
 
 from vpp.config.config_ini_parser import ConfigIniParser
+from vpp.config.data_provider_config import DataProviderConfig
 from vpp.database.db_manager import DBManager
+from vpp.util import util
 
 
 class DBMaintenance(object):
@@ -42,7 +44,7 @@ class DBMaintenance(object):
         self.db_manager_dw = DBManager(self.db_string_dw, autoflush=False)
 
         #transfer
-        self._transfer_main_tables_to_dw()
+        #self._transfer_main_tables_to_dw()
 
         #find subtables scheduled for transfer and deletion - and search back for any old tables
         self._create_round_func()
@@ -74,14 +76,13 @@ class DBMaintenance(object):
         meas_table_name = self.db_manager_local.schema_manager.get_measurement_subtable_name(partition_timestamp)
         pred_table_name = self.db_manager_local.schema_manager.get_prediction_subtable_name(partition_timestamp)
 
-        averaging_interval_secs = None #60*60 * 1 #1 hour
         if self._table_exists_locally(meas_table_name):
             self.db_manager_dw.schema_manager.get_or_create_measurement_subtable(partition_timestamp)
-            self._copy_meas_table(meas_table_name, averaging_interval_secs)
+            self._copy_meas_table(meas_table_name)
 
         if self._table_exists_locally(pred_table_name):
             self.db_manager_dw.schema_manager.get_or_create_prediction_subtable(partition_timestamp)
-            self._copy_pred_table(pred_table_name, averaging_interval_secs)
+            self._copy_pred_table(pred_table_name)
 
         self.db_manager_dw.commit()
 
@@ -122,46 +123,69 @@ class DBMaintenance(object):
             string = 'Table %s transferred total of %d entries to DW in %.2f secs, average %.1f ms/entry' % (table_local.name, count, time_spent, avg_time)
             self.logger.info(string)
 
-    def _copy_meas_table(self, table_name, averaging_interval_secs = None):
+    def _copy_meas_table(self, table_name):
         columns = 'sensor_id, timestamp , value'
-        columns_w_types = 'sensor_id character varying, timestamp timestamp with time zone, value character varying'
+        columns_w_types = 'sensor_id character varying, ' \
+                          'timestamp timestamp with time zone, ' \
+                          'value character varying'
+        device_id_column = 'sensor_id'
 
-        query_sql = self._get_simple_query_sql(table_name, columns)
-        if averaging_interval_secs is not None:
-            query_sql = self._get_meas_averaging_sql(table_name, averaging_interval_secs)
+        files = util.get_data_provider_ini_files()
+        for ini_file_path in files:
+            data_provider_config = DataProviderConfig(ini_file_path)
+            device_id_prefix = data_provider_config.id_prefix
+            enabled = data_provider_config.averaging_config.enabled
+            if enabled:
+                interval = data_provider_config.averaging_config.default_interval_secs
+                query_sql = self._get_meas_averaging_select_where_sql(table_name, interval, device_id_prefix)
+            else:
+                query_sql = self._get_simple_select_where_sql(table_name, columns, device_id_column, device_id_prefix)
 
-        self._copy_table_custom_sql(table_name, columns, columns_w_types, query_sql)
+            self._transfer_data_to_dw(table_name, columns, columns_w_types, query_sql)
 
-    def _copy_pred_table(self, table_name, averaging_interval_secs = None):
+    def _copy_pred_table(self, table_name):
         columns = 'endpoint_id, timestamp, value, time_received, value_interval'
-        columns_w_types = 'endpoint_id character varying, timestamp timestamp with time zone, value character varying, time_received timestamp with time zone, value_interval interval'
+        columns_w_types = 'endpoint_id character varying, ' \
+                          'timestamp timestamp with time zone, ' \
+                          'value character varying, ' \
+                          'time_received timestamp with time zone, ' \
+                          'value_interval interval'
+        device_id_column = 'endpoint_id'
 
-        query_sql = self._get_simple_query_sql(table_name, columns)
-        if averaging_interval_secs is not None:
-            query_sql = self._get_pred_averaging_sql(table_name, averaging_interval_secs)
+        for ini_file_path in util.get_data_provider_ini_files():
+            data_provider_config = DataProviderConfig(ini_file_path)
+            device_id_prefix = data_provider_config.id_prefix
+            averaging_enabled = data_provider_config.averaging_config.enabled
+            if averaging_enabled:
+                interval = data_provider_config.averaging_config.default_interval_secs
+                query_sql = self._get_pred_averaging_select_where_sql(table_name, interval, device_id_prefix)
+            else:
+                query_sql = self._get_simple_select_where_sql(table_name, columns, device_id_column, device_id_prefix)
 
-        self._copy_table_custom_sql(table_name, columns, columns_w_types, query_sql)
+            self._transfer_data_to_dw(table_name, columns, columns_w_types, query_sql)
 
-    def _get_meas_averaging_sql(self, table_name, averaging_interval):
+    def _get_meas_averaging_select_where_sql(self, table_name, averaging_interval, id_pattern):
         return 'SELECT sensor_id, ' \
                       'ts_round( "timestamp", ' + str(averaging_interval) + ' ) AS "timestamp", ' \
                       'CAST(AVG(CAST(value AS float)) AS text) AS value ' \
                'FROM "' + table_name + '" ' \
+               'WHERE sensor_id LIKE \'\'' + id_pattern + '%%\'\' ' \
                'GROUP BY 2, sensor_id ORDER BY sensor_id;'
 
-    def _get_pred_averaging_sql(self, table_name, averaging_interval_secs):
+    def _get_pred_averaging_select_where_sql(self, table_name, averaging_interval_secs, id_pattern):
         return 'SELECT endpoint_id, ' \
-                               'ts_round( "timestamp", ' + str(averaging_interval_secs) + ' ) AS "timestamp", ' \
-                               'CAST(AVG(CAST(value AS float)) AS text) AS value, ' \
-                               'MIN(time_received) AS time_received, ' \
-                               '\'\'' + str(averaging_interval_secs) + ' seconds\'\' AS value_interval ' \
-                        'FROM "' + table_name + '" ' \
-                        'GROUP BY 2, endpoint_id ORDER BY endpoint_id;'
+                       'ts_round( "timestamp", ' + str(averaging_interval_secs) + ' ) AS "timestamp", ' \
+                       'CAST(AVG(CAST(value AS float)) AS text) AS value, ' \
+                       'MIN(time_received) AS time_received, ' \
+                       '\'\'' + str(averaging_interval_secs) + ' seconds\'\' AS value_interval ' \
+                'FROM "' + table_name + '" ' \
+                'WHERE sensor_id LIKE \'\'' + id_pattern + '%%\'\' ' \
+                'GROUP BY 2, endpoint_id ORDER BY endpoint_id;'
 
-    def _get_simple_query_sql(self, table_name, columns):
-        return 'SELECT ' + columns + ' FROM "' + table_name + '";'
+    def _get_simple_select_where_sql(self, table_name, columns, id_column, id_pattern):
+        return 'SELECT ' + columns + ' FROM "' + table_name + '" WHERE ' + id_column + ' LIKE \'\'' + id_pattern + '%%\'\';'
 
-    def _copy_table_custom_sql(self, table_name, columns, columns_w_types, query_sql):
+    def _transfer_data_to_dw(self, table_name, columns, columns_w_types, query_sql):
         count_sql = "SELECT COUNT (*) FROM \""+ table_name +"\";"
         result = self.db_manager_local.engine.execute(count_sql).first()
         count = result[0]
