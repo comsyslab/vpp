@@ -20,10 +20,7 @@ class DataProviderProcess(AbstractVPPProcess):
     def _init_data_providers(self):
         util.init_strptime()
         self.data_providers = []
-        data_provider_config_dir = '../resources/data_providers'
-        for file_name in os.listdir(data_provider_config_dir):
-            rel_file_path = data_provider_config_dir + os.sep + file_name
-            if os.path.isfile(rel_file_path) and rel_file_path.endswith('.ini'):
+        for rel_file_path in util.get_data_provider_ini_files():
                 data_provider = DataProvider(rel_file_path)
                 self.data_providers.append(data_provider)
         self.logger.debug("DataProviderProcess found " + str(len(self.data_providers)) + " data providers.")

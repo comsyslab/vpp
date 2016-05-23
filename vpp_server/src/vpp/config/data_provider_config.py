@@ -46,6 +46,10 @@ class DataProviderConfig(object):
     def ftp_config(self):
         return FTPConfig(self.config_parser)
 
+    @property
+    def averaging_config(self):
+        return AveragingConfig(self.config_parser)
+
 
 class ErrorHandlingConfigParser(object):
     def __init__(self, config_parser):
@@ -144,3 +148,10 @@ class FTPConfig(FetchingAdapterConfig):
         self.remote_dir = parser.get(section_name, 'remote_dir')
         self.file_pattern = parser.get(section_name, 'file_pattern')
         self.encoding = parser.get(section_name, 'encoding')
+
+
+class AveragingConfig(object):
+    def __init__(self, parser):
+        section_name = 'averaging'
+        self.enabled = bool(parser.get(section_name, 'enabled') == 'True' or parser.get(section_name, 'enabled') == 'true')
+        self.default_interval_secs = parser.get(section_name, 'default_interval_secs')

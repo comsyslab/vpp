@@ -2,6 +2,7 @@
 adapter = vpp.data_acquisition.adapter.ftp_adapter.FTPAdapter
 interpreter = vpp.data_acquisition.interpreter.[FILL IN]
 processor = vpp.data_acquisition.processing_strategy.DefaultMeasurementProcessingStrategy
+id_prefix = [FILL IN]
 
 [fetch]
 interval = 600
@@ -17,4 +18,6 @@ port = 21
 file_pattern = [FILL IN]
 encoding = utf-8
 
+[averaging]
+interval_secs = [FILL IN]
 
