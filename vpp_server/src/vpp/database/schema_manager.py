@@ -5,8 +5,11 @@ import time
 import pytz
 import tzlocal
 from sqlalchemy import Column, Integer, ForeignKey, Float, DateTime, Table, String, Time, Interval
+from sqlalchemy.engine import default
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.schema import ColumnDefault
+from sqlalchemy.sql.sqltypes import Boolean
 
 from vpp.config.config_ini_parser import ConfigIniParser
 from vpp.util import util
@@ -56,6 +59,7 @@ class SchemaManager(object):
                                  Column('sensor_id', String, ForeignKey('Sensor.id'), nullable=False),
                                  Column('timestamp', DateTime(timezone=True), nullable=False),
                                  Column('value', String, nullable=False),
+                                 Column('exported', Boolean, nullable=False, default=False),
                                  extend_existing=True)
         self.measurement_base_table.create(self.engine, checkfirst=True)
 
@@ -68,6 +72,7 @@ class SchemaManager(object):
                                            Column('value', String, nullable=False),
                                            Column('time_received', DateTime(timezone=True), nullable=False),
                                            Column('value_interval', Interval),
+                                           Column('exported', Boolean, nullable=False, default=False),
                                            extend_existing=True)
         self.prediction_base_table.create(self.engine, checkfirst=True)
 
@@ -84,14 +89,6 @@ class SchemaManager(object):
         if table is None:
             table = self._create_prediction_subtable(timestamp)
         return table
-
-    '''def drop_measurement_subtable(self, timestamp):
-        table_name = self.get_partition_subtable_name(self.measurement_base_table_name, timestamp)
-        self.drop_table(table_name)
-
-    def drop_prediction_subtable(self, timestamp):
-        table_name = self.get_partition_subtable_name(self.prediction_base_table_name, timestamp)
-        self.drop_table(table_name)'''
 
     def drop_table(self, table_name):
         sql = 'DROP TABLE IF EXISTS "' + table_name + '";'

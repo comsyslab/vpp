@@ -153,5 +153,5 @@ class FTPConfig(FetchingAdapterConfig):
 class AveragingConfig(object):
     def __init__(self, parser):
         section_name = 'averaging'
-        self.enabled = bool(parser.get(section_name, 'enabled') == 'True' or parser.get(section_name, 'enabled') == 'true')
+        self.enabled = bool(parser.get(section_name, 'enable') == 'True' or parser.get(section_name, 'enable') == 'true')
         self.default_interval_secs = parser.get(section_name, 'default_interval_secs')
