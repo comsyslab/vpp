@@ -63,6 +63,8 @@ class DBManager(object):
     def store_new_data_bulk(self, data_dicts):
         time_begin = time.time()
 
+        self._insert_exported_value(data_dicts)
+
         table_to_data_map = {}
 
         time_grouping_begin = time.time()
@@ -97,6 +99,11 @@ class DBManager(object):
         self.logger.debug("DBManager processed " + str(len(data_dicts)) + " measurements in " + str(time_spent_ms) + " ms. " +
                           "Grouping by table " + str(time_grouping_spent_ms) + " ms, DB interaction " + str(time_sql_spent_ms) + " ms.")
 
+    def _insert_exported_value(self, data_dicts):
+        for dict in data_dicts:
+            if 'exported' not in dict:
+                dict['exported'] = False
+
     def _get_table_for_data_dict(self, data_dict):
         if 'time_received' in data_dict:
             return self.get_prediction_table(data_dict)
@@ -116,7 +123,7 @@ class DBManager(object):
     def store_new_measurement(self, sensor_id, timestamp, value):
         datetime_w_timezone = iso8601.parse_date(timestamp)
         table = self.schema_manager.get_or_create_measurement_subtable(datetime_w_timezone)
-        sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value)
+        sql = table.insert().values(sensor_id=sensor_id, timestamp=timestamp, value=value, exported=False)
         try:
             self.session.execute(sql)
             self.logger.debug("Stored new measurement " + str(value) + " for sensor " + str(sensor_id))
@@ -182,7 +189,7 @@ class DBManager(object):
         #Format: '1 year 2 months 3 days 4 hours 5 minutes 6 seconds'
 
         table = self.schema_manager.get_or_create_prediction_subtable(time_received_dt)
-        sql = table.insert().values(endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval)
+        sql = table.insert().values(endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval, exported=False)
         try:
             self.session.execute(sql)
             self.logger.debug("Stored new prediction " + str(value) + " for endpoint" + str(pred_endpoint_id))

@@ -89,7 +89,7 @@ class EnerginetOnlineInterpreter(AbstractDataInterpreter):
             timestamp_naive = self.parse_timestamp(str(values[0]))
 
             if not self.date_helper.should_process_date(timestamp_naive):
-                self.logger.debug('Measurements for date ' + timestamp_naive.isoformat() + ' already processed. Skipping.')
+                self.logger.log(logging.DEBUG-1, 'Measurements for date ' + timestamp_naive.isoformat() + ' already processed. Skipping.')
                 continue
 
             timestamp_localized = self.localize(timestamp_naive)

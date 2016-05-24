@@ -19,5 +19,7 @@ file_pattern = [FILL IN]
 encoding = utf-8
 
 [averaging]
-interval_secs = [FILL IN]
+enable = False
+default_interval_secs = [FILL IN]
 
+id_patterns = ,,,

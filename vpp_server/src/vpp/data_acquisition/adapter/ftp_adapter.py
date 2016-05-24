@@ -1,4 +1,5 @@
 import calendar
+import logging
 from _socket import gaierror
 from ftplib import FTP, error_perm
 
@@ -40,11 +41,11 @@ class FTPAdapter(AbstractFetchingAdapter):
 
         for file_name in self.files:
             if not re.match(regex_string, file_name):
-                self.logger.debug('File ' + file_name + ' skipped. did not match regex ' + regex_string)
+                self.logger.log(logging.DEBUG-1, 'File ' + file_name + ' skipped. did not match regex ' + regex_string)
                 continue
 
             if not self.file_date_strategy.should_fetch_file(file_name):
-                self.logger.debug('File ' + file_name + ' skipped since it is already processed.')
+                self.logger.log(logging.DEBUG-1, 'File ' + file_name + ' skipped since it is already processed.')
                 continue
 
             self._file_contents = ''

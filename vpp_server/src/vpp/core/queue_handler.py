@@ -19,8 +19,6 @@ class QueueHandler(logging.Handler):
 
         Writes the LogRecord to the queue.
         """
-        if (record.msg.count("501") > 0):
-            pass
 
         try:
             self.decorate_record(record)
