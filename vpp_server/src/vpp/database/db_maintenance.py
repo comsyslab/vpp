@@ -239,8 +239,10 @@ class DBMaintenance(object):
 
         time_spent = (time.time() - time_start)
         string = 'From table %s with total %d rows, %d new rows were inserted in DW in %.2f secs' % (table_name, count, result_count, time_spent)
-        self.logger.info(string)
-
+        if result_count > 0:
+            self.logger.info(string)
+        else:
+            self.logger.debug(string)
 
     def _quick_mapper(self, table):
         Base = declarative_base()
