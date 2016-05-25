@@ -35,7 +35,7 @@ def fetch_sensors_from_gandalf():
 
 
 def get_connection():
-    return psycopg2.connect("dbname='RollingDbProduction' host='gandalf.netlab.eng.au.dk' user='ubbe' password='vpp4sgr2015'")
+    return psycopg2.connect("dbname='RollingDbProduction' host='gandalf.netlab.eng.au.dk' user='ubbe' password=''")
 
 
 #def fetch_additional_sensors_from_gandalf():
