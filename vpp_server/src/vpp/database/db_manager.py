@@ -1,20 +1,13 @@
 import logging
-from ConfigParser import ConfigParser
-
-import iso8601
-import sqlalchemy
 import time
 
-from psycopg2._psycopg import IntegrityError
-from sqlalchemy import func
+import iso8601
 
 from vpp.config.config_ini_parser import ConfigIniParser
 from vpp.database.entities.core_entities import Controller, Device, PredictionEndpoint
 from vpp.database.entities.core_entities import Sensor
-
 from vpp.database.schema_manager import SchemaManager
 from vpp.database.sql_alch_util import create_engine_and_session
-from vpp.util import util
 from vpp.util.util import secs_to_ms
 
 __author__ = 'ubbe'
