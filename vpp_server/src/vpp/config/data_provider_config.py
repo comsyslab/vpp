@@ -152,6 +152,38 @@ class FTPConfig(FetchingAdapterConfig):
 
 class AveragingConfig(object):
     def __init__(self, parser):
-        section_name = 'averaging'
-        self.enabled = bool(parser.get(section_name, 'enable') == 'True' or parser.get(section_name, 'enable') == 'true')
-        self.default_interval_secs = parser.get(section_name, 'default_interval_secs')
+        self.logger = logging.getLogger(__name__)
+        self._section_name = 'averaging'
+        self._parser = parser
+
+        self.enabled = bool(parser.get(self._section_name, 'enable') == 'True' or parser.get(self._section_name, 'enable') == 'true')
+        self.id_patterns_and_intervals = self._parse_intervals()
+        pass
+
+    def _parse_intervals(self):
+        id_patterns_string = self._parser.get(self._section_name, 'id_patterns')
+        intervals_string = self._parser.get(self._section_name, 'intervals')
+
+        id_patterns_string = id_patterns_string.replace("%", "%%")
+
+        result = [] #list instead of dict to maintain ordered sequence
+        if id_patterns_string is None or intervals_string is None:
+            return result
+
+        id_patterns = id_patterns_string.split(";")
+        intervals = intervals_string.split(";")
+
+
+
+        if len(id_patterns) != len(intervals):
+            self.logger.warning("Bad configuration in section " + self._section_name + ": Found " + str(len(id_patterns)) +
+                                " ID patterns and " + str(len(intervals)) + " intervals. Should be equal.")
+            return result
+
+        for i in range(0, len(id_patterns)):
+            id_pattern = id_patterns[i].strip()
+            interval = int(intervals[i].strip())
+            tuple = (id_pattern, interval)
+            result.append(tuple)
+
+        return result

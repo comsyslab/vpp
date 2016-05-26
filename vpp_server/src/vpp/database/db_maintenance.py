@@ -143,19 +143,14 @@ class DBMaintenance(object):
                           'exported boolean'
         device_id_column = 'sensor_id'
 
-        for ini_file_path in util.get_data_provider_ini_files():
+        files = util.get_data_provider_ini_files()
+        for ini_file_path in files:
+            self.logger.debug("Transferring measurements according to config in file " + ini_file_path)
             data_provider_config = DataProviderConfig(ini_file_path)
-            device_id_prefix = data_provider_config.id_prefix
-            enabled = data_provider_config.averaging_config.enabled
-            if enabled:
-                interval = data_provider_config.averaging_config.default_interval_secs
-                self.logger.debug("Averaging over interval " + str(interval) + " and transferring measurements for sensors " + device_id_prefix)
-                query_sql = self._get_meas_averaging_select_where_sql(table_name, interval, device_id_prefix)
-            else:
-                self.logger.debug("Transferring measurements for sensors " + device_id_prefix + " (no averaging)")
-                query_sql = self._get_simple_select_where_sql(table_name, columns, device_id_column, device_id_prefix)
+            id_patterns_and_queries = self.get_transfer_queries_for_data_provider(columns, data_provider_config, device_id_column, table_name, self._get_meas_averaging_select_where_sql)
 
-            self._transfer_data_to_dw(table_name, columns, columns_w_types, query_sql, device_id_prefix)
+            for id_pattern, query in id_patterns_and_queries:
+                self._transfer_data_to_dw(table_name, columns, columns_w_types, device_id_column, query, id_pattern)
 
     def _copy_pred_table(self, table_name):
         columns = 'endpoint_id, timestamp, value, time_received, value_interval, exported'
@@ -163,30 +158,45 @@ class DBMaintenance(object):
                           'timestamp timestamp with time zone, ' \
                           'value character varying, ' \
                           'time_received timestamp with time zone, ' \
-                          'value_interval interval' \
+                          'value_interval interval, ' \
                           'exported boolean'
         device_id_column = 'endpoint_id'
 
-        for ini_file_path in util.get_data_provider_ini_files():
+        files = util.get_data_provider_ini_files()
+        for ini_file_path in files:
+            self.logger.debug("Transferring predictions according to config in file " + ini_file_path)
             data_provider_config = DataProviderConfig(ini_file_path)
-            device_id_prefix = data_provider_config.id_prefix
-            averaging_enabled = data_provider_config.averaging_config.enabled
-            if averaging_enabled:
-                interval = data_provider_config.averaging_config.default_interval_secs
-                self.logger.debug("Averaging over interval " + str(interval) + " and transferring predictions for endpoints " + device_id_prefix)
-                query_sql = self._get_pred_averaging_select_where_sql(table_name, interval, device_id_prefix)
-            else:
-                self.logger.debug("Transferring predictions for endpoints " + device_id_prefix + " (no averaging)")
-                query_sql = self._get_simple_select_where_sql(table_name, columns, device_id_column, device_id_prefix)
+            id_patterns_and_queries = self.get_transfer_queries_for_data_provider(columns, data_provider_config, device_id_column, table_name, self._get_pred_averaging_select_where_sql)
 
-            self._transfer_data_to_dw(table_name, columns, columns_w_types, query_sql, device_id_prefix)
+            for id_pattern, query in id_patterns_and_queries:
+                self._transfer_data_to_dw(table_name, columns, columns_w_types, device_id_column, query, id_pattern)
+
+    def get_transfer_queries_for_data_provider(self, columns, data_provider_config, device_id_column, table_name, avg_query_func):
+        avg_config = data_provider_config.averaging_config
+        id_patterns_and_queries = []
+        if avg_config.enabled:
+            for id_pattern, interval in avg_config.id_patterns_and_intervals:
+                query_sql = avg_query_func(table_name, interval, id_pattern)
+                tuple = (id_pattern, query_sql)
+                id_patterns_and_queries.append(tuple)
+                self.logger.debug("Added ID pattern " + id_pattern + " and interval " + str(interval))
+
+        device_id_prefix = data_provider_config.id_prefix
+        id_pattern = device_id_prefix + '%%'
+        query_sql = self._get_simple_select_where_sql(table_name, columns, device_id_column, id_pattern)
+        self.logger.debug("Added default ID pattern " + id_pattern)
+        tuple = (id_pattern, query_sql)
+        id_patterns_and_queries.append(tuple)
+
+        return id_patterns_and_queries
 
     def _get_meas_averaging_select_where_sql(self, table_name, averaging_interval, id_pattern):
         return 'SELECT sensor_id, ' \
                       'ts_round( "timestamp", ' + str(averaging_interval) + ' ) AS "timestamp", ' \
-                      'CAST(AVG(CAST(value AS float)) AS text) AS value ' \
+                      'CAST(AVG(CAST(value AS float)) AS text) AS value, ' \
+                      'FALSE as exported ' \
                'FROM "' + table_name + '" ' \
-               'WHERE sensor_id LIKE \'\'' + id_pattern + '%%\'\' AND exported=FALSE' \
+               'WHERE sensor_id LIKE \'\'' + id_pattern + '\'\' AND exported=FALSE ' \
                'GROUP BY 2, sensor_id ORDER BY sensor_id;'
 
     def _get_pred_averaging_select_where_sql(self, table_name, averaging_interval_secs, id_pattern):
@@ -194,23 +204,24 @@ class DBMaintenance(object):
                        'ts_round( "timestamp", ' + str(averaging_interval_secs) + ' ) AS "timestamp", ' \
                        'CAST(AVG(CAST(value AS float)) AS text) AS value, ' \
                        'MIN(time_received) AS time_received, ' \
-                       '\'\'' + str(averaging_interval_secs) + ' seconds\'\' AS value_interval ' \
+                       '\'\'' + str(averaging_interval_secs) + ' seconds\'\' AS value_interval, ' \
+                       'FALSE as exported ' \
                 'FROM "' + table_name + '" ' \
-                'WHERE endpoint_id LIKE \'\'' + id_pattern + '%%\'\' AND exported=FALSE' \
+                'WHERE endpoint_id LIKE \'\'' + id_pattern + '\'\' AND exported=FALSE ' \
                 'GROUP BY 2, endpoint_id ORDER BY endpoint_id;'
 
     def _get_simple_select_where_sql(self, table_name, columns, id_column, id_pattern):
-        return 'SELECT ' + columns + ' FROM "' + table_name + '" WHERE ' + id_column + ' LIKE \'\'' + id_pattern + '%%\'\' AND exported=FALSE;'
+        return 'SELECT ' + columns + ' FROM "' + table_name + '" WHERE ' + id_column + ' LIKE \'\'' + id_pattern + '\'\' AND exported=FALSE;'
 
-    def _get_update_transferred_sql(self, table_name, id_pattern):
+    def _get_update_transferred_sql(self, table_name, device_id_column, id_pattern):
         return 'UPDATE "' + table_name+ '" '\
                'SET exported=TRUE ' \
-               'WHERE sensor_id LIKE \'' + id_pattern + '%%\';'
+               'WHERE ' + device_id_column + ' LIKE \'' + id_pattern + '\';'
 
     def _get_count_not_transferred_sql(self, table_name):
         return 'SELECT COUNT(*) FROM "' + table_name + '" WHERE exported=FALSE;'
 
-    def _transfer_data_to_dw(self, table_name, columns, columns_w_types, query_sql, device_id_prefix):
+    def _transfer_data_to_dw(self, table_name, columns, columns_w_types, device_id_column, query_sql, device_id_prefix):
         count_sql = "SELECT COUNT (*) FROM \""+ table_name +"\";"
         result = self.db_manager_local.engine.execute(count_sql).first()
         count = result[0]
@@ -232,8 +243,9 @@ class DBMaintenance(object):
             return
 
         try:
-            update_sql = self._get_update_transferred_sql(table_name, device_id_prefix)
+            update_sql = self._get_update_transferred_sql(table_name, device_id_column, device_id_prefix)
             self.db_manager_local.engine.execute(update_sql)
+            self.db_manager_local.commit()
         except Exception as e:
             self.logger.exception("Exception while executing SQL: " + update_sql + "\n Exception says: " + str(e.message))
 
