@@ -27,3 +27,9 @@ certfile =
 keyfile =
 cert_reqs = verify_peer
 fail_if_no_peer_cert = True 
+
+
+[averaging]
+enable = False
+id_patterns = grundfos%
+intervals = 60

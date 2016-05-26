@@ -20,6 +20,5 @@ encoding = utf-8
 
 [averaging]
 enable = False
-default_interval_secs = [FILL IN]
-
-id_patterns = ,,,
+id_patterns = prefix1%Temperature;...
+intervals = 0;...
