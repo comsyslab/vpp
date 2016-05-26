@@ -8,6 +8,7 @@ from vpp.database.entities.core_entities import Controller, Device, PredictionEn
 from vpp.database.entities.core_entities import Sensor
 from vpp.database.schema_manager import SchemaManager
 from vpp.database.sql_alch_util import create_engine_and_session
+from vpp.util import util
 from vpp.util.util import secs_to_ms
 
 __author__ = 'ubbe'
@@ -16,6 +17,7 @@ __author__ = 'ubbe'
 class DBManager(object):
 
     def __init__(self, db_string=None, autoflush=True):
+        self._closed = False
         try:
             self.logger = logging.getLogger(__name__)
             if not db_string:
@@ -23,6 +25,7 @@ class DBManager(object):
 
             self.engine, self.session = create_engine_and_session(db_string)
             self.schema_manager = SchemaManager(self.engine)
+            util.log_open_db_connection()
         except Exception as e:
             self.logger.exception('Exception initializing DBManager: ' + e.message)
 
@@ -202,8 +205,12 @@ class DBManager(object):
         self.session.rollback()
 
     def close(self):
+        if self._closed:
+            return
         self.commit()
         self.session.close()
+        self._closed = True
+        util.log_close_db_connection()
 
     def __del__(self):
         self.close()

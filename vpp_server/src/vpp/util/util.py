@@ -7,6 +7,37 @@ import datetime
 
 from vpp.config.config_ini_parser import ConfigIniParser
 
+sem = threading.Semaphore()
+con_count = 0
+
+def log_open_db_connection():
+    global con_count
+    global sem
+    sem.acquire()
+    con_count += 1
+    string = get_thread_info() + "Opened DB connection. " + str(con_count) + " connections open"
+    sem.release()
+    logger = logging.getLogger(__name__)
+    logger.debug(string)
+    if con_count > 10:
+        logger.warning(string)
+    else:
+        logger.info(string)
+
+def log_close_db_connection():
+    global con_count
+    global sem
+    sem.acquire()
+    con_count -= 1
+    sem.release()
+    logger = logging.getLogger(__name__)
+    string = get_thread_info() + "Closed DB connection. " + str(con_count) + " connections open"
+
+    if con_count > 10:
+        logger.warning(string)
+    else:
+        logger.info(string)
+
 
 def get_fully_qualified_name(cls):
     return cls.__module__ + "." + cls.__name__
