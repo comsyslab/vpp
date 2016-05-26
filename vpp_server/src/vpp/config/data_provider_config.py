@@ -164,11 +164,11 @@ class AveragingConfig(object):
         id_patterns_string = self._parser.get(self._section_name, 'id_patterns')
         intervals_string = self._parser.get(self._section_name, 'intervals')
 
-        id_patterns_string = id_patterns_string.replace("%", "%%")
-
         result = [] #list instead of dict to maintain ordered sequence
         if id_patterns_string is None or intervals_string is None:
             return result
+
+        id_patterns_string = id_patterns_string.replace("%", "%%")
 
         id_patterns = id_patterns_string.split(";")
         intervals = intervals_string.split(";")
