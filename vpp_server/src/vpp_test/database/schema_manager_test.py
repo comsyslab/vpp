@@ -11,7 +11,7 @@ class SchemaManagerTest(unittest.TestCase):
 
     def test_get_partition_table_name_1(self):
 
-        schema_manager = SchemaManager(None)
+        schema_manager = SchemaManager(None, None)
         timezone_cph = pytz.timezone('Europe/Copenhagen')
 
         timestamp = timezone_cph.localize(datetime.datetime(year=2015, month=4, day=7, hour=0, minute=5, second=0, microsecond=0))
@@ -20,7 +20,7 @@ class SchemaManagerTest(unittest.TestCase):
 
     def test_get_partition_table_name_2(self):
 
-        schema_manager = SchemaManager(None)
+        schema_manager = SchemaManager(None, None)
         timezone_cph = pytz.timezone('Europe/Copenhagen')
 
         #Daylight savings time, should be timezone +2
@@ -56,7 +56,7 @@ class SchemaManagerTest(unittest.TestCase):
         This test verifies that timestamps around the changing times will
         still map to the same single table for that date'''
 
-        schema_manager = SchemaManager(None)
+        schema_manager = SchemaManager(None, None)
         timezone_cph = pytz.timezone('Europe/Copenhagen')
 
         #Just before entering DST, at 1:59
@@ -89,7 +89,7 @@ class SchemaManagerTest(unittest.TestCase):
 
 
     def test_get_partition_table_name_4(self):
-        schema_manager = SchemaManager(None)
+        schema_manager = SchemaManager(None, None)
         timezone_cph = pytz.timezone('Europe/Copenhagen')
 
         #2014-08-19 01:59 CET -> 2014-08-18 23:59 UTC

@@ -1,6 +1,7 @@
 class DataProviderConfigStub(object):
-    def __init__(self):
+    def __init__(self, id_prefix="test"):
         self.ftp_config = FTPConfigStub()
+        self.id_prefix = id_prefix
 
 
 class FTPConfigStub(object):

@@ -22,7 +22,7 @@ class GrundfosInterpreterTest(unittest.TestCase):
                '"reading":[{"sensorId":1152,"appartmentId":3,"value":1024.0,"timestamp":"2014-10-08T09:30:32.747Z"}]' \
                '}'
 
-        interpreter = GrundfosDataInterpreter(DataProviderConfigStub())
+        interpreter = GrundfosDataInterpreter(DataProviderConfigStub("grundfos"))
 
         meas_dicts = interpreter.interpret_data(json)['measurements']
 

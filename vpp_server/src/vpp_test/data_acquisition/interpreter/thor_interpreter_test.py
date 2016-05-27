@@ -4,6 +4,7 @@ import unittest
 import datetime
 
 from vpp.data_acquisition.interpreter.thor_interpreter import ThorInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class ThorInterpreterTest(unittest.TestCase):
@@ -44,7 +45,7 @@ class ThorInterpreterTest(unittest.TestCase):
                        [EOD]\n\
                        [EOF]'
 
-        interpreter = ThorInterpreter()
+        interpreter = ThorInterpreter(DataProviderConfigStub("thor"))
 
         result = interpreter.interpret_data(data_string)
         pred_dicts = result['predictions']
