@@ -14,7 +14,12 @@ class NrgiAbsInterpreter(AbstractDataInterpreter):
 
     def _interpret_string(self, data_string):
 
-        root = ElementTree.fromstring(data_string)
+        try:
+            root = ElementTree.fromstring(data_string)
+        except Exception as e:
+            self.logger.debug("Could not parse data string " + str(data_string))
+            return {'sensors': [], 'measurements': []}
+
         install_no = root.find('installationNumber').text
 
         sensor_id = self.id_prefix + '_' + install_no
