@@ -3,7 +3,7 @@ from vpp.database.db_manager import DBManager
 
 
 def recreate_db_schema():
-    db_manager = DBManager()
+    db_manager = DBManager(autoflush=True)
     db_manager.drop_tables()
     db_manager.create_missing_tables()
     db_manager.close()
