@@ -2,12 +2,13 @@ import logging
 import time
 
 import iso8601
+import sqlalchemy
 
 from vpp.config.config_ini_parser import ConfigIniParser
 from vpp.database.entities.core_entities import Controller, Device, PredictionEndpoint
 from vpp.database.entities.core_entities import Sensor
 from vpp.database.schema_manager import SchemaManager
-from vpp.database.sql_alch_util import create_engine_and_session
+
 from vpp.util import util
 from vpp.util.util import secs_to_ms
 
@@ -16,16 +17,37 @@ __author__ = 'ubbe'
 
 class DBManager(object):
 
-    def __init__(self, db_string=None, autoflush=True):
-        self._closed = False
+    engines = {}
+
+    @staticmethod
+    def get_engine(db_string):
+        db_host = db_string.split('@')[1]
+        if not DBManager.engines.has_key(db_string):
+            engine = sqlalchemy.create_engine(db_string, pool_size=10, echo=False)
+            DBManager.engines[db_string] = engine
+            logging.getLogger(__name__).debug("Creating DB engine " + db_host)
+        else:
+            logging.getLogger(__name__).debug("Retrieving existing DB engine " + db_host)
+
+        return DBManager.engines[db_string]
+
+    @staticmethod
+    def create_session(engine, autoflush=False):
+        SessionCls = sqlalchemy.orm.sessionmaker(bind=engine)
+        session = SessionCls()
+        session.autoflush = autoflush
+
+        return session
+
+    def __init__(self, db_string=None, autoflush=False):
         try:
             self.logger = logging.getLogger(__name__)
             if not db_string:
                 db_string = ConfigIniParser().get_db_string()
 
-            self.engine, self.session = create_engine_and_session(db_string)
-            self.schema_manager = SchemaManager(self.engine)
-            util.log_open_db_connection()
+            self.engine = self.get_engine(db_string)
+            self.session = self.create_session(self.engine, autoflush)
+            self.schema_manager = SchemaManager(self.session, self.engine)
         except Exception as e:
             self.logger.exception('Exception initializing DBManager: ' + e.message)
 
@@ -205,12 +227,8 @@ class DBManager(object):
         self.session.rollback()
 
     def close(self):
-        if self._closed:
-            return
         self.commit()
         self.session.close()
-        self._closed = True
-        util.log_close_db_connection()
 
     def __del__(self):
-        self.close()
+        self.session.close()

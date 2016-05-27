@@ -20,8 +20,9 @@ DeclarativeBase = declarative_base()
 
 
 class SchemaManager(object):
-    def __init__(self, engine):
+    def __init__(self, session, engine):
         self.logger = logging.getLogger(__name__)
+        self.session = session
         self.engine = engine
         self.measurement_base_table_name = 'Measurement'
         self.prediction_base_table_name = 'Prediction'
@@ -37,7 +38,7 @@ class SchemaManager(object):
               "GRANT ALL ON SCHEMA public TO postgres;" \
               "GRANT ALL ON SCHEMA public TO public;" \
               "COMMENT ON SCHEMA public IS 'standard public schema';"
-        self.engine.execute(sql)
+        self.session.execute(sql)
 
     def drop_measurement_tables(self):
         self._drop_table_cascading(self.measurement_base_table_name)
@@ -45,7 +46,7 @@ class SchemaManager(object):
     def _drop_table_cascading(self, table_name):
         #drop base table with cascade
         sql = 'DROP TABLE IF EXISTS \"' + table_name + '\" CASCADE;'
-        self.engine.execute(sql)
+        self.session.execute(sql)
 
     def create_missing_tables(self):
         DeclarativeBase.metadata.create_all(self.engine)
@@ -93,18 +94,18 @@ class SchemaManager(object):
     def drop_table(self, table_name):
         sql = 'DROP TABLE IF EXISTS "' + table_name + '";'
         self.logger.debug(util.get_thread_info() + sql)
-        self.engine.execute(sql)
+        self.session.execute(sql)
 
     def _create_measurement_subtable(self, timestamp):
         table_name = self._create_partition_subtable(self.measurement_base_table_name, timestamp, 'timestamp')
         sql = 'ALTER TABLE"' + table_name + '" ADD FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id) ON DELETE CASCADE;'
-        self.engine.execute(sql)
+        self.session.execute(sql)
         return self.lookup_table(table_name)
 
     def _create_prediction_subtable(self, timestamp):
         table_name = self._create_partition_subtable(self.prediction_base_table_name, timestamp, 'time_received')
         sql = 'ALTER TABLE "' + table_name + '" ADD FOREIGN KEY (endpoint_id) REFERENCES "PredictionEndpoint" (id) ON DELETE CASCADE;'
-        self.engine.execute(sql)
+        self.session.execute(sql)
         return self.lookup_table(table_name)
 
     def _create_partition_subtable(self, base_table_name, timestamp, timestamp_name='timestamp'):
@@ -121,7 +122,7 @@ class SchemaManager(object):
               '(' + constraint_sql + ') ' + \
               'INHERITS ("' + base_table_name + '");'
 
-        result_proxy = self.engine.execute(sql)
+        result_proxy = self.session.execute(sql)
 
         result_proxy.close()
         self.logger.info("Created table " + table_name)

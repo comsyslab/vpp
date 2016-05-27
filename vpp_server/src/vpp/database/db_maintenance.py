@@ -66,8 +66,8 @@ class DBMaintenance(object):
         self.db_manager_dw.create_missing_tables()
         tables = ['Building', 'FloorSection', 'Room', 'Device', 'Controller', 'Sensor', 'ControlAction',
                   'DeviceLocation', 'PredictionEndpoint']
-        for table in tables:
-            self._copy_table_contents_slow(table)
+        for i in range (0, len(tables)):
+            self._copy_table_contents_slow(tables[i])
 
     def _transfer_subtables_to_dw(self, partition_timestamp):
         if not self.dw_enabled:
@@ -118,7 +118,10 @@ class DBMaintenance(object):
         time_start = time.time()
         for record in self.db_manager_local.session.query(table_local).all():
             data = dict([(str(column), getattr(record, column)) for column in columns])
-            self.db_manager_dw.session.merge(NewRecord(**data))
+            try:
+                self.db_manager_dw.session.merge(NewRecord(**data))
+            except Exception as e:
+                self.logger.exception("Exception while merging data into DW: " + str(e.message))
             count += 1
             if count % 1000 == 0:
                 self.db_manager_dw.commit()
