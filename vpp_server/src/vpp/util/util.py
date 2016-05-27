@@ -19,7 +19,7 @@ def log_open_db_connection():
     sem.release()
     logger = logging.getLogger(__name__)
     logger.debug(string)
-    if con_count > 10:
+    if con_count > 1:
         logger.warning(string)
     else:
         logger.info(string)
@@ -33,7 +33,7 @@ def log_close_db_connection():
     logger = logging.getLogger(__name__)
     string = get_thread_info() + "Closed DB connection. " + str(con_count) + " connections open"
 
-    if con_count > 10:
+    if con_count > 1:
         logger.warning(string)
     else:
         logger.info(string)

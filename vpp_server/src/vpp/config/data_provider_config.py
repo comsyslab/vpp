@@ -158,7 +158,6 @@ class AveragingConfig(object):
 
         self.enabled = bool(parser.get(self._section_name, 'enable') == 'True' or parser.get(self._section_name, 'enable') == 'true')
         self.id_patterns_and_intervals = self._parse_intervals()
-        pass
 
     def _parse_intervals(self):
         id_patterns_string = self._parser.get(self._section_name, 'id_patterns')
@@ -173,8 +172,6 @@ class AveragingConfig(object):
         id_patterns = id_patterns_string.split(";")
         intervals = intervals_string.split(";")
 
-
-
         if len(id_patterns) != len(intervals):
             self.logger.warning("Bad configuration in section " + self._section_name + ": Found " + str(len(id_patterns)) +
                                 " ID patterns and " + str(len(intervals)) + " intervals. Should be equal.")
@@ -182,7 +179,10 @@ class AveragingConfig(object):
 
         for i in range(0, len(id_patterns)):
             id_pattern = id_patterns[i].strip()
-            interval = int(intervals[i].strip())
+            try:
+                interval = int(intervals[i].strip())
+            except ValueError:
+                interval = 0
             tuple = (id_pattern, interval)
             result.append(tuple)
 
