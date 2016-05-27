@@ -9,7 +9,7 @@ def run():
     process_sensors(result)
 
 def process_sensors(result):
-    db_manager = DBManager()
+    db_manager = DBManager(autoflush=True)
     existing_count = 0
     created_count = 0
     for grundfos_id, description, unit in result:
