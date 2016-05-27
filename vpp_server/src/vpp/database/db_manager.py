@@ -210,7 +210,7 @@ class DBManager(object):
         sql = table.insert().values(endpoint_id=pred_endpoint_id, timestamp=timestamp_dt, value=value, time_received=time_received_dt, value_interval=value_interval, exported=False)
         try:
             self.session.execute(sql)
-            self.logger.debug("Stored new prediction " + str(value) + " for endpoint" + str(pred_endpoint_id))
+            self.logger.debug("Stored new prediction " + str(value) + " for endpoint " + str(pred_endpoint_id))
         except Exception as e:
             self.logger.exception(e)
 
@@ -227,8 +227,8 @@ class DBManager(object):
         self.session.rollback()
 
     def close(self):
-        self.commit()
+        self.session.commit()
         self.session.close()
 
     def __del__(self):
-        self.session.close()
+        self.close()
