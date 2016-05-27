@@ -22,7 +22,7 @@ class NordpoolspotInterpreterTest(unittest.TestCase):
                        28.10.15;;;;;;;;;;;;;;;;;;;;;;;;;;28.10.15;;;;;;;;;\n\
                        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
 
-        interpreter = NordpoolspotInterpreter(DataProviderConfigStub())
+        interpreter = NordpoolspotInterpreter(DataProviderConfigStub("nordpool_elspot_odense"))
 
         result = interpreter.interpret_data(data_string)
         meas_dicts = result['measurements']
@@ -76,7 +76,7 @@ class NordpoolspotInterpreterTest(unittest.TestCase):
                        ;1;2;3A;3B;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;Kjøredag;\n\
                        29.03.15;73,93;66,69;;;120,08;160,71;162,65;165,71;162,95;168,92;174,23;177,14;177,74;176,62;175,72;174,23;173,78;174,75;177,44;180,87;181,99;182,44;181,40;179,90;176,24;29.03.15;162,88;;;Summertime;;;;;'
 
-        interpreter = NordpoolspotInterpreter()
+        interpreter = NordpoolspotInterpreter(DataProviderConfigStub("nordpool_elspot_odense"))
 
         result = interpreter.interpret_data(data_string)
         meas_dicts = result['measurements']
@@ -107,7 +107,7 @@ class NordpoolspotInterpreterTest(unittest.TestCase):
                        ;1;2;3A;3B;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;Kjøredag;\n\
                        25.10.15;194,09;203,24;219,68;123,45;219,16;219,31;216,11;205,92;270,49;279,94;301,96;308,13;334,76;343,10;327,99;326,21;343,47;385,95;432,37;372,48;325,47;244,30;242,44;229,50;226,97;29.12.14;282,21;;;;Odense priser for Elspot i 2015;;;;'
 
-        interpreter = NordpoolspotInterpreter(DataProviderConfigStub())
+        interpreter = NordpoolspotInterpreter(DataProviderConfigStub("nordpool_elspot_odense"))
 
         result = interpreter.interpret_data(data_string)
         meas_dicts = result['measurements']

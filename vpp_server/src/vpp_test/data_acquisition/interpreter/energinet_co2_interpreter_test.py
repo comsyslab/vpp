@@ -11,6 +11,7 @@ from vpp.data_acquisition.interpreter.energinet_co2_interpreter import Energinet
 from vpp.data_acquisition.interpreter.energinet_online_interpreter import EnerginetOnlineInterpreter
 from vpp.data_acquisition.interpreter.grundfos_data_interpreter import GrundfosDataInterpreter
 from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmDataInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class EnerginetCO2InterpreterTest(unittest.TestCase):
@@ -22,7 +23,7 @@ class EnerginetCO2InterpreterTest(unittest.TestCase):
                '01:00-02:00;233\n'\
                '23:00-24:00;261'
 
-        interpreter = EnerginetCO2Interpreter()
+        interpreter = EnerginetCO2Interpreter(DataProviderConfigStub("energinet_CO2"))
 
         result = interpreter.interpret_data(data)
 

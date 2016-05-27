@@ -6,6 +6,7 @@ import datetime
 from vpp.data_acquisition.interpreter.nrgi_abs_interpreter import NrgiAbsInterpreter
 from vpp.data_acquisition.interpreter.nrgi_delta_interpreter import NrgiDeltaInterpreter
 from vpp.data_acquisition.interpreter.thor_interpreter import ThorInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class NrgiDeltaInterpreterTest(unittest.TestCase):
@@ -25,24 +26,24 @@ class NrgiDeltaInterpreterTest(unittest.TestCase):
                          </meter-readings>\n\
                        </deltavalues>'
 
-        interpreter = NrgiDeltaInterpreter()
+        interpreter = NrgiDeltaInterpreter(DataProviderConfigStub('nrgi_delta'))
 
         result = interpreter.interpret_data(data_string)
         measurements = result['measurements']
         sensors = result['sensors']
 
         self.assertEqual(len(sensors), 1)
-        self.assertEqual(sensors[0]['sensor_id'], 'nrgi_571313115104261182_delta')
+        self.assertEqual(sensors[0]['sensor_id'], 'nrgi_delta_571313115104261182')
         self.assertEqual(sensors[0]['attribute'], 'meter-delta')
         self.assertEqual(sensors[0]['unit'], 'kWh')
 
         self.assertEqual(len(measurements), 2)
 
-        self.assertEqual(measurements[0]['sensor_id'], 'nrgi_571313115104261182_delta')
+        self.assertEqual(measurements[0]['sensor_id'], 'nrgi_delta_571313115104261182')
         self.assertEqual(float(measurements[0]['value']), 0.02)
         self.assertEqual(measurements[0]['timestamp'], '2014-03-04T00:00:00.000+01:00')
 
-        self.assertEqual(measurements[1]['sensor_id'], 'nrgi_571313115104261182_delta')
+        self.assertEqual(measurements[1]['sensor_id'], 'nrgi_delta_571313115104261182')
         self.assertEqual(float(measurements[1]['value']), 0.01)
         self.assertEqual(measurements[1]['timestamp'], '2014-03-04T00:15:00.000+01:00')
 

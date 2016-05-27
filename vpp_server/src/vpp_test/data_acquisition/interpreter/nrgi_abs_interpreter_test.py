@@ -5,6 +5,7 @@ import datetime
 
 from vpp.data_acquisition.interpreter.nrgi_abs_interpreter import NrgiAbsInterpreter
 from vpp.data_acquisition.interpreter.thor_interpreter import ThorInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class NrgiAbsInterpreterTest(unittest.TestCase):
@@ -21,14 +22,14 @@ class NrgiAbsInterpreterTest(unittest.TestCase):
                            </meter-readings>\n\
                        </absolutevalues>'
 
-        interpreter = NrgiAbsInterpreter()
+        interpreter = NrgiAbsInterpreter(DataProviderConfigStub('nrgi_abs'))
 
         result = interpreter.interpret_data(data_string)
         measurements = result['measurements']
         sensors = result['sensors']
 
         self.assertEqual(len(sensors), 1)
-        expected_sensor_id = 'nrgi_571313115104260611_abs'
+        expected_sensor_id = 'nrgi_abs_571313115104260611'
         self.assertEqual(sensors[0]['sensor_id'], expected_sensor_id)
         self.assertEqual(sensors[0]['attribute'], 'meter-reading')
         self.assertEqual(sensors[0]['unit'], 'kWh')

@@ -33,7 +33,7 @@ class EnerginetOnlineInterpreterTest(unittest.TestCase):
                "Dato og tid      ;      1 ;      2 ;      3 ;      4 ;      5 ;      6 ;      7 ;      8 ;      9 ;     10 ;     11 ;     12 ;     13 ;     14 ;     15 ;     16 ;     17 ;     18 ;     19 ;     20 ;\n" \
                "2014-08-19 00:05 ;    441 ;    297 ;    210 ;     63 ;   2541 ;    696 ;   -949 ;   -734 ;    986 ;  -1058 ;    600 ;     -7 ;   -590 ;     11 ;      6 ;    144 ;   1172 ;   2065 ;    123 ;    456 ;"
 
-        interpreter = EnerginetOnlineInterpreter(DataProviderConfigStub())
+        interpreter = EnerginetOnlineInterpreter(DataProviderConfigStub("energinet"))
 
         data_dict = interpreter.interpret_data(data)
 

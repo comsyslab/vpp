@@ -5,6 +5,7 @@ import sys
 import unittest
 
 from vpp.data_acquisition.interpreter.smartamm_data_interpreter import SmartAmmDataInterpreter
+from vpp_test.data_acquisition.interpreter.data_provider_config_stub import DataProviderConfigStub
 
 
 class SmartammInterpreterTest(unittest.TestCase):
@@ -27,7 +28,7 @@ class SmartammInterpreterTest(unittest.TestCase):
                     '"Cluster":"Metering"}'''
 
 
-        interpreter = SmartAmmDataInterpreter()
+        interpreter = SmartAmmDataInterpreter(DataProviderConfigStub("smartamm"))
 
         data_dict = interpreter.interpret_data(json)
         meas_dicts = data_dict['measurements']
