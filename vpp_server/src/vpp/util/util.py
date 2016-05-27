@@ -33,7 +33,7 @@ def log_close_db_connection():
     logger = logging.getLogger(__name__)
     string = get_thread_info() + "Closed DB connection. " + str(con_count) + " connections open"
 
-    if con_count >= 1:
+    if con_count >= 2:
         logger.warning(string)
     else:
         logger.info(string)
