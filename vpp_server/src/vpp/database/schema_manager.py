@@ -38,7 +38,7 @@ class SchemaManager(object):
               "GRANT ALL ON SCHEMA public TO postgres;" \
               "GRANT ALL ON SCHEMA public TO public;" \
               "COMMENT ON SCHEMA public IS 'standard public schema';"
-        self.session.execute(sql)
+        self.engine.execute(sql)
 
     def drop_measurement_tables(self):
         self._drop_table_cascading(self.measurement_base_table_name)
