@@ -100,12 +100,14 @@ class SchemaManager(object):
         table_name = self._create_partition_subtable(self.measurement_base_table_name, timestamp, 'timestamp')
         sql = 'ALTER TABLE"' + table_name + '" ADD FOREIGN KEY (sensor_id) REFERENCES "Sensor" (id) ON DELETE CASCADE;'
         self.session.execute(sql)
+        self.session.commit()
         return self.lookup_table(table_name)
 
     def _create_prediction_subtable(self, timestamp):
         table_name = self._create_partition_subtable(self.prediction_base_table_name, timestamp, 'time_received')
         sql = 'ALTER TABLE "' + table_name + '" ADD FOREIGN KEY (endpoint_id) REFERENCES "PredictionEndpoint" (id) ON DELETE CASCADE;'
         self.session.execute(sql)
+        self.session.commit()
         return self.lookup_table(table_name)
 
     def _create_partition_subtable(self, base_table_name, timestamp, timestamp_name='timestamp'):
