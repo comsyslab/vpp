@@ -86,9 +86,9 @@ class AbstractFetchingAdapter(AbstractDataAdapter):
     def join(self):
         self.timer.join()
 
-    def fetch_and_process_data(self, db_manager=None):
+    def fetch_and_process_data(self):
         data_strings = self.fetch_data()
-        self.data_provider.interpret_and_process_data(data_strings, db_manager)
+        self.data_provider.interpret_and_process_data(data_strings)
 
     @abstractmethod
     def fetch_data(self):

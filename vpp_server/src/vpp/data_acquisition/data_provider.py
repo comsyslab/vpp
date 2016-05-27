@@ -32,10 +32,10 @@ class DataProvider(object):
     def join(self):
         self.data_adapter.join()
 
-    def interpret_and_process_data(self, data_strings, db_manager=None):
+    def interpret_and_process_data(self, data_strings):
         start_time = time.time()
         interpreted_data = self.data_interpreter.interpret_data(*data_strings)
-        self.data_processor.process_data(interpreted_data, db_manager)
+        self.data_processor.process_data(interpreted_data)
         time_spent = time.time() - start_time
         self.logger.info("Processed message in " + str(util.secs_to_ms(time_spent)) + " ms.")
 

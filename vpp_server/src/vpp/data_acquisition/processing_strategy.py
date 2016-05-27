@@ -55,7 +55,7 @@ class DefaultMeasurementProcessingStrategy(AbstractProcessingStrategy):
 class DefaultPredictionProcessingStrategy(AbstractProcessingStrategy):
 
     def process_data(self, data, db_manager=None):
-        if not db_manager:  # putting the call to DBManager() directly as default parameter above
+        if db_manager is None:  # putting the call to DBManager() directly as default parameter above
             db_manager = DBManager(autoflush=False)  # apparently causes the same instance to be reused (?).
         endpoint_dicts = data['endpoints']
         pred_dicts = data['predictions']
