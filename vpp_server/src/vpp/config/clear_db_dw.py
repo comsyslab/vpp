@@ -4,7 +4,7 @@ from vpp.database.db_manager import DBManager
 
 
 def recreate_db_schema():
-    db_manager_dw = DBManager(ConfigIniParser().get_db_string('DB-DW'))
+    db_manager_dw = DBManager(ConfigIniParser().get_db_string('DB-DW'), autoflush=True)
     db_manager_dw.drop_tables()
     db_manager_dw.create_missing_tables()
     db_manager_dw.close()
