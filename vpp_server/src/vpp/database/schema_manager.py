@@ -49,9 +49,12 @@ class SchemaManager(object):
         self.session.execute(sql)
 
     def create_missing_tables(self):
-        DeclarativeBase.metadata.create_all(self.engine)
-        self.create_measurement_basetable()
-        self.create_prediction_basetable()
+        try:
+            DeclarativeBase.metadata.create_all(self.engine)
+            self.create_measurement_basetable()
+            self.create_prediction_basetable()
+        except Exception as e:
+            self.logger.exception("Exception while creating tables: " + str(e.message))
 
     def create_measurement_basetable(self):
         self.measurement_base_table = Table(self.measurement_base_table_name,
