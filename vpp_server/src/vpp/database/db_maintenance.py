@@ -84,8 +84,6 @@ class DBMaintenance(object):
             self.db_manager_dw.schema_manager.get_or_create_prediction_subtable(partition_timestamp)
             self._copy_pred_table(pred_table_name)
 
-        self.db_manager_dw.commit()
-
     def _drop_for_timestamp(self, timestamp):
         self.logger.debug("DBMaintenance dropping subtables for time " + str(timestamp))
         self.db_manager_local.commit()  # Necessary to prevent DROP TABLE from blocking
@@ -100,6 +98,8 @@ class DBMaintenance(object):
         self.db_manager_local.schema_manager.drop_table(pred_table_name)
 
     def _check_all_exported(self, table_name):
+        if not self._table_exists_locally(table_name):
+            return
         sql = self._get_count_not_transferred_sql(table_name)
         result = self.db_manager_local.engine.execute(sql).first()
         count = result[0]
@@ -241,6 +241,7 @@ class DBMaintenance(object):
         try:
             transfer_result = self.db_manager_dw.engine.execute(transfer_sql)
             result_count = transfer_result.rowcount
+            self.db_manager_dw.commit()
         except Exception as e:
             self.logger.exception("Exception while executing SQL: " + transfer_sql + "\n Exception says: " + str(e.message))
             return
