@@ -52,7 +52,7 @@ class DBMaintenance(object):
             secs_to_look_back = self.window_seconds + part_back_index * self.partitition_period_seconds
             partition_timestamp = datetime.datetime.now(tz=tzlocal.get_localzone()) - datetime.timedelta(seconds=secs_to_look_back)
             self._transfer_subtables_to_dw(partition_timestamp)
-            #self._drop_for_timestamp(partition_timestamp)
+            self._drop_for_timestamp(partition_timestamp)
 
         self.db_manager_local.close()
         self.db_manager_dw.close()
