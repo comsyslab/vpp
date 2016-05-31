@@ -1,13 +1,23 @@
-\chapter{Overview}
+% !TEX root =  main.tex
+\chapter{Overview} \label{ch:overview}
+
+This report provides technical documentation of the VPP software located in \url{https://github.com/comsyslab/vpp}. To use the software, read chapter \ref{ch:overview} and \ref{ch:how_to_run}. To modify/extend the software, read chapter \ref{ch:details} as well.
 
 \section{Purpose}
 
 The purpose of the Virtual Power Plant (VPP) platform is to:
 \begin{itemize}
+
 	\item receive measurements from sensors deployed in a building.
 	\item receive current and forecast information from external sources on grid load, electricity price and more.
 	\item process measurements and external information to make decisions on power usage.
 	\item actuate devices deployed in a building to implement above mentioned decisions.
 \end{itemize} 
 
+In the current state, only the two first bullets (i.e. data collection) have been implemented. In the design document located in \url{https://github.com/comsyslab/vpp/blob/master/documentation/design_doc/main.pdf}, the original ideas and visions for further extensions to the system are documented. Note that the technical information in the design document is not up-to-date. The present document is intended to provide a comprehensive description of the software in its current state (May 31, 2016).
+
+\section{Functionality}
+The system can receive measurement and prediction data from data providers via FTP, SFTP and RabbitMQ. There is thus no direct connection to physical sensors. 
+
+Received data is stored in a local database which employs a \emph{Rolling Window} scheme: Data is put into subtables according to timestamp (one subtable for e.g. every 24 hours), and when a subtables ages beyond the configured time limit (e.g. 5 days), the contents of it is transferred to the external data warehouse database and the table is deleted. This enables deployment of the VPP software on machines with limited disk size.
 
