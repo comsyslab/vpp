@@ -1,7 +1,147 @@
 % !TEX root =  main.tex
-\chapter{How to run}
+\chapter{Configuration} \label{ch:configuration}
 
-\section{Configuration}
+\section{Main configuration file}
+The main configuration file is \texttt{vpp/vpp\_server/resources/config.ini}.
+In the repository, a \texttt{config.ini.default} is provided. It is shown and explained below:
+
+\lstset{language=C, basicstyle=\ttfamily}  
+\begin{lstlisting}
+[DB]
+user=[FILL IN]
+password=[FILL IN]
+host=[external address of localhost] 
+database=vpp
+measurement_partition_period_hours=24 
+rolling_window_length_days=7
+
+[DB-DW]
+enabled=False
+user=[FILL IN]
+password=[FILL IN]
+host=[host.sub.domain.dk]
+database=vpp_dw
+
+[LOG]
+level=DEBUG
+\end{lstlisting}
+
+\subsection{Section \texttt{[DB]}}
+Section \texttt{[DB]} specifies how to connect to the Rolling Window DB that is intended to run on the same machine as the VPP application. Note that it is perfectly possible to run the database on a different machine if desired.
+
+\paragraph{\texttt{host}} This should be the external address (hostname or IP) of the machine running the database - usually the same as is running the application. While writing \texttt{localhost} is sufficient for the application to access the DB, this address is also used by the data warehouse to extract data for export, and therefore it must be the machine's actual network address.
+Port \texttt{5432} (the PostgreSQL default) is assumed. Note that this port must be accessible from the data warehouse machine, as the data export SQL is sent to and executed in the data warehouse DB, connecting back to the main DB.
+
+\paragraph{\texttt{database}} The name of the database to connect to. 
+
+\paragraph{\texttt{measurement\_partition\_period\_hours}} Incoming measurements and predictions will be stored in subtables covering time intervals of the number of hours specified here. Should be a divisor of 24 (e.g 24, 12, 6). Behavior with other values has not been tested. The partitioning happens with respect to UTC, not the local time of the server.
+
+\paragraph{\texttt{rolling\_window\_length\_days}} The number of days to retain subtables with measurements and predictions before exporting the data to data warehouse and deleting the tables. The current day is not counted, meaning that a value of 1 will cause data received during June 10th to be exported sometime during June 12th, since the last data of June 10th will at that time be at least 24 hours old. Behavior with value 0 has not been tested.
+
+\subsection{Section \texttt{[DB-DW]}}
+
+\paragraph{\texttt{enabled}} If \texttt{true}, data export to data warehouse and subsequent local deletion will be performed. If \texttt{false}, data will be retained in the local database forever. In this case, configuration of user, password, host and database name may be omitted, and the {\texttt{rolling\_window\_length\_days} value above is irrelevant. Values are not case sensitive.
+	
+\subsection{Section \texttt{[LOG]}}
+\paragraph{\texttt{level}} Specifies the level of logging that will be output in \\ \texttt{vpp\_server/logs/console.log}. Valid values (case sensitive): \texttt{DEBUG, INFO, WARNING, ERROR, FATAL, CRITICAL} (the last two are equal) and integer values. \texttt{DEBUG} is level 10. Setting value 9 will add messages on files skipped when fetching from FTP servers. The log level can be changed while the application is running and should take effect within 5 seconds.
+
+No file rotation is performed, which can cause log file to grow very large if the log level is set to \texttt{INFO} or lower and a high volume of messages is received. It is recommended to set level \texttt{WARNING}, in which case any problems will be reported, but nothing else.
+
+Note that the log file is cleared on application startup.
+
+\section{Data provider: measurements from FTP}
+
+The retrieval of data is configured by placing a \texttt{.ini} file for each data source in folder \texttt{vpp\_server/resources/data\_providers}. 
+
+
+File \texttt{ftp\_energinet\_online.ini}:
+\begin{lstlisting}
+[data_provider]
+adapter = vpp.data_acquisition.adapter.ftp_adapter.FTPAdapter
+interpreter = vpp.data_acquisition.interpreter.energinet_online_interpreter.EnerginetOnlineInterpreter
+processor = vpp.data_acquisition.processing_strategy.DefaultMeasurementProcessingStrategy
+id_prefix = energinet
+
+[fetch]
+interval = 600
+adapter_date_strategy = vpp.data_acquisition.adapter.adapter_date_strategy.DefaultAdapterFileDateStrategy
+last_fetch_adapter = 2016-05-27T00:00:00
+fetch_again_when_date_equal = True
+last_fetch_interpreter = 2016-05-27T14:55:00
+
+[ftp]
+host = 194.239.2.256
+username = ftp000123
+password = ...
+port = 21
+remote_dir = Onlinedata
+file_pattern = ([0-9]{4})([0-1][0-9])([0-3][0-9])_onlinedata\.txt
+encoding = iso-8859-1
+
+[averaging]
+enable = True
+id_patterns = energinet_1; energinet_2; energinet_3; energinet_%%
+intervals = 900; 1800; 3600; 7200
+\end{lstlisting}
+
+\subsection{Section \texttt{[data\_provider]}}
+This section configures the protocol for obtaining data, and how they should be interpreted and stored. The adapters, interpreters and processors (listed below) can be combined in any way, but the interpreter obviously must be matched to the data fetched/received by the data provider. It also would be pointless to combine a PredictionProcessingStrategy with a data source and interpreter that provides measurements.
+
+\paragraph{\texttt{adapter}} This specifies which data adapter to use for retrieving data from the provider. Available adapters:
+
+\texttt{vpp.data\_acquisition.adapter.ftp\_adapter.FTPAdapter}
+
+\texttt{[...].ftp\_adapter.SFTPAdapter}
+
+\texttt{[...].rabbit\_mq\_adapter.RabbitMQAdapter}
+
+The adapter will handle communication with the provider and extract a raw text body and pass it to the data interpreter.
+
+
+\paragraph{\texttt{interpreter}} This specifies which data interpreter to use for parsing the received raw text messages and transforming them to an internal data format that is then passed to the processor responsible for storing measurements (or predictions) in the database. Available interpreters:
+
+\texttt{vpp.data\_acquisition.interpreter.energinet\_online\_interpreter.EnerginetOnlineInterpreter}
+
+\texttt{[...].energinet\_co2\_interpreter.EnerginetCO2Interpreter}
+
+\texttt{[...].nordpoolspot\_interpreter.NordpoolspotInterpreter}
+
+\texttt{[...].thor\_interpreter.ThorInterpreter}
+
+\texttt{[...].nrgi\_abs\_interpreter.NrgiAbsInterpreter}
+
+\texttt{[...].nrgi\_delta\_interpreter.NrgiDeltaInterpreter}
+
+\texttt{[...].grundfos\_data\_interpreter.GrundfosDataInterpreter}
+
+\texttt{[...].smartamm\_data\_interpreter.SmartAmmDataInterpreter}
+
+\paragraph{\texttt{processor}} Responsible for storing measurements or predictions in the database. Available processors:
+
+\texttt{vpp.data\_acquisition.processing\_strategy.DefaultMeasurementProcessingStrategy}
+
+\texttt{vpp.data\_acquisition.processing\_strategy.DefaultPredictionProcessingStrategy}
+
+\paragraph{\texttt{id\_prefix}} Among the data received will be sensors (logical sources of measurements) and endpoints (logical sources of predictions). The id\_prefix specifies a prefix for the database ID of the sensors and endpoints which makes it easier to distinguish them and their measurements/predictions in the database.
+
+\subsection{Section \texttt{[fetch]}}
+Since the FTPAdapter must actively fetch data, this section is required. 
+
+\paragraph{\texttt{interval}} 
+= 600
+
+\paragraph{\texttt{adapter\_date\_strategy}} 
+= vpp.data\_acquisition.adapter.adapter\_date\_strategy.DefaultAdapterFileDateStrategy
+
+
+
+\paragraph{\texttt{fetch\_again\_when\_date\_equal}} = True
+
+\paragraph{\texttt{last\_fetch\_adapter}} = 2016-05-27T00:00:00
+\paragraph{\texttt{last\_fetch\_interpreter}} = 2016-05-27T14:55:00
+
+
+\chapter{How to run} \label{ch:how_to_run}
 
 \section{Scripts}
 
