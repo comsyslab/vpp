@@ -162,4 +162,59 @@ The \texttt{DefaultAdapterFileDateStrategy} will fetch a file if the date is lat
 
 \subsection{Section \texttt{[averaging]}}
 
-TODO
+\paragraph{\texttt{enable}} If \texttt{True} or \texttt{true}, data transferred to data warehouse will be averaged over the intervals specified below in order to reduce data size in data warehouse. If not, entries will be bulk copied as-is.
+
+\paragraph{\texttt{id\_patterns}} List of patterns of sensor/endpoint IDs to perform averaging for. Patterns are used in a PostgreSQL \texttt{LIKE} comparison. The wildcard \texttt{\%} must be written twice due to Python's string parsing. Thus, to match all sensors starting with prefix \texttt{energinet}, write \texttt{energinet\%\%}. Patterns should be separated with semicolon \texttt{;}. Every pattern should have a corresponding interval in the \texttt{intervals} list below. The patterns are processed in order, so it makes sense to add a catch-all pattern at the end of the list.
+
+\paragraph{\texttt{intervals}}
+Semicolon-separated list of time intervals in seconds, each interval corresponding to the pattern with the same position in the list above.
+
+
+\section{Data provider: measurements from RabbitMQ}
+File \texttt{....ini}:
+\begin{lstlisting}
+[data_provider]
+adapter = 
+vpp.data_acquisition.adapter.rabbit_mq_adapter.RabbitMQAdapter
+interpreter = 
+vpp.data_acquisition.interpreter.smartamm_data_interpreter.SmartAmmDataInterpreter
+processor = 
+vpp.data_acquisition.processing_strategy.DefaultMeasurementProcessingStrategy
+id_prefix = smartamm
+
+[exchange]
+username = user123
+password = 12345
+serverAddressList = ecosensemq02.cs.au.dk
+port = 5672
+sslConnection = False
+exchangeName = ecosense-exchange
+exchangeDurable = True
+exchangeType = topic
+
+[queue]
+name = vpp-listener-queue-new
+routingKeys = smartamm.#
+durable = False
+exclusive = False
+autoDelete = True
+
+[ssl_options]
+cacerts = /etc/rabbitmq/ssl/tesca/cacert.pem
+certfile = /etc/rabbitmq/ssl/client/cert.pem
+keyfile = /etc/rabbitmq/ssl/client/key.pem
+cert_reqs = verify_peer
+fail_if_no_peer_cert = True 
+
+[averaging]
+enable = False
+id_patterns = smartamm%%RMSCurrent%%; smartamm%%ActivePower%%;
+intervals = 60; 120
+\end{lstlisting}
+
+\subsection{Section \texttt{[exchange]}}
+Since the FTPAdapter must actively fetch data, this section is required. 
+
+\subsection{Section \texttt{[queue]}}
+
+\subsection{Section \texttt{[ssl\_options]}}
