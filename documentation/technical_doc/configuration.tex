@@ -169,9 +169,9 @@ The \texttt{DefaultAdapterFileDateStrategy} will fetch a file if the date is lat
 \paragraph{\texttt{intervals}}
 Semicolon-separated list of time intervals in seconds, each interval corresponding to the pattern with the same position in the list above.
 
-
+\newpage
 \section{Data provider: measurements from RabbitMQ}
-File \texttt{....ini}:
+File \texttt{rabbitmq\_ecosense\_smartamm.ini}:
 \begin{lstlisting}
 [data_provider]
 adapter = 
@@ -213,8 +213,15 @@ intervals = 60; 120
 \end{lstlisting}
 
 \subsection{Section \texttt{[exchange]}}
-Since the FTPAdapter must actively fetch data, this section is required. 
+
+
+\paragraph{\texttt{serverAddressList}} The RabbitMQ exchange server to connect to. The "\texttt{List}" is misleading. Only a single host should be specified.
+
+\paragraph{\texttt{sslConnection}} If \texttt{True}, the \texttt{Pika} library will enable SSL when connecting. Not tested.
+
+For the remaining configuration, look at \url{https://www.rabbitmq.com/getstarted.html} to understand how RabbitMQ works.
 
 \subsection{Section \texttt{[queue]}}
+Specifies the RabbitMQ queue to connect to in the exchange with various parameters. Again: Look at \url{https://www.rabbitmq.com/getstarted.html} to understand how RabbitMQ works.
 
-\subsection{Section \texttt{[ssl\_options]}}
+\subsection{Section \texttt{[ssl\_options]}} This section is not parsed, regardless of \texttt{sslConnection} seeting above.

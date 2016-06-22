@@ -3,6 +3,25 @@
 
 
 \chapter{How to run} \label{ch:how_to_run}
+The various scripts are placed in \texttt{vpp\_server/run} and explained below. All scripts exist in a Linux (\texttt{.sh}) and Windows (\texttt{.bat}) version.
 
 \section{Scripts}
 
+\paragraph{\texttt{clear\_db.sh}}
+Use with care. Connects to the database specified in the \texttt{[DB]} section of \texttt{config.ini} and drops and recreates the entire database schema \emph{without prompting for confirmation}. This can be used to initialize a new database.
+
+\paragraph{\texttt{clear\_db\_dw.sh}}
+Use with care. Identical to \texttt{clear\_db.sh} above, but connects to the database specified in the \texttt{[DB-DW]} section of \texttt{config.ini}. Note that this may contain data accumulated over a long time.
+
+
+\paragraph{\texttt{run\_tests.sh}}
+Executes all unit tests and outputs results to console.
+
+\paragraph{\texttt{start\_server.sh}}
+Launches the VPP server. \\
+Logging is output in \texttt{vpp\_server/logs/console.log}.
+
+
+\paragraph{\texttt{stop\_server.sh}}
+Stops a running server. 
+This is implemented in a very primitive fashion: The script creates a file named \texttt{stop} which the running server scans for every 5 seconds. 
