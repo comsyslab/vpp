@@ -1,9 +1,9 @@
 % !TEX root =  main.tex
 \newpage
 \chapter{Application design} \label{ch:sw_design}
-The application will be programmed in object-oriented Python, using Python processes to enable concurrent processing. 
+The VPP application is implemented in object-oriented Python, using Python processes to enable concurrent processing. 
 
-Using processes instead of threads is necessary to utilize both cores in the intended machine, since Python employs a \emph{Global Interpreter Lock} which prevents threads within the same Python interpreter from executing concurrently. Using processes mitigates this as each process will run with its own interpreter. 
+Using processes instead of threads is necessary to utilize both cores in the intended machine, since Python employs a \emph{Global Interpreter Lock} which prevents threads within the same Python interpreter from executing concurrently. Using processes mitigates this as each process will run with its own interpreter. For this prototype, the multiprocessing could probably have been omitted in favor of simpler multithreading since CPU load has not been an issue at all.
 
 \subsection{Static structure}
 structure is shown in figure \ref{figureClassDiagram} and elaborated below:
