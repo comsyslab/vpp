@@ -1,57 +1,39 @@
 % !TEX root =  main.tex
 \newpage
 \chapter{Application design} \label{ch:sw_design}
-The VPP application is implemented in object-oriented Python, using Python processes to enable concurrent processing. 
+The VPP application is implemented in object-oriented Python. The static structure and runtime behavior is det
 
-Using processes instead of threads is necessary to utilize both cores in the intended machine, since Python employs a \emph{Global Interpreter Lock} which prevents threads within the same Python interpreter from executing concurrently. Using processes mitigates this as each process will run with its own interpreter. For this prototype, the multiprocessing could probably have been omitted in favor of simpler multithreading since CPU load has not been an issue at all.
-
-\subsection{Static structure}
-structure is shown in figure \ref{figureClassDiagram} and elaborated below:
+\section{Static structure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/class_overview}
-    \caption{Class diagram. }
+    \includegraphics[width=0.5\textwidth]{figures/class_overview}
+    \caption{Package diagram}
     \label{figureClassDiagram}
 \end{figure}
 
-The server application is roughly structured in a three-layered architecture with the \texttt{database} at lowest layer, the \texttt{core}, \texttt{control} and \texttt{data\_acquisition} packages as the middle "domain" layer and the \texttt{service} package as the top layer, providing an external interface. 
-
-The \texttt{webserver} will access the \texttt{service} layer to provide GUI. It will be a separate application deployed on the same machine. See section \ref{subsection:webserver}.
-
+The application is roughly structured in a layered architecture with the \texttt{database} as the bottom layer and the \texttt{core} and \texttt{data\_acquisition} packages as the domain layer. A \texttt{service} package could be added as the top layer, providing an external interface. The packages are explained in detail below.
 
 
 \subsubsection{Package \texttt{vpp.core}}
-This package implements the core logic of the VPP server. Classes are explained in detail below.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/class_core}
     \caption{Core}
-    \label{figureClassDiagram}
 \end{figure}
 
-\texttt{Coordinator} is responsible for instantiating other classes and processes. For clarity, associations are not shown in the diagram.\\
+\texttt{Coordinator} is called by \texttt{start\_server.sh} and launches the entire application. Mainly, it instantiates the \texttt{DataProviderProcess} and the \texttt{DBMaintenanceProcess}. The processes are each wrapped in a \texttt{ProcessHandle} which handles process launch and termination and receives log messages from the underlying process.
 
-\texttt{DataProviderProcessManager} launches the process which instantiates and manages the individual data providers that will supply measurements and predictions. \\
-
-\texttt{ControllerManager} instantiates and keeps track of controllers for actuating physical devices. This will run in a separate process that periodically will check for and execute scheduled actions. It is expected that one process for handling all actions will be sufficient. \\
-
-\texttt{StatusMonitor} runs a process that will poll \texttt{DataProviderManager} and \texttt{ControllerManager} for status and make this information available to the service layer.\\
-
-\texttt{DBMonitor} runs a process that will monitor the database status. It will give information on when the last measurements were received and similar.\\
-
-\texttt{Predictor} will run a process to create predictions based the available data.\\
-
-\texttt{DBAccess} provides a clean interface for retrieving and posting data from and to the database. 
 
 \subsubsection{Package \texttt{vpp.data\_acquisition}}
+TODO
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/class_data_acquisition}
     \caption{Data acquisition}
-    \label{figureClassDiagram}
+    \label{}
 \end{figure}
 
 This package contains the framework for connecting to various sources of measurement and prediction data. Class \texttt{DataProvider} can be instantiated in a separate thread to model a single source of data. Each \texttt{DataProvider} instance employs a suitable \texttt{DataAdapter} to communicate with for instance a message queue or a SmartAmm server.
@@ -70,7 +52,9 @@ This package contains the code that interfaces directly with the database.
 Communication with the database could be implemented simply using SQL, or we could opt for an object-relational mapper (ORM) framework such as SQLAlchemy.
 
 
-\subsection{Runtime processes}
+\section{Runtime processes}
+
+Separate Python processes are deployed to enable concurrent processing. Using processes instead of threads is necessary to fully utilize multiple cores, since Python employs a \emph{Global Interpreter Lock} which prevents threads within the same Python interpreter from executing concurrently. Using processes mitigates this as each process will run with its own interpreter. For this prototype, the multiprocessing could probably have been omitted in favor of simpler multithreading since CPU load has not been an issue at all.
 
 The runtime creation of processes within the main server application is shown below:
 \begin{figure}[H]
@@ -84,6 +68,8 @@ As can be seen, at least six concurrent processes will be running in addition to
 
 \subsubsection{Process communication overhead}
 There is of course an overhead cost involved in running processes as opposed to threads, since processes do not have shared memory which will make communication more costly performance-wise. A balanced approach could be to group processes with frequent communication as threads within the same process, thus reducing the total number of processes form the current minimum six (plus \texttt{DataProviders}) to two or three. 
+
+\subsection{Logging - interprocess}
 
 \newpage
 \subsection{Data acquisition}
