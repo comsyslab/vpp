@@ -27,25 +27,28 @@ The application is roughly structured in a layered architecture with the \texttt
 
 
 \subsubsection{Package \texttt{vpp.data\_acquisition}}
-TODO
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/class_data_acquisition}
     \caption{Data acquisition}
-    \label{}
 \end{figure}
 
-This package contains the framework for connecting to various sources of measurement and prediction data. Class \texttt{DataProvider} can be instantiated in a separate thread to model a single source of data. Each \texttt{DataProvider} instance employs a suitable \texttt{DataAdapter} to communicate with for instance a message queue or a SmartAmm server.
+This package contains the framework for connecting to sources of measurement and prediction data. The \texttt{DataProviderProcess} launches a \texttt{DataProvider} for each configured \texttt{.ini}-file as described in \ref{sec:data_provider_config}. Each \texttt{DataProvider} instance employs a suitable \texttt{DataAdapter}. The \texttt{FetchingAdapter}s employ a \texttt{DataProviderTimer} that will wake up according to configuration and execute data retrieval and processing. The \texttt{ListeningAdapter} will launch a thread that continuously listens for messages and processes them as they are received. Thus, each data provider does all processing in its own thread.
 
-A distinction is made between listening adapters (\texttt{AbstractListeningAdapter}), which will be activated by external events, and fetching adapters (\texttt{AbstractFetchingAdapter}) which employ an internal timer to fetch data periodically.
-
-\subsubsection{Package \texttt{vpp.control}}
-Similar to \texttt{data\_acquisition}, this package will provide a framework for communicating with the various control devices. A \texttt{Controller} can be instantiated with a suitable \texttt{ControllerAdapter} to communicate with a given device. 
+The \texttt{DataAdapters} handle communication with the data source and extract a raw string that is then passed to the configured \texttt{DataInterpreter}. The interpreter parses the string and outputs data as Python dictionaries to the \texttt{ProcessingStrategy} which interacts with a \texttt{DBManager} to store the data.
 
 
 \subsubsection{Package \texttt{vpp.database}}
+
 This package contains the code that interfaces directly with the database. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\textwidth]{figures/class_db}
+	\caption{Database TODO update figure}
+	\label{}
+\end{figure}
 
 \texttt{DBMaintainer} will run maintenance on the database and implement the Rolling Window strategy.
 
