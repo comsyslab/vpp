@@ -23,6 +23,7 @@ class ConfigIniParser(object):
         return db_string
 
     def get_db_string_dblink(self, section_name='DB'):
+        logging.DEBUG
         database_name, host, password, user = self._get_db_config(section_name)
         db_string = 'user={} password={} host={} dbname={}'.format(user, password, host, database_name)
         return db_string

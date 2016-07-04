@@ -4,9 +4,7 @@ import time
 from abc import ABCMeta, abstractmethod
 
 from vpp.core import domain_object_factory
-from vpp.data_acquisition.adapter.adapter_date_strategy import DefaultAdapterFileDateStrategy
-from vpp.data_acquisition.data_provider_timer import DataProviderTimer
-from vpp.util import util
+from vpp.data_acquisition.adapter.data_provider_timer import DataProviderTimer
 
 
 class AbstractDataAdapter(object):
