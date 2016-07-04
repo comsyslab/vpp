@@ -114,7 +114,22 @@ class DBManagerTest(unittest.TestCase):
 
 
     def test_create_new_data_bulk_empty(self):
-        db_manager = self.get_new_db_manager()
+        db_manager = self.get_new_db_manager(autoflush=True)
+
+        sensor_id1 = "smartamm_0015BC00260000BA_InstantaneousDemand"
+        attribute = "InstantaneousDemand"
+        unit = "W"
+
+        db_manager.delete_device(sensor_id1)
+        db_manager.create_new_sensor(sensor_id1, attribute, unit)
+
+        sensor_id2 = 'smartamm_0015BC00260000BA_CurrentSummationDelivered'
+        attribute = "CurrentSummationDelivered"
+        unit = "Wh"
+
+        db_manager.delete_device(sensor_id2)
+        db_manager.create_new_sensor(sensor_id2, attribute, unit)
+        db_manager.commit()
 
         data_dicts = [{'timestamp': u'2016-02-15T15:46:09.740Z', 'sensor_id': u'smartamm_0015BC00260000BA_InstantaneousDemand', 'value': 55},
                       {'timestamp': u'2016-02-15T15:46:09.740Z', 'sensor_id': u'smartamm_0015BC00260000BA_CurrentSummationDelivered', 'value': 1920517}]
@@ -122,13 +137,11 @@ class DBManagerTest(unittest.TestCase):
 
         try:
             db_manager.commit()
+
+            db_manager.close()
         except Exception as e:
             db_manager.rollback()
-            db_manager.close()
             self.fail(e.message)
-            return
 
-        db_manager.close()
-
-    def get_new_db_manager(self):
-        return DBManager()
+    def get_new_db_manager(self, autoflush=False):
+        return DBManager(autoflush=autoflush)
