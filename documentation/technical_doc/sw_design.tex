@@ -8,7 +8,7 @@ The VPP application is implemented in object-oriented Python. The static structu
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{figures/class_overview}
-    \caption{Package diagram}
+    \caption{Overview of packages}
     \label{figureClassDiagram}
 \end{figure}
 
@@ -20,10 +20,10 @@ The application is roughly structured in a layered architecture with the \texttt
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/class_core}
-    \caption{Core}
+    \caption{Package \texttt{core}}
 \end{figure}
 
-\texttt{Coordinator} is called by \texttt{start\_server.sh} and launches the entire application. Mainly, it instantiates the \texttt{DataProviderProcess} and the \texttt{DBMaintenanceProcess}. The processes are each wrapped in a \texttt{ProcessHandle} which handles process launch and termination and receives log messages from the underlying process.
+\texttt{Coordinator} is called by \texttt{start\_server.sh} and launches the entire application. Mainly, it instantiates the \texttt{DataProviderProcess} and the \texttt{DBMaintenanceProcess}. The processes are each wrapped in a \texttt{ProcessHandle} which handles process launch and termination and receives log messages from the underlying  \texttt{AbstractVPPProcess}. That is, all log messages are communicated (using Python interprocess message queues) to the main process which outputs to \texttt{logs/console.log}.
 
 
 \subsubsection{Package \texttt{vpp.data\_acquisition}}
@@ -31,7 +31,7 @@ The application is roughly structured in a layered architecture with the \texttt
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/class_data_acquisition}
-    \caption{Data acquisition}
+    \caption{Package \texttt{data\_acquisition}}
 \end{figure}
 
 This package contains the framework for connecting to sources of measurement and prediction data. The \texttt{DataProviderProcess} launches a \texttt{DataProvider} for each configured \texttt{.ini}-file as described in \ref{sec:data_provider_config}. Each \texttt{DataProvider} instance employs a suitable \texttt{DataAdapter}. The \texttt{FetchingAdapter}s employ a \texttt{DataProviderTimer} that will wake up according to configuration and execute data retrieval and processing. The \texttt{ListeningAdapter} will launch a thread that continuously listens for messages and processes them as they are received. Thus, each data provider does all processing in its own thread.
@@ -46,46 +46,37 @@ This package contains the code that interfaces directly with the database.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.5\textwidth]{figures/class_db}
-	\caption{Database TODO update figure}
+	\caption{Package \texttt{database}}
 	\label{}
 \end{figure}
 
-\texttt{DBMaintainer} will run maintenance on the database and implement the Rolling Window strategy.
+\texttt{DBMaintainerProcess} wakes up in accordance with the period specified in \texttt{config.ini} and instantiates  \texttt{DBMaintenance} that runs maintenance on the database, implementing the Rolling Window strategy.
 
-Communication with the database could be implemented simply using SQL, or we could opt for an object-relational mapper (ORM) framework such as SQLAlchemy.
+\texttt{DBManager} provides an interface to the database. It relies on \texttt{SchemaManager} which implements initialization of the database schema as well as creation and lookup of subtables for the Rolling Window scheme. The \texttt{measurement} and \texttt{prediction} tables and their subtables are implemented directly in SQL, but the rest of the schema is implemented using the object-relational mapper (ORM) framework SQLAlchemy.
 
-
-\section{Runtime processes}
+\newpage
+\section{Runtime behavior}
 
 Separate Python processes are deployed to enable concurrent processing. Using processes instead of threads is necessary to fully utilize multiple cores, since Python employs a \emph{Global Interpreter Lock} which prevents threads within the same Python interpreter from executing concurrently. Using processes mitigates this as each process will run with its own interpreter. For this prototype, the multiprocessing could probably have been omitted in favor of simpler multithreading since CPU load has not been an issue at all.
 
 The runtime creation of processes within the main server application is shown below:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/seq_diagram}
-    \caption{Sequence diagram of thread creation}
+    \includegraphics[width=\textwidth]{figures/seq_diagram_init}
+    \caption{Simplified sequence diagram of process and thread creation}
     \label{figureSeqDiagram}
 \end{figure}
-As can be seen, at least six concurrent processes will be running in addition to any \texttt{DataProviders} configured.
 
+In the diagram above, the \texttt{ProcessHandle} class is omitted for clarity.
 
-\subsubsection{Process communication overhead}
-There is of course an overhead cost involved in running processes as opposed to threads, since processes do not have shared memory which will make communication more costly performance-wise. A balanced approach could be to group processes with frequent communication as threads within the same process, thus reducing the total number of processes form the current minimum six (plus \texttt{DataProviders}) to two or three. 
-
-\subsection{Logging - interprocess}
 
 \newpage
 \subsection{Data acquisition}
-The execution flow when receiving measurements from a RabbitMQ is shown below:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figures/data_acq_seq_diagram}
-    \caption{Sequence diagram of data acquisition}
+    \includegraphics[width=0.9\textheight, angle=90]{figures/data_acq_seq_diagram}
+    \caption{Sequence diagram of receiving measurements from a RabbitMQ}
     \label{figureSeqDiagram}
 \end{figure}
 
 
-\subsection{Web server}\label{subsection:webserver}
-We intend to provide a web interface for users to access the system. This will run in a separate web server, but in the same machine. The preliminary plan is to build the webapp using Django since this supports Python. 
-
-The web interface could in itself grow to a rather large application with support for building configuration, device configuration, user administration, actuation interfaces and so on. This will require a substantial design and development effort. In the initial version, we plan to support only very basic interaction as proof of concept.
