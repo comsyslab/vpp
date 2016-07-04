@@ -3,9 +3,32 @@
 
 
 \chapter{How to run} \label{ch:how_to_run}
-The various scripts are placed in \texttt{vpp\_server/run} and explained below. All scripts exist in a Linux (\texttt{.sh}) and Windows (\texttt{.bat}) version.
+
+\section{Installation}
+
+\begin{itemize}
+	\item Install python 2.7.11
+	\item Setup postgresql DB. Create VPP DB with suitable user access
+	\item Clone from \url{https://github.com/comsyslab/vpp.git}
+
+
+	\item Windows:
+	\begin{itemize}
+		\item Install \url{http://www.microsoft.com/en-us/download/details.aspx?id=44266} (required for pip install)
+		\item Install pip
+		\item Install Psycopg2 manually for windows with exe from \url{https://github.com/nwcell/psycopg2-windows}
+		\item Install win32con from \url{http://sourceforge.net/projects/pywin32/files/pywin32/Build%20220/}
+	\end{itemize}
+
+	\item Linux: \texttt{pip install -r vpp\_server/resources/requirements\_psycopg2.txt}
+
+
+	\item \texttt{pip install -r vpp\_server/resources/requirements.txt}
+\end{itemize}
+
 
 \section{Scripts}
+The various scripts are placed in \texttt{vpp\_server/run} and explained below. All scripts exist in a Linux (\texttt{.sh}) and Windows (\texttt{.bat}) version.
 
 \paragraph{\texttt{clear\_db.sh}}
 Use with care. Connects to the database specified in the \texttt{[DB]} section of \texttt{config.ini} and drops and recreates the entire database schema \emph{without prompting for confirmation}. This can be used to initialize a new database.
