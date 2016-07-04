@@ -1,0 +1,22 @@
+1) Install python 2.7.11
+
+2) Setup postgresql DB
+   Create VPP DB with suitable user access
+
+3) Clone from https://github.com/comsyslab/vpp.git
+
+4 - windows) 
+ Install http://www.microsoft.com/en-us/download/details.aspx?id=44266 (prerequisite for pip install)
+ Install pip
+ Install Psycopg2 manually for windows with exe from https://github.com/nwcell/psycopg2-windows)
+ Install win32con from http://sourceforge.net/projects/pywin32/files/pywin32/Build%20220/
+ 
+4 - linux) 
+ pip install -r vpp_server\resources\requirements_psycopg2.txt
+
+5) (both win & linux)
+ pip install -r vpp_server\resources\requirements.txt
+
+6) Setup config.ini for DB access
+
+7) vpp_server\run\start_server.bat (or .sh)
