@@ -15,7 +15,7 @@ username = anonymous
 password =
 host = localhost
 port = 21
-file_pattern = [FILL IN]
+file_pattern = [FILL IN. Example: "([0-9]{4})([0-1][0-9])([0-3][0-9])_onlinedata\.txt" gives files of format "YYYYMMDD_onlinedata.txt"]
 encoding = utf-8
 
 [averaging]
